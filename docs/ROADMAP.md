@@ -1196,6 +1196,14 @@ Current source, test, package and owner/external scopes stay separate.
    matrix started on a source-equivalent revision that adds manual
    CI dispatch without changing any job.
    [Hosted matrix](https://github.com/hoozter/ottrin/actions/runs/42678015279).
+   Source `d40f0573` gives the main and View Options menu separators
+   the Borders and dividers color and exposes it under Buttons and
+   menus. All 554 local UI tests and strict Linux and Windows-target
+   lint passed. Source-built Dark and Light checks at 150% verified
+   all three divider lines in the real main menu, View Options and
+   the editor preview after a color edit. Cancel preserved preferences.
+   The private desktops were removed. This change is source-only.
+   [Menu divider result](../.hermes/evidence/view-options-alignment-current/ACCEPTANCE.json).
    Broader platform and theme-property coverage and whole-interface
    alignment/grouping remain open. The theme-library miniature now
    paints square selected-row fills, rounds only outer title/status corners and
