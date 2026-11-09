@@ -789,7 +789,20 @@ Current source, test, package and owner/external scopes stay separate.
      acquired no recovery journal.
      [Installed profile-owner pass](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_PROFILE_OWNER_PASS.json).
      [Installed profile refusal controls](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_PROFILE_REFUSAL_CONTROLS.json).
-     Keep read-only originals with hard-link aliases open separately.
+     Read-only originals with hard-link aliases remain open in the
+     transaction engine. A native Windows build 26100 NTFS probe refused
+     writable opens through both the default stream and an existing named
+     stream, including through the alias. Under SYSTEM, a volume handle
+     opened from the pinned file's final GUID path could be flushed before
+     and after renaming the original in both directions. Both links kept
+     the original file ID, read-only flag, and both stream payloads. The
+     32-bit volume serials matched. FileIdInfo on the volume handle
+     returned error 87. This establishes a volume-flush candidate without
+     changing a shared attribute. Integrate only with a pinned local-volume
+     binding, before the first namespace mutation, and verify bounded
+     cancellation, journal recovery, and the installed administrator path
+     separately. The probe did not test power loss or production latency.
+     [Native read-only alias probe](../.hermes/evidence/windows-admin-copy-package-current/READONLY_ALIAS_VOLUME_PROBE.json).
 
    Missing member IDs never license deletion or a completed original-batch claim.
    These are implementation/QA tasks, not owner waits. Personal authentication,

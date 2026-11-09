@@ -1,0 +1,41 @@
+{
+  "status": "native capability probe passed",
+  "build": "10.0.26100.0",
+  "identity": "NT AUTHORITY\\SYSTEM",
+  "filesystem": "local NTFS",
+  "fixture": "Read-only and archive attributes set before probing, two names for the same file, unnamed and named data streams",
+  "writable_open_error": 5,
+  "refused_names": [
+    "original",
+    "original:ottrin-test",
+    "original::$DATA",
+    "alias:ottrin-test"
+  ],
+  "scope": "CreateFile explicit write-data access refused on all four names. SetFileInformationByHandle renamed the pinned original to a vacant name and back. Only the disposable guest volume was flushed.",
+  "volume_guid_route": "GetFinalPathNameByHandle with VOLUME_NAME_GUID then CreateFile on the volume prefix without trailing backslash",
+  "file_id_info_volume_handle_error": 87,
+  "get_volume_information_file_serial": "9485c76d",
+  "get_volume_information_volume_serial": "9485c76d",
+  "volume_flush_ms_before_retain_after_retain_after_restore": [
+    78,
+    18,
+    16
+  ],
+  "file_id_preserved_at_both_names": true,
+  "read_only_flag_preserved_at_both_names": true,
+  "unnamed_and_named_streams_preserved": true,
+  "limitations": [
+    "SYSTEM-only probe",
+    "Absolute Win32 rename rather than production relative rename",
+    "No production journal, package, power-loss or cancellation acceptance"
+  ],
+  "cleanup": {
+    "domain": "ottrin-init-helper-pipe-qa",
+    "uuid": "11a770ae-d970-43e2-922e-6b29ebafc779",
+    "volume": "ottrin-init-helper-pipe-qa.qcow2",
+    "status": "pass",
+    "domain_removed": true,
+    "overlay_removed": true,
+    "protected_definitions_states_and_backing_unchanged": true
+  }
+}
