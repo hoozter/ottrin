@@ -9,7 +9,7 @@ not complete a broader native, platform or user-acceptance requirement.
 | Platform | Launchable locally | Next delivery |
 | --- | --- | --- |
 | Linux | `4d3f11a3` AppImage, portable archive, DEB and RPM in `dist/packages/`. [Exact package receipt](../dist/packages/LINUX_PACKAGES_ACCEPTANCE.json). | Promoted after mounted Dark and Light menu and Smart Panel checks, watcher and restart checks, and all four [hosted jobs](https://github.com/hoozter/ottrin/actions/runs/42687932598). |
-| Windows | `a9c718a2` portable ZIP, NSIS and development MSIX 31 in `dist/windows-candidate/`. [Exact package receipt](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json). | `4d3f11a3` passed native MSIX 32 deployment and upgrade and portable theme rendering. The staged installer still needs native NSIS lifecycle acceptance. |
+| Windows | `4d3f11a3` portable ZIP, NSIS and development MSIX 32 in `dist/windows-candidate/`. [Exact package receipt](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json). | Promoted after native MSIX deployment and upgrade, portable theme rendering and NSIS lifecycle checks. |
 
 The [ordered work](#current-ordered-work) tracks the remaining software
 and package acceptance. The [owner and external waiting list](#ownerexternal-waiting-list)
@@ -1259,6 +1259,18 @@ Current source, test, package and owner/external scopes stay separate.
    desktop captures were removed. This is portable Windows evidence.
    [Windows theme capture review](../.hermes/evidence/windows-menu-divider-delivery-current/NATIVE_THEME_VISUAL_REVIEW.json).
    [Windows theme retest](../.hermes/evidence/windows-menu-divider-delivery-current/native-theme-retry/ACCEPTANCE.json).
+   The exact NSIS and portable ZIP passed the lifecycle checks across
+   two native runs. The first reached the host disk-space floor after
+   the picker, fresh install and uninstall, running-index upgrade and
+   two reinstall cases. The follow-up repeated the running-index
+   upgrade, then passed stopped-and-disabled reinstall, locked-cache
+   refusal and uninstall retry. Both runs verified the same package
+   hashes. Promotion replaced all three stable Windows packages, removed
+   the old candidate and stage, and preserved the Linux delivery and
+   held MSI. Both guests, their volumes and temporary exports were
+   removed, and the borrowed test executables were restored by hash.
+   [NSIS lifecycle](../.hermes/evidence/windows-menu-divider-delivery-current/nsis32-completion/ACCEPTANCE.json).
+   [Windows promotion](../.hermes/evidence/windows-menu-divider-delivery-current/WINDOWS_DELIVERY.json).
    Broader platform and theme-property coverage and whole-interface
    alignment/grouping remain open. The theme-library miniature now
    paints square selected-row fills, rounds only outer title/status corners and

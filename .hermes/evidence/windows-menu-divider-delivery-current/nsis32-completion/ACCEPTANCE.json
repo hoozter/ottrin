@@ -1,0 +1,109 @@
+{
+  "status": "pass native portable picker and NSIS lifecycle",
+  "input": {
+    "source_revision": "4d3f11a379df2d58424093a0bb13fbf42b2aa8b4",
+    "files": [
+      {
+        "name": "portable.zip",
+        "sha256": "1759dce7320b0f5015e144db54880550044326a4c2687717fd7382e30b95c457"
+      },
+      {
+        "name": "current-setup.exe",
+        "sha256": "50c713d4ba37a61949e809e1d820a76a3e0ea4619c2c50c2902de959a586744f"
+      },
+      {
+        "name": "previous-setup.exe",
+        "sha256": "b58938b254f05d84a51ae94243a7f517ebcd77b1edd9198b4f275f5eefd477b0"
+      }
+    ],
+    "previous_source": "a9c718a2f21f9c1c45e798f2fc83a3f59b96bbae"
+  },
+  "payload_files": 59,
+  "picker_cases": [
+    "picker-dark-baseline",
+    "picker-dark-up-single",
+    "picker-dark-up-range",
+    "picker-dark-down-single",
+    "picker-dark-down-range",
+    "picker-light-baseline",
+    "picker-light-up-single",
+    "picker-light-up-range",
+    "picker-light-down-single",
+    "picker-light-down-range"
+  ],
+  "fresh_install_uninstall": "pass",
+  "running_index_upgrade": "pass",
+  "database_identity_preserved": true,
+  "preferences_preserved": true,
+  "runtime_cases": [
+    {
+      "status": "pass",
+      "running": true,
+      "enabled": false
+    },
+    {
+      "status": "pass",
+      "running": false,
+      "enabled": true
+    },
+    {
+      "status": "pass",
+      "running": false,
+      "enabled": false
+    }
+  ],
+  "refused_uninstall": {
+    "exit": 1,
+    "source_preserved": true,
+    "task_and_security_preserved": true,
+    "database_identity": "402E2E37:0003000000024D64",
+    "after": {
+      "instance": "{38AB7893-8F1E-4DC3-B9FC-13D4CA272E93}",
+      "pid": 2104
+    },
+    "payload_preserved": true,
+    "before": {
+      "instance": "{38AB7893-8F1E-4DC3-B9FC-13D4CA272E93}",
+      "pid": 2104
+    },
+    "status": "pass",
+    "preferences_preserved": true
+  },
+  "uninstall_retry": "pass",
+  "cleanup": {
+    "nsis32-lifecycle": {
+      "domain_removed": true,
+      "owned_volumes_removed": [
+        "ottrin-nsis-client.qcow2",
+        "ottrin-nsis-client-fixture.iso"
+      ],
+      "fixture_removed": true,
+      "base_still_off": true,
+      "retained_pending_volume": null
+    },
+    "nsis32-completion": {
+      "domain_removed": true,
+      "owned_volumes_removed": [
+        "ottrin-nsis-client.qcow2",
+        "ottrin-nsis-client-fixture.iso"
+      ],
+      "fixture_removed": true,
+      "base_still_off": true,
+      "retained_pending_volume": null
+    }
+  },
+  "verified_export_sha256": {
+    "interrupted": "17fd7ae8005b13f3e698a11ef54575c54e084a1377809b393c7c331eee643348",
+    "completion": "f1034dc479afb40a9a2a6fa5c37a43f3c008651384323bb2738ccbb4d5d473e4"
+  },
+  "disposable_outputs_retired": [
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-menu-divider-delivery-current/nsis32-completion/RESULTS.zip",
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-menu-divider-delivery-current/nsis32-lifecycle/INTERRUPTED_RESULTS.zip",
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-menu-divider-delivery-current/nsis32-lifecycle/desktop-ready.png",
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-menu-divider-delivery-current/nsis32-lifecycle/privacy-accepted-0.png",
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-menu-divider-delivery-current/nsis32-lifecycle/privacy-accepted-1.png",
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-menu-divider-delivery-current/nsis32-completion/desktop-ready.png",
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-menu-divider-delivery-current/nsis32-completion/privacy-accepted-0.png",
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-menu-divider-delivery-current/nsis32-completion/privacy-accepted-1.png"
+  ]
+}
