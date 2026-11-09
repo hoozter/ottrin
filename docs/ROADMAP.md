@@ -1158,7 +1158,13 @@ Current source, test, package and owner/external scopes stay separate.
    Heading text. Its real Search header icon uses Secondary text in the
    app and preview. All 37 focused Appearance tests passed, including
    control discovery in Dark and Light and the rendered icon color.
-   This checkpoint is source-only.
+   This checkpoint is source-only. GitHub run 42673226623 failed
+   before creating jobs on its first attempt. The second attempt ran
+   and passed only the Windows search benchmark. GitHub reported an
+   overall failure and exposed no failed job log. The workflow is
+   identical to the one that passed on `a9c718a2`. Full hosted
+   verification remains open.
+   [Hosted attempt](https://github.com/hoozter/ottrin/actions/runs/42673226623/attempts/2).
    Broader platform and theme-property coverage and whole-interface
    alignment/grouping remain open. The theme-library miniature now
    paints square selected-row fills, rounds only outer title/status corners and
