@@ -1563,6 +1563,18 @@ Current source, test, package and owner/external scopes stay separate.
    were removed, and borrowed executables were restored by hash.
    [Portable app trace](../.hermes/evidence/theme-editor-app-trace-current/native-portable-user-root/GUEST_RESULT.json).
 
+   The exact rebuilt Linux AppImage from `a9c718a2` stayed open while
+   Cancel was held and closed on release after 1.28 seconds in both
+   palettes. Popup dismissal, draft geometry, saved preferences and
+   source bytes passed. All four Linux formats passed content checks.
+   The packaged daemon passed watcher/restart tests and used 0.067% of
+   one core over a quiet minute. Atomic replacement passed in isolation.
+   The private displays and profiles were removed. Guarded local
+   promotion is queued behind exact-source hosted CI and native guest
+   teardown. The Windows rebuild resumed from the same source after
+   removal of the interrupted build's detached worktree and scratch.
+   [Delayed-click AppImage receipt](../.hermes/evidence/theme-editor-pointer-fix-linux-current/MENU_UI_ACCEPTANCE.json).
+
    Verify every supported role/control against the actual interface and logical
    hierarchy; field-map/test/capture counts do not close this audit.
 3. Close remaining supported themed-picker, Linux FileChooser/FileManager1 and
