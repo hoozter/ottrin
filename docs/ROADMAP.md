@@ -230,12 +230,18 @@ during its Explorer probe. The retry requires a matching executable path
 and a populated command line before comparing launch arguments. The
 disabled upgrade case also checks the saved checkbox state and restores
 that choice after exercising the toggle.
+The NSIS lifecycle fixture passed all ten portable picker cases before
+the host free-space guard interrupted fresh-install testing. The
+disposable overlay and duplicate portable export were removed. The
+lifecycle retry requires more initial free space and keeps the same
+emergency floor.
 [Staged payload](../.hermes/evidence/windows-save-identity-delivery-current/HOST_PAYLOAD.json).
 [Installed Save](../.hermes/evidence/windows-save-identity-delivery-current/INSTALLED_SAVE_IDENTITY.json).
 [MSIX assembly](../.hermes/evidence/windows-save-identity-delivery-current/ASSEMBLY_ACCEPTANCE.json).
 [Daemon runtime](../.hermes/evidence/windows-save-identity-delivery-current/WINDOWS_DAEMON_RUNTIME.json).
 [Fresh MSIX deployment](../.hermes/evidence/windows-save-identity-delivery-current/runtime30-fresh/ACCEPTANCE.json).
 [First MSIX upgrade attempt](../.hermes/evidence/windows-save-identity-delivery-current/runtime30-upgrade/ATTEMPT.json).
+[First NSIS lifecycle attempt](../.hermes/evidence/windows-save-identity-delivery-current/nsis30-lifecycle/ATTEMPT.json).
 
 The preceding Windows cohort used `7992ad1e` and development MSIX 28.
 The installed Save fix passed in Dark and Light. NSIS passed running-index
