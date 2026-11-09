@@ -1,13 +1,13 @@
 {
-  "status": "pass scoped Linux theme menu preview delivery",
-  "source_revision": "a9c718a2f21f9c1c45e798f2fc83a3f59b96bbae",
+  "status": "pass scoped Linux Smart Panel color delivery",
+  "source_revision": "b1bc72fe369fea5e0f3892701b67a26833a653cd",
   "artifacts": {
-    "ottrin-0.1.0-1.x86_64.rpm": "79a15bb0aa7f0c5421eda26cf95ec501b864ae2a12c89be57021af4c1f828537",
-    "Ottrin-0.1.0-x86_64.AppImage": "73d68bf20762d3deba7220b7e12dc078c81224ead08a9ca454aa16b3e1a643d0",
-    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "221e8f9d62cf210e79cf5f31a3989d73c9b2c35ef643e8c29cf05eb2e9dd5e5f",
-    "ottrin_0.1.0_amd64.deb": "2258d28db918f372e9c4dc1c63c7c19c157061b984ebe3d926afb54a5f3406a7"
+    "ottrin-0.1.0-1.x86_64.rpm": "6ec306115422c9ac8ba05a914af79ce9835c01ddc7eb9fd674b36154d7d70c35",
+    "Ottrin-0.1.0-x86_64.AppImage": "313312585998f02f8bd0d3bcc559f64a2ebc7d8156f1bd4495964ac2bc665687",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "4353dddb7014ceee9bf34133f7ffc2c7697c71d16afdf251352d7bb4d2ee35e9",
+    "ottrin_0.1.0_amd64.deb": "3d3526e4882db0abd93f58646b39f6ed97fe4d4b9223cd53c57ba763b61ceddc"
   },
-  "evidence": ".hermes/evidence/theme-editor-pointer-fix-linux-current",
+  "evidence": ".hermes/evidence/smart-panel-secondary-text-current",
   "checks": [
     "production portable/AppImage runtime closure and playback checks",
     "production native payload, dependencies, policy, hooks and code identity blocks",
@@ -17,32 +17,32 @@
     "actual AppImage and RPM index daemon namespace/ownership refusal checks"
   ],
   "runtime_sha256": {
-    "application": "705a24e68c957a452a4fbf576a35bf17b3d32a5f098d9bc5d1112c414c3c13b0",
+    "application": "6de279c6b73dc90163b236c0f19d3057c3a0c0a048e6d6ebf9659dd336b7ec37",
     "index_daemon": "f456fca656cb1c1dfe36832b4cf58beaefc0949d7bc065b6f673fe7afe613aaa",
     "privileged_helper": "f123b93368d7919067bdcfe6f295c079fc1d000c38fdb2f3f493c465bd0f932f",
     "html_renderer": "f6a4ebe343c58ad3f06398c81574aa44d2b1afcfd7486e9e180c9368efefcbed"
   },
   "hosted_source": {
-    "run": 42653629672,
-    "tested_source_revision": "a9c718a2f21f9c1c45e798f2fc83a3f59b96bbae",
+    "run": 42678015279,
+    "tested_source_revision": "c8534e2bb14abbe6d4e5d5a2a1f8c6e9e13c9419",
     "all_four_jobs_success": true
   },
-  "source_scope": ".hermes/evidence/theme-editor-pointer-fix-linux-current/BUILD_SOURCE.json",
-  "mounted_menu_preview": ".hermes/evidence/theme-editor-pointer-fix-linux-current/MENU_UI_ACCEPTANCE.json",
-  "mounted_file_manager": ".hermes/evidence/theme-editor-pointer-fix-linux-current/FILE_MANAGER_DBUS_ACCEPTANCE.json",
-  "mounted_picker_caller": ".hermes/evidence/theme-editor-pointer-fix-linux-current/picker-save/RESULT.json",
-  "daemon_runtime": ".hermes/evidence/theme-editor-pointer-fix-linux-current/LINUX_DAEMON_RUNTIME.json",
+  "source_scope": ".hermes/evidence/smart-panel-secondary-text-current/BUILD_SOURCE.json",
+  "mounted_smart_panel": ".hermes/evidence/smart-panel-secondary-text-current/THEME_UI_ACCEPTANCE.json",
+  "mounted_file_manager": ".hermes/evidence/smart-panel-secondary-text-current/FILE_MANAGER_DBUS_ACCEPTANCE.json",
+  "mounted_picker_caller": ".hermes/evidence/smart-panel-secondary-text-current/picker-save/RESULT.json",
+  "daemon_runtime": ".hermes/evidence/smart-panel-secondary-text-current/LINUX_DAEMON_RUNTIME.json",
   "current_helper_read_only": [
-    ".hermes/evidence/theme-editor-pointer-fix-linux-current/LINUX_HELPER_RUNTIME.json"
+    ".hermes/evidence/smart-panel-secondary-text-current/LINUX_HELPER_RUNTIME.json"
   ],
   "previous_cohort": {
-    "source_revision": "9f27ece172a23d42155c8cbe6496248461f8e182",
-    "receipt": ".hermes/evidence/theme-editor-pointer-fix-linux-current/PREVIOUS_LINUX_PACKAGES_ACCEPTANCE.json"
+    "source_revision": "a9c718a2f21f9c1c45e798f2fc83a3f59b96bbae",
+    "receipt": ".hermes/evidence/smart-panel-secondary-text-current/PREVIOUS_LINUX_PACKAGES_ACCEPTANCE.json"
   },
   "limits": [
-    "Mounted Dark and Light X11 verified preview menu behavior, draft geometry, and physical Cancel after a 1.25-second hold. Native Windows appearance remains open.",
+    "Mounted Dark and Light X11 at 150% verified the Smart Panel Search header icon color, Restore and Cancel. Earlier menu receipts retain their original package scope.",
     "Other portal, theme and native distro receipts retain their recorded package scopes.",
     "Bundled administrator helper passed read-only protocol checks. Updating the installed system helper requires its own administrator action.",
-    "Packaged manuals are build-time snapshots at a9c718a2; repository metadata records later delivery."
+    "Packaged manuals are build-time snapshots at b1bc72fe; repository metadata records later delivery."
   ]
 }

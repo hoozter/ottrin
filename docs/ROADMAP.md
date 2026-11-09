@@ -1185,7 +1185,13 @@ Current source, test, package and owner/external scopes stay separate.
    changed to the entered Secondary text color, restored exactly and
    preserved the saved theme after Cancel. The same AppImage passed
    atomic replacement, FileManager1 dispatch and the Save caller
-   workflow on private desktops. The candidate remains staged.
+   workflow on private desktops. All four source-equivalent hosted
+   jobs passed. The AppImage, portable archive, DEB and RPM were
+   promoted to their stable paths and rechecked by hash. The managed
+   index returned to Ready with startup, preferences and database
+   identity preserved. The stage and superseded package files were
+   removed.
+   [Linux Smart Panel delivery](../.hermes/evidence/smart-panel-secondary-text-current/PROMOTION.json).
    [Packaged Smart Panel result](../.hermes/evidence/smart-panel-secondary-text-current/THEME_UI_ACCEPTANCE.json).
    Strict local lint passed for both Linux and Windows targets. The
    exact portable index passed watcher and restart checks and averaged

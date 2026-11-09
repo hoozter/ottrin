@@ -204,7 +204,7 @@
     {
       "id": "U14",
       "requirement": "Keep one stable usable package path, current GitHub checkpoints, honest status/roadmap/waiting list and no failure-email flood.",
-      "current_scope": "Stable Linux and Windows both use a9c718a2. Linux b1bc72fe is built and independently verified locally, with promotion waiting on source-equivalent hosted run 42678015279. The source-only Smart Panel run failed scheduling, and full CI is now manually dispatchable. Public release and notification-email delivery remain separate.",
+      "current_scope": "Stable Linux b1bc72fe and Windows a9c718a2 match the current package authorities. All four source-equivalent Smart Panel hosted jobs passed and Linux promotion is complete. The combined Linux and Windows 4d3f11a3 candidates remain staged. Public release and notification-email delivery retain separate scopes.",
       "evidence": [
         ".hermes/evidence/recovery-transport-delivery-current/PROGRESS.json",
         ".hermes/evidence/recovery-transport-delivery-current/NATIVE_CLEANUP_CURRENT.json",
@@ -222,13 +222,14 @@
         ".hermes/evidence/office-label-delivery-current/PROMOTION.json",
         ".hermes/evidence/theme-editor-pointer-fix-current/WINDOWS_DELIVERY.json",
         ".hermes/evidence/theme-editor-pointer-fix-linux-current/PROMOTION.json",
-        ".hermes/evidence/smart-panel-secondary-text-current/PROMOTION_PREFLIGHT.json"
+        ".hermes/evidence/smart-panel-secondary-text-current/PROMOTION_PREFLIGHT.json",
+        ".hermes/evidence/smart-panel-secondary-text-current/PROMOTION.json"
       ]
     },
     {
       "id": "U15",
       "requirement": "Remove owned obsolete build/QA output and test processes while preserving user data, protected VMs, useful caches and current deliverables.",
-      "current_scope": "Windows a9c718a2 promotion retired its stage and superseded package cohort. Native picker teardown removed the VM, volumes and export and restored 20 borrowed test executables by hash. Six superseded compiler sessions were removed during Linux QA. The current Linux stage remains owned pending promotion.",
+      "current_scope": "Windows a9c718a2 promotion retired its stage and superseded package cohort. Native picker teardown removed the VM, volumes and export and restored 20 borrowed test executables by hash. Six superseded compiler sessions were removed during Linux QA. The current Linux stage remains owned pending promotion. Linux b1bc72fe promotion removed its consumed stage and superseded artifacts.",
       "evidence": [
         ".hermes/evidence/release-audit-current/CLEANUP.json",
         ".hermes/evidence/release-audit-current/cohort/EXTRACTION_CLEANUP.json",
@@ -249,7 +250,8 @@
         ".hermes/evidence/vivaldi-picker-delivery-current/MANAGED_INDEX_TRANSITION.json",
         ".hermes/evidence/theme-editor-pointer-fix-current/WINDOWS_DELIVERY.json",
         ".hermes/evidence/windows-native-picker-folders-current/ACCEPTANCE.json",
-        ".hermes/evidence/smart-panel-secondary-text-current/STORAGE_AFTER_LOCAL_QA.txt"
+        ".hermes/evidence/smart-panel-secondary-text-current/STORAGE_AFTER_LOCAL_QA.txt",
+        ".hermes/evidence/smart-panel-secondary-text-current/PROMOTION.json"
       ]
     }
   ],
@@ -260,10 +262,9 @@
   ],
   "latest_scope_reconciliation": {
     "date": "2026-11-09",
-    "stable_linux": "a9c718a2f21f9c1c45e798f2fc83a3f59b96bbae",
+    "stable_linux": "b1bc72fe369fea5e0f3892701b67a26833a653cd",
     "stable_windows": "a9c718a2f21f9c1c45e798f2fc83a3f59b96bbae",
     "staged_linux": [
-      "b1bc72fe369fea5e0f3892701b67a26833a653cd",
       "4d3f11a379df2d58424093a0bb13fbf42b2aa8b4"
     ],
     "staged_windows": [],
