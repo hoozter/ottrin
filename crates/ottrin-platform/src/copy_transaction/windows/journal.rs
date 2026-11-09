@@ -4280,9 +4280,11 @@ fn undo_bound_copy(
 /// An opened, source-free, native-validated durable completion receipt.
 /// This read-only proof alone does not grant Undo, deletion or cleanup authority.
 /// The paired journal remains the only persisted representation.
+#[cfg(test)]
 pub(super) struct CompletedCopy<'a> {
     retained: RetainedStage<'a>,
 }
+#[cfg(test)]
 impl<'a> CompletedCopy<'a> {
     pub(super) fn open(
         authority: &Authority,
@@ -4302,15 +4304,12 @@ impl<'a> CompletedCopy<'a> {
         }
         Ok(Self { retained })
     }
-    #[cfg(test)]
     pub(super) fn entry_count(&self) -> usize {
         self.retained.snapshot.state.final_versions.len()
     }
-    #[cfg(test)]
     pub(super) fn root_version(&self) -> &EntryVersion {
         &self.retained.snapshot.state.final_versions[0]
     }
-    #[cfg(test)]
     pub(super) fn revalidate(
         &self,
         progress: impl FnMut(u64) -> Result<(), PlatformError>,

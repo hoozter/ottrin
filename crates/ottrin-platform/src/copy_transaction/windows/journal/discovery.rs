@@ -138,20 +138,29 @@ pub(super) fn session_receipt(
     parent: &File,
     central: &File,
     name: &OsStr,
-    mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
+    progress: impl FnMut(u64) -> Result<(), PlatformError>,
 ) -> Result<crate::PathMoveUndoReceipt, PlatformError> {
-    let completed = CompletedCopy::open(authority, parent, central, name, &mut progress)?;
-    let state = &completed.retained.snapshot.state;
+    // Bind the session's completed journal before resolving its registered
+    // Undo admission. That admission already verifies the full payload.
+    let snapshot = Snapshot::load(authority, parent, central, name, SnapshotAccess::Read)?;
+    let state = &snapshot.state;
+    if phase(state) != WindowsCopyPhase::Completed {
+        return Err(io("Copy has no current completed receipt"));
+    }
     let header = state.header.as_ref().unwrap();
     let location = windows_fs::location(parent).map_err(io)?;
     let registry = windows_fs::location(central).map_err(io)?;
     let plan = RetainedCopyUndoPlan::admit(authority, &registry, &header.transaction, progress)?;
-    if &plan.binding.header != header || plan.binding.completion_digest != completion_digest(state)?
+    if &plan.binding.header != header
+        || plan.binding.completion_digest != completion_digest(state)?
+        || plan.binding.parent_location != location
+        || plan.admitted_phase != WindowsCopyPhase::Completed
     {
         return Err(io(
             "Copy completion changed while issuing the session receipt",
         ));
     }
+    snapshot.revalidate(parent, central)?;
     Ok(crate::PathMoveUndoReceipt {
         before_path: location.join(header.candidate_name()),
         after_path: location.join(OsString::from_wide(&header.target)),

@@ -1065,6 +1065,18 @@ Current source, test, package and owner/external scopes stay separate.
      [Installed terminal timing](../.hermes/evidence/windows-alias-performance-terminal-current/ACCEPTANCE.json).
      [Native read-only alias probe](../.hermes/evidence/windows-admin-copy-package-current/READONLY_ALIAS_VOLUME_PROBE.json).
 
+     Copy receipt creation now binds the original completed journal and
+     delegates payload verification to the existing Undo admission, removing
+     a duplicate payload read. Receipt creation rechecks the paired journals,
+     destination parent, completion digest and phase before returning. Four
+     native Windows platform tests passed under SYSTEM, covering creation and
+     overwrite Undo, a moved parent, changed or missing authority, and
+     preservation of committed data on receipt failure. Strict Windows-target
+     Clippy passed. The follow-up profiling attempt ended at the permission
+     prompt without collecting a sample. Rebuild the private helper and rerun
+     the installed 1 GiB workflow to measure the change before promotion.
+     [Native receipt checks](../.hermes/evidence/windows-alias-receipt-current/native/NATIVE_TEST.json).
+
    Missing member IDs never license deletion or a completed original-batch claim.
    These are implementation/QA tasks, not owner waits. Personal authentication,
    unavailable hardware and final acceptance remain on the separate waiting list.
