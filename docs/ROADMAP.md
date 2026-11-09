@@ -1001,8 +1001,17 @@ Current source, test, package and owner/external scopes stay separate.
      Ended in another. The original and hard-link metadata and named
      stream, source and unrelated marker passed each disk check.
      [Installed application crash recovery](../.hermes/evidence/windows-alias-app-crash-current/ACCEPTANCE.json).
-     Guest power loss and production latency for this protected
-     Replace case remain separate gates.
+     The exact private NSIS passed an abrupt guest power cut while
+     staging a 1 GiB protected replacement. After cold boot on the
+     same overlay, a fresh Ottrin process loaded and ended the
+     matching journal. Another process verified Ended, and the disk
+     checks preserved the source, destination marker, original and
+     hard-link metadata and named stream. The guest and overlay
+     were removed.
+     [Installed guest power-cut recovery](../.hermes/evidence/windows-alias-power-cut-current/ACCEPTANCE.json).
+     This checks the observed pre-publication staging boundary.
+     Physical storage power loss and production latency remain
+     separate gates.
      [Native read-only alias probe](../.hermes/evidence/windows-admin-copy-package-current/READONLY_ALIAS_VOLUME_PROBE.json).
 
    Missing member IDs never license deletion or a completed original-batch claim.
