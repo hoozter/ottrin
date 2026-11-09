@@ -1072,10 +1072,16 @@ Current source, test, package and owner/external scopes stay separate.
      native Windows platform tests passed under SYSTEM, covering creation and
      overwrite Undo, a moved parent, changed or missing authority, and
      preservation of committed data on receipt failure. Strict Windows-target
-     Clippy passed. The follow-up profiling attempt ended at the permission
-     prompt without collecting a sample. Rebuild the private helper and rerun
-     the installed 1 GiB workflow to measure the change before promotion.
+     Clippy passed. The installed 1 GiB workflow then passed with the
+     rebuilt private helper and the same installer. Publication appeared at
+     70.54 seconds and Undo at 118.72 seconds. The observed gap between them
+     fell from 69.27 to 48.18 seconds across the two VM runs. The standard
+     caller verified the published hash, and disk checks confirmed caller
+     ownership and preservation of the original and its hard link. The
+     same-run ordinary copy control took 4.05 seconds. Profile the remaining
+     gap and repeat before enabling Administrator Copy in standard packages.
      [Native receipt checks](../.hermes/evidence/windows-alias-receipt-current/native/NATIVE_TEST.json).
+     [Installed receipt timing](../.hermes/evidence/windows-alias-receipt-installed-current/ACCEPTANCE.json).
 
    Missing member IDs never license deletion or a completed original-batch claim.
    These are implementation/QA tasks, not owner waits. Personal authentication,
