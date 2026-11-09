@@ -1086,12 +1086,21 @@ Current source, test, package and owner/external scopes stay separate.
      15 samples, caller-profile validation in 11 and retained-tree
      revalidation in seven. These raw stack words locate candidate code
      paths without measuring how much elapsed time each path consumed.
-     Measure payload verification and caller-profile validation separately,
-     then retest any optimization with caller drift and changed-payload
-     refusal coverage before enabling Administrator Copy in standard packages.
+     A separate instrumented run of the same installed 1 GiB scenario passed
+     the terminal integrity checks. From native rename through receipt, the
+     executor took 74.71 seconds. Stream transfer and verification accounted
+     for 60.39 seconds after subtracting overlapping caller validation.
+     Caller-context validation accounted for 13.59 seconds across 35,714
+     calls. Permission application was the largest phase at 38.87 seconds,
+     including 31.57 seconds of stream work and 6.94 seconds of caller
+     validation. Prioritize repeated stream verification under the held
+     publication capabilities. Retest caller drift, changed payloads, and
+     permission interruption before enabling Administrator Copy in standard
+     packages. These timings describe one instrumented VM run.
      [Native receipt checks](../.hermes/evidence/windows-alias-receipt-current/native/NATIVE_TEST.json).
      [Installed receipt timing](../.hermes/evidence/windows-alias-receipt-installed-current/ACCEPTANCE.json).
      [Post-publication helper profile](../.hermes/evidence/windows-alias-finalization-profile-current/FINDING.json).
+     [Installed finalization timing](../.hermes/evidence/windows-alias-finalization-timing-current/FINDING.json).
 
    Missing member IDs never license deletion or a completed original-batch claim.
    These are implementation/QA tasks, not owner waits. Personal authentication,
