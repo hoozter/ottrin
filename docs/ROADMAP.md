@@ -1480,6 +1480,15 @@ Current source, test, package and owner/external scopes stay separate.
    The temporary AppImage copy was removed.
    [FileManager1 receipt](../.hermes/evidence/theme-preview-popup-linux-current/FILE_MANAGER_DBUS_ACCEPTANCE.json).
 
+   The exact staged AppImage also passed the cooperating-caller Save
+   flow with a non-UTF-8 filename. The chooser required confirmation
+   and returned the exact native path while preserving the file.
+   Closing the caller pipe during a second live request returned
+   cancellation and closed the chooser. Neither request started an
+   index or wrote main application configuration. The private display,
+   profile and AppImage copy were removed.
+   [Picker caller receipt](../.hermes/evidence/theme-preview-popup-linux-current/picker-save/RESULT.json).
+
    The exact rebuilt `9f27ece1` Windows NSIS, SHA-256
    `96a68d5907fd359c3f584991591602b7e6ebbe4ad66265a6a449f1b0c47209c3`,
    passed the sample-popup dismissal assertion in both palettes and
