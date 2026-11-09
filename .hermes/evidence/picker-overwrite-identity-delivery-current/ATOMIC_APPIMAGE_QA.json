@@ -1,0 +1,70 @@
+{
+  "status": "pass atomic replacement preserved the existing mounted window and the next launch used the new AppImage",
+  "previous_image_sha256": "71bfe68b40c1442110e5b3b38ba967ebc5277ddb8e5907587f7d42500c45176e",
+  "new_image_sha256": "022083b67feadc38555fddbcca7b5578445e82500ca8fd8b274256e82bafbbc3",
+  "old_window_operated_after_replacement": true,
+  "next_launch_new_binary": true,
+  "scope": "Private same-filesystem AppImage path replacement only. Multi-package promotion, concurrent settings writes, and managed service continuity are separate.",
+  "atomic-appimage_teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-4u1aufzn",
+    "owned_processes_reaped": [
+      {
+        "pid": 1994302,
+        "exit": 0
+      },
+      {
+        "pid": 1994305,
+        "exit": 0
+      },
+      {
+        "pid": 1994306,
+        "exit": 15
+      },
+      {
+        "pid": 1994361,
+        "exit": -15
+      }
+    ],
+    "owned_children": {
+      "stopped": [
+        1994365,
+        1994433
+      ],
+      "unreadable_foreign_processes_preserved": 4
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  },
+  "atomic-appimage-next_teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-97yv6jp9",
+    "owned_processes_reaped": [
+      {
+        "pid": 1994453,
+        "exit": 0
+      },
+      {
+        "pid": 1994459,
+        "exit": 0
+      },
+      {
+        "pid": 1994460,
+        "exit": 15
+      },
+      {
+        "pid": 1994513,
+        "exit": -15
+      }
+    ],
+    "owned_children": {
+      "stopped": [
+        1994517,
+        1994617
+      ],
+      "unreadable_foreign_processes_preserved": 4
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  }
+}

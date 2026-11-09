@@ -1,0 +1,17 @@
+{
+  "original_executable_sha256": "73e5752d7d8677e7e88c0187a08309e3c642bdbc58ebe5a3a1c1c921772fab7e",
+  "executed_executable_sha256": "5500adcbc7d3be1b3dfdb7b639df56d7648f98478e0bd2ec92abbca49e0cd0dc",
+  "output": "NT AUTHORITY\\SYSTEM\r\n10.0.26100.0\r\n\nrunning 1 test\ntest picker::tests::filtered_out_typed_names_are_rejected_and_save_confirmation_never_changes_a_file ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 534 filtered out; finished in 0.05s\n\n",
+  "cleanup": {
+    "domain": "ottrin-init-helper-pipe-qa",
+    "uuid": "d39517dd-6e86-4935-9001-0dda4b96e654",
+    "volume": "ottrin-init-helper-pipe-qa.qcow2",
+    "status": "pass",
+    "domain_removed": true,
+    "overlay_removed": true,
+    "protected_definitions_states_and_backing_unchanged": true
+  },
+  "source_base": "2fa925f0f895c34e67865ce2c48f562b5f5565f7",
+  "status": "pass native Windows Save dialog model and filesystem identity regression",
+  "scope": "Native Windows UI library test under SYSTEM, actual filesystem replacement and asynchronous Save validation. No installed Windows GUI, UAC or package acceptance."
+}

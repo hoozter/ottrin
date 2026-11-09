@@ -27,6 +27,26 @@ See [mounted acceptance](../.hermes/evidence/appearance-page-delivery-current/AC
 [service sample](../.hermes/evidence/appearance-page-delivery-current/INDEX_PREPROMOTION_OBSERVATION.json)
 and `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`.
 
+The four Linux formats from `2fa925f0` are staged for the Save confirmation
+fix. The mounted Dark GTK 3 Save dialog required a second confirmation
+after a same-name, same-size, same-mtime replacement. Light returned a
+new path without creating a file. Both returned the exact path and did
+not start an index. The matching focused Windows test passed on native
+build 26100 under SYSTEM. It covers the dialog model and real file
+identity, with installed Windows UI acceptance still open. The native
+Windows guest and overlay, Linux profiles, and package extractions were
+removed. The candidate daemon preserved the private database inode and
+preferences across the old-to-new transition, passed watcher and restart
+checks, and averaged 0.067% of one core during a 30-second idle sample.
+Local promotion preflight passed. The stage awaits Windows verification in
+[run 42576198057](https://github.com/hoozter/ottrin/actions/runs/42576198057).
+Linux verification and both performance jobs passed, including the
+previously failing Linux watcher fixture in the Linux verification job.
+See [GTK acceptance](../.hermes/evidence/picker-overwrite-identity-delivery-current/gtk-save-dark/RESULT.json),
+[native Windows test](../.hermes/evidence/picker-overwrite-identity-delivery-current/WINDOWS_NATIVE_SAVE_IDENTITY.json),
+[index transition](../.hermes/evidence/picker-overwrite-identity-delivery-current/LINUX_DAEMON_RUNTIME.json),
+and [promotion preflight](../.hermes/evidence/picker-overwrite-identity-delivery-current/PROMOTION_PREFLIGHT.json).
+
 The previous Linux cohort used source
 `46802ab4`. Real Vivaldi Open and Save passed, including window parenting,
 cancellation and caller exit. Native Ubuntu and Fedora package transitions
@@ -1282,7 +1302,8 @@ Current source, test, package and owner/external scopes stay separate.
    started no index and wrote no main configuration. All 550 active Linux
    UI tests, strict Linux/Windows-target lint and formatting passed.
    [Native Save acceptance](../.hermes/evidence/picker-overwrite-identity-current/ACCEPTANCE.json).
-   This follow-up still needs packaging and native Windows acceptance.
+   The staged mounted Linux portal and native Windows model checks are
+   recorded above. Installed Windows UI acceptance remains open.
 
    Linux folder setup `b9543fe9` keeps interrupted launcher replacements
    repairable while refusing edits outside the recorded versions. Eight
