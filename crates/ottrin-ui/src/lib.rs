@@ -6653,6 +6653,20 @@ impl OttrinApp {
             {
                 record.detail = detail;
             }
+            if res.stopped
+                && let FileCommand::Copy { sources, .. } = &completed_cmd
+                && let Some(completed) = res.completed_sources
+                && let Some(record) = self
+                    .operation_history
+                    .iter_mut()
+                    .find(|record| record.id == res.op_id)
+            {
+                record.detail.push_str(&format!(
+                    " · {} of {} items copied",
+                    completed,
+                    sources.len()
+                ));
+            }
             self.finish_operation_record(
                 res.op_id,
                 if res.stopped {

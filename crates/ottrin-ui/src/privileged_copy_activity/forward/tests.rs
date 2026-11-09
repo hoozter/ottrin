@@ -233,6 +233,15 @@ fn partial_failure_keeps_undo_while_denial_and_missing_payload_never_claim_compl
         assert_eq!(is_privileged(record), payload);
         if payload {
             assert_eq!(record.status, OperationStatus::Stopped);
+            assert!(record.detail.ends_with("1 of 1 items copied"));
+            assert_eq!(
+                record.message.as_deref(),
+                Some("Owned helper refusal after completed prefix")
+            );
+            assert_eq!(
+                app.command_frame.message.as_deref(),
+                Some("Copy stopped before finishing. See Activity for details.")
+            );
             assert_eq!(copy_receipt_transaction_ids(record), vec!["a".repeat(32)]);
             assert!(matches!(
                 record.path_move_undo,
