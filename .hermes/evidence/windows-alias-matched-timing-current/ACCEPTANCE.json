@@ -1,0 +1,54 @@
+{
+  "status": "pass matched installed 1 GiB Windows Replace workflow",
+  "measurements": {
+    "before": {
+      "source": "91168ef7b4a72a2c5fe4bc960ad460c7730e74ee",
+      "helper_sha256": "d8cb888710329606996bbde65d11ef831998cdb017b123f4ad54f4e1db70b023",
+      "helper_to_publication_s": 97.913408,
+      "publication_to_undo_s": 78.9327185,
+      "helper_to_undo_s": 176.8461265,
+      "ordinary_copy_s": 4.171249899999999
+    },
+    "after": {
+      "source": "073c3945a42464c8fe8cda76ddcff5288a8bdf4b",
+      "helper_sha256": "64299126b3d7f133e29f4d61d2d946594dd589281c896e82477e1621e27df1ec",
+      "helper_to_publication_s": 110.1778822,
+      "publication_to_undo_s": 69.6620174,
+      "helper_to_undo_s": 179.8398996,
+      "ordinary_copy_s": 5.219370400000001
+    }
+  },
+  "after_minus_before_s": {
+    "helper_to_publication_s": 12.264474199999995,
+    "publication_to_undo_s": -9.270701099999997,
+    "helper_to_undo_s": 2.9937730999999985,
+    "ordinary_copy_s": 1.0481205000000013
+  },
+  "shared_inputs": {
+    "source_revision": "155796285ef6f00a0868bb797a400d5553efe4bf",
+    "installer_sha256": "7257c854c72986d24052c22f43514536a686ebf8965c18e73c25e28725c8c3b6",
+    "source_sha256": "670e8470dc21dc15ea0263c848123840e03b20313e74971d1e96df02991e0713",
+    "alias_performance": true,
+    "interrupt": false,
+    "disconnect": false,
+    "caller_registry": false,
+    "profile_refusals": false,
+    "stop": false,
+    "stopped_ui": false,
+    "symlink": false,
+    "directory_symlink": false,
+    "overwrite_symlink": false,
+    "overwrite_readonly": true,
+    "readonly_alias": true,
+    "keep_alias_replacement": false,
+    "invoke_alias_cleanup": false,
+    "resume": false,
+    "late_stop": false,
+    "lost_reply": false,
+    "tree_count": null,
+    "actor_sha256": "37e7a274fd89adc50e8e79ee848828dab24807817eeef54e0070291b48d1b33a",
+    "observer_sha256": null
+  },
+  "guest_teardown_and_test_binary_restoration_verified": true,
+  "scope": "One offline VM run per helper. Timings include observation delay and have no repeated-run confidence interval."
+}

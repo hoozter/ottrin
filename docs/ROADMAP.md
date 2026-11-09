@@ -328,11 +328,10 @@ and [first-run timeout](../.hermes/evidence/windows-picker-keyboard-current/nati
    open at this checkpoint. The installed recovery and interruption
    receipts below cover those paths on capability-enabled private builds.
    Administrator Copy is still disabled in the current Windows candidate.
-   The remaining delivery gate is a matched installed timing comparison
-   for the large protected Replace and its post-publication verification,
-   followed by capability-enabled acceptance against the source intended
-   for delivery. Keep caller identity, journal recovery and Undo checks
-   in that fixture. Private revision `94549b87` changes the shared capability
+   The matched installed timing comparison is complete. The next gate
+   is capability-enabled acceptance against the source intended for
+   delivery. Keep caller identity, journal recovery, Undo and the
+   observed latency in that assessment. Private revision `94549b87` changes the shared capability
    gate relative to the delivered `d2031d5e` build. Its ZIP and NSIS matched
    across all 59 payload files. The installer ran as a standard user, and
    the bundled helper advertised Copy recovery. An incomplete fixture
@@ -1150,6 +1149,17 @@ Current source, test, package and owner/external scopes stay separate.
      [Installed finalization timing](../.hermes/evidence/windows-alias-finalization-timing-current/FINDING.json).
      [Native permission finalization checks](../.hermes/evidence/windows-alias-permission-finalization-current/native/NATIVE_TEST.json).
      [Installed permission finalization retest](../.hermes/evidence/windows-alias-permission-installed-current/ACCEPTANCE.json).
+     A matched offline VM comparison used the same private installer,
+     actor and 1 GiB payload for both release helpers. Both passed
+     caller ownership, published hash, retained original and hard-link
+     checks. Publication to Undo fell from 78.93 to 69.66 seconds.
+     Helper start to Undo was 176.85 versus 179.84 seconds, and the
+     ordinary copy control was 4.17 versus 5.22 seconds. One run per
+     helper establishes observed behavior and cost, with insufficient
+     evidence for an end-to-end speedup. Both test guests and overlays
+     were removed and borrowed compiler executables were restored by
+     hash. The currently delivered Windows capability remains disabled.
+     [Matched Windows Replace timing](../.hermes/evidence/windows-alias-matched-timing-current/ACCEPTANCE.json).
 
    Missing member IDs never license deletion or a completed original-batch claim.
    These are implementation/QA tasks, not owner waits. Personal authentication,

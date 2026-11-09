@@ -1,0 +1,27 @@
+{
+  "installer_sha256": "7257c854c72986d24052c22f43514536a686ebf8965c18e73c25e28725c8c3b6",
+  "fixture_sha256": {
+    "installed-actor.ps1": "37e7a274fd89adc50e8e79ee848828dab24807817eeef54e0070291b48d1b33a",
+    "fixture-vm.py": "d10b19d502cb3fa61051fb698a17f8647996599d489631af4e6fa7468145650a"
+  },
+  "before": {
+    "source_revision": "91168ef7b4a72a2c5fe4bc960ad460c7730e74ee",
+    "base_private_source": "c3b3b8504f1bb6f50866de3eda26746ffe948005",
+    "applied_source_change": "9ec233f4",
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-alias-receipt-installed-current/ottrin-priv-helper.exe",
+    "sha256": "d8cb888710329606996bbde65d11ef831998cdb017b123f4ad54f4e1db70b023",
+    "scope": "Private installed Windows Replace timing fixture"
+  },
+  "after": {
+    "source_revision": "073c3945a42464c8fe8cda76ddcff5288a8bdf4b",
+    "base_private_source": "91168ef7b4a72a2c5fe4bc960ad460c7730e74ee",
+    "applied_source_change": "3b7c843b",
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-alias-permission-installed-current/ottrin-priv-helper.exe",
+    "sha256": "64299126b3d7f133e29f4d61d2d946594dd589281c896e82477e1621e27df1ec",
+    "scope": "Private installed Windows Replace timing fixture"
+  },
+  "changed_product_paths": [
+    "crates/ottrin-platform/src/copy_transaction/windows/journal.rs"
+  ],
+  "scope": "One fresh offline guest per helper. Same private installer, actor and backing image. Compare publication and Undo visibility separately."
+}
