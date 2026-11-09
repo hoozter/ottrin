@@ -1,0 +1,62 @@
+{
+  "status": "pass native MSIX deployment, actual login and removal",
+  "case": "runtime33-fresh",
+  "input": {
+    "runtime_script_sha256": "7d0aece5f261edaeeec2951196d29c581703bdf0b45cbd35aeb23c4122d53d75",
+    "native_controls_sha256": "c6fa404bd07713763f261a99a6194c3fe52930fbe123ffdb99355b77e20a7b11",
+    "sha256": "ff98d685a6113ba1177c938fb7ce51f95e21c23a15e9b457dc9f91d258e354da",
+    "source_revision": "c4c2f4beb0a859cadae68423bfaad2e56996a4e6",
+    "version": "0.1.0.33",
+    "startup_enabled": true
+  },
+  "ordinary_user": true,
+  "actual_login": {
+    "index_ready": "ready",
+    "phase": "login-index-status.json",
+    "observed_before_any_ottrin_cli": {
+      "pid": 8292,
+      "administrator": false,
+      "session": 1,
+      "package": "Ottrin.Development_0.1.0.33_x64__vs01n017nxmbr"
+    },
+    "cli_exits": {
+      "login-service-status.stdout": 0,
+      "login-index-status.json": 0
+    },
+    "scope": "Observe Windows-started package daemon before any Ottrin CLI, after actual reboot/login",
+    "preferences_preserved": true,
+    "status": "pass",
+    "store": {
+      "path": "C:\\Users\\OTMSIXc89a26fed69d\\AppData\\Local\\Packages\\Ottrin.Development_vs01n017nxmbr\\LocalCache\\Local\\ottrin\\search.db",
+      "bytes": 28672,
+      "identity": "FA402E6A402E2E37:0003000000024BA50000000000000000"
+    },
+    "boot_ticks": 639298653655000000,
+    "administrator": false
+  },
+  "explorer_contexts": [
+    "Background",
+    "Multiple",
+    "Drive"
+  ],
+  "package_process_task_and_com_removal": true,
+  "preferences_and_fixture_preserved": true,
+  "update": null,
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-runtime.qcow2",
+      "ottrin-msix-runtime-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "verified_export_sha256": "27da9c815048f31c4a090152303c85056e5d5c7fb7f97ab5e18198435fc60633",
+  "disposable_outputs_retired": [
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-admin-copy-delivery-current/runtime33-fresh/RESULTS.zip",
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-admin-copy-delivery-current/runtime33-fresh/desktop-ready.png",
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-admin-copy-delivery-current/runtime33-fresh/privacy-accepted-0.png",
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-admin-copy-delivery-current/runtime33-fresh/privacy-accepted-1.png"
+  ]
+}

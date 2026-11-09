@@ -343,9 +343,15 @@ and [first-run timeout](../.hermes/evidence/windows-picker-keyboard-current/nati
    and verified all 59 payload files. Its daemon passed watcher and
    restart checks and averaged 0.16% of one core during the private
    idle sample. The assembly guest, volumes, source archive and clone
-   were removed. Fresh deployment, upgrade from 32 and administrator
-   Copy under package identity have separate acceptance gates.
+   were removed. Fresh deployment and both upgrades from 32 passed.
+   Real sign-in preserved the automatic indexing choice and existing
+   database and preferences. Explorer folder actions and removal
+   passed. Administrator Copy under package identity is in a separate
+   fixture and remains open.
    [MSIX 33 assembly](../.hermes/evidence/windows-admin-copy-delivery-current/ASSEMBLY_ACCEPTANCE.json).
+   [Fresh deployment](../.hermes/evidence/windows-admin-copy-delivery-current/runtime33-fresh/ACCEPTANCE.json),
+   [enabled upgrade](../.hermes/evidence/windows-admin-copy-delivery-current/runtime33-upgrade/ACCEPTANCE.json)
+   and [disabled upgrade](../.hermes/evidence/windows-admin-copy-delivery-current/runtime33-disabled/ACCEPTANCE.json).
    Earlier private revision `94549b87` changes the shared capability
    gate relative to the delivered `d2031d5e` build. Its ZIP and NSIS matched
    across all 59 payload files. The installer ran as a standard user, and

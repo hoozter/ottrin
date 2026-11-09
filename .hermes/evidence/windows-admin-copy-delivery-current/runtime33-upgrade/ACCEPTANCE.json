@@ -1,0 +1,77 @@
+{
+  "status": "pass native MSIX deployment, actual login and removal",
+  "case": "runtime33-upgrade",
+  "input": {
+    "runtime_script_sha256": "7d0aece5f261edaeeec2951196d29c581703bdf0b45cbd35aeb23c4122d53d75",
+    "native_controls_sha256": "c6fa404bd07713763f261a99a6194c3fe52930fbe123ffdb99355b77e20a7b11",
+    "sha256": "ff98d685a6113ba1177c938fb7ce51f95e21c23a15e9b457dc9f91d258e354da",
+    "source_revision": "c4c2f4beb0a859cadae68423bfaad2e56996a4e6",
+    "version": "0.1.0.33",
+    "startup_enabled": true,
+    "previous": {
+      "sha256": "3a1a054485612fb0024059ddc3d1e3aa63614a38bd47558cff6832979850a186",
+      "version": "0.1.0.32",
+      "source_revision": "4d3f11a379df2d58424093a0bb13fbf42b2aa8b4"
+    }
+  },
+  "ordinary_user": true,
+  "actual_login": {
+    "index_ready": "ready",
+    "phase": "login-index-status.json",
+    "observed_before_any_ottrin_cli": {
+      "pid": 8368,
+      "administrator": false,
+      "session": 1,
+      "package": "Ottrin.Development_0.1.0.33_x64__vs01n017nxmbr"
+    },
+    "cli_exits": {
+      "login-service-status.stdout": 0,
+      "login-index-status.json": 0
+    },
+    "scope": "Observe Windows-started package daemon before any Ottrin CLI, after actual reboot/login",
+    "preferences_preserved": true,
+    "status": "pass",
+    "store": {
+      "path": "C:\\Users\\OTMSIXa10d6252360e\\AppData\\Local\\Packages\\Ottrin.Development_vs01n017nxmbr\\LocalCache\\Local\\ottrin\\search.db",
+      "bytes": 28672,
+      "identity": "FA402E6A402E2E37:0003000000024BB80000000000000000"
+    },
+    "boot_ticks": 639298660685000000,
+    "administrator": false
+  },
+  "explorer_contexts": [
+    "Background",
+    "Multiple",
+    "Drive"
+  ],
+  "package_process_task_and_com_removal": true,
+  "preferences_and_fixture_preserved": true,
+  "update": {
+    "old_pids": [
+      5020
+    ],
+    "startup_enabled": true,
+    "previous_daemon_count": 1,
+    "old_processes_removed": true,
+    "family": "Ottrin.Development_vs01n017nxmbr",
+    "after": "Ottrin.Development_0.1.0.33_x64__vs01n017nxmbr",
+    "before": "Ottrin.Development_0.1.0.32_x64__vs01n017nxmbr"
+  },
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-runtime.qcow2",
+      "ottrin-msix-runtime-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "verified_export_sha256": "b9b0a953c13c3a1932379cefdc68e3e652dc753ac1d16f9b3a556d1879f15145",
+  "disposable_outputs_retired": [
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-admin-copy-delivery-current/runtime33-upgrade/RESULTS.zip",
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-admin-copy-delivery-current/runtime33-upgrade/desktop-ready.png",
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-admin-copy-delivery-current/runtime33-upgrade/privacy-accepted-0.png",
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-admin-copy-delivery-current/runtime33-upgrade/privacy-accepted-1.png"
+  ]
+}
