@@ -924,10 +924,14 @@ Current source, test, package and owner/external scopes stay separate.
      removed the transaction data and journal and preserved the source,
      replacement bytes and caller ownership, and the original alias's
      exact metadata and streams. Cleared history stayed empty after
-     restart. Accessibility Invoke reached the same action in a
-     separate run but the expected confirmation did not remain open.
-     Its source and replacement stayed intact. Keep accessibility
-     activation open as a separate UI gate.
+     restart. The first accessibility invocation did not open the
+     confirmation. The repeat explicitly focused Ottrin and invoked
+     both discard and confirmation through Windows UI Automation.
+     Four real UAC prompts and the restart and preservation checks
+     passed. The application-level accessibility event also opens
+     confirmation without starting cleanup. Invocation without
+     foreground focus remains unverified.
+     [Accessible installed cleanup](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_READONLY_ALIAS_ACCESSIBLE_CLEANUP.json).
      [Installed cleanup with replacement kept](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_READONLY_ALIAS_KEEP_REPLACEMENT.json).
      [Private installer receipt](../.hermes/evidence/windows-admin-copy-package-current/READONLY_ALIAS_HOST_PAYLOAD.json).
      Crash recovery, cancellation, power loss and production latency
