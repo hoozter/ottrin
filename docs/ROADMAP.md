@@ -1470,6 +1470,16 @@ Current source, test, package and owner/external scopes stay separate.
    guarded promotion receipt.
    [Linux package and UI evidence](../.hermes/evidence/theme-preview-popup-linux-current/MENU_UI_ACCEPTANCE.json).
 
+   The same exact AppImage passed private D-Bus activation for
+   FileManager1 ShowFolders, ShowItems and ShowItemProperties, including
+   native filename bytes and refusal of a mixed invalid URI batch.
+   Repair replaced the owned backend while leaving an existing Properties
+   window open. Disable removed registration, and the source file,
+   private profile and app mount checks passed. Properties started no
+   index and the idle backend used zero CPU ticks over five seconds.
+   The temporary AppImage copy was removed.
+   [FileManager1 receipt](../.hermes/evidence/theme-preview-popup-linux-current/FILE_MANAGER_DBUS_ACCEPTANCE.json).
+
    The exact rebuilt `9f27ece1` Windows NSIS, SHA-256
    `96a68d5907fd359c3f584991591602b7e6ebbe4ad66265a6a449f1b0c47209c3`,
    passed the sample-popup dismissal assertion in both palettes and
