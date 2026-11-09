@@ -1466,8 +1466,13 @@ Current source, test, package and owner/external scopes stay separate.
    local Linux package formats passed payload verification. Private
    daemon watcher/restart checks passed, with 0.05% of one core over
    60 quiet seconds. Atomic AppImage replacement passed in isolation.
-   Stable delivery requires the remaining hosted verification and the
-   guarded promotion receipt.
+   All four exact-source hosted jobs passed. The four Linux formats were
+   promoted to the stable paths and their hashes rechecked. The managed
+   index returned to Ready with the same startup setting, preferences
+   and database identity. The consumed stage, prior package cohort and
+   previous managed mount were removed.
+   [Hosted verification](https://github.com/hoozter/ottrin/actions/runs/42637304102).
+   [Linux promotion receipt](../.hermes/evidence/theme-preview-popup-linux-current/PROMOTION.json).
    [Linux package and UI evidence](../.hermes/evidence/theme-preview-popup-linux-current/MENU_UI_ACCEPTANCE.json).
 
    The same exact AppImage passed private D-Bus activation for
