@@ -722,6 +722,69 @@ mod tests {
     }
 
     #[test]
+    fn recovered_copy_accessible_discard_opens_confirmation_without_clearing_history() {
+        use egui::accesskit::{Action, ActionRequest, Role};
+
+        let mut app = OttrinApp::default();
+        let Some(PrivilegedPayload::Copy(reference)) =
+            response(PrivilegedStatus::Success, 1).payload
+        else {
+            unreachable!()
+        };
+        app.merge_privileged_copy_history(vec![ottrin_core::PrivilegedCopyHistoryEntry {
+            reference,
+            recovery: PrivilegedCopyHistoryState::UndoAvailable,
+        }]);
+
+        let ctx = Context::default();
+        ctx.enable_accesskit();
+        let render = |app: &mut OttrinApp, events| {
+            ctx.run(
+                egui::RawInput {
+                    screen_rect: Some(Rect::from_min_size(
+                        egui::Pos2::ZERO,
+                        Vec2::new(900.0, 720.0),
+                    )),
+                    events,
+                    ..Default::default()
+                },
+                |ctx| {
+                    egui::CentralPanel::default().show(ctx, |ui| app.render_activity_sidebar(ui));
+                    app.render_copy_cleanup_confirmation(ctx);
+                },
+            )
+        };
+        let initial = render(&mut app, Vec::new());
+        let target = initial
+            .platform_output
+            .accesskit_update
+            .unwrap()
+            .nodes
+            .into_iter()
+            .find(|(_, node)| {
+                node.role() == Role::Button && node.label() == Some("Discard Copy undo and clear…")
+            })
+            .expect("Recovered Copy must expose its discard action")
+            .0;
+
+        render(
+            &mut app,
+            vec![egui::Event::AccessKitActionRequest(ActionRequest {
+                action: Action::Click,
+                target,
+                data: None,
+            })],
+        );
+        let confirmation = render(&mut app, Vec::new());
+        assert!(confirmation.shapes.iter().any(|shape| {
+            matches!(&shape.shape, egui::Shape::Text(text)
+                if text.galley.job.text == "Discard Copy undo and clear history?")
+        }));
+        assert_eq!(app.operation_history.len(), 1);
+        assert!(!app.copy_cleanup.running());
+    }
+
+    #[test]
     fn restored_history_refreshes_without_claiming_original_copy_completed() {
         let mut app = OttrinApp::default();
         app.operation_history.clear();
