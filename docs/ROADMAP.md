@@ -15,7 +15,12 @@ after a same-name, same-size, same-mtime replacement. Light returned a
 new path without creating a file. Both returned the exact path without
 starting an index. The focused Windows test passed on native build
 26100 under SYSTEM and verified the dialog model and actual file
-identity. Installed Windows UI acceptance remains open.
+identity. The private NSIS from `15579628` also passed installed Dark
+and Light Save. Each same-name, same-size, same-mtime replacement
+required a second confirmation before returning the exact Windows
+path. Uninstall preserved both original and replacement files in
+both variants. Stable Windows package delivery remains open.
+[Installed Windows Save verification](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_SAVE_IDENTITY.json).
 
 The private old-to-new index transition preserved the database inode and
 preferences, passed watcher and restart checks, and averaged 0.067% of
