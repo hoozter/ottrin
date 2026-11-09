@@ -858,12 +858,19 @@ Current source, test, package and owner/external scopes stay separate.
      Both processes passed and their offline guest was removed.
      [Native caller command receipt](../.hermes/evidence/windows-admin-copy-package-current/READONLY_ALIAS_CALLER_COMMANDS_NATIVE.json).
      The private capability-enabled NSIS installer from `6dd568dc`
-     is built. The installer extraction and ZIP agree on all 59 payload
-     files. The installed Replace, restart, Undo and cleanup fixture
-     stopped at its 24 GiB storage check before allocating a guest.
-     The installer remains for this run. The private worktree, raw
-     payload, extraction, verified duplicate ZIP and private executable
-     compiler outputs were retired.
+     is built. The installer extraction, ZIP and native installation
+     agree on all 59 payload files. The installed standard-user fixture
+     reached Windows UAC and authorized the packaged helper with the
+     disposable alternate administrator. Replace then failed with
+     `existing tree version changed during observation`. The source
+     hash was preserved, the destination name was absent, and Ottrin
+     reported retained transaction evidence. Restart, Undo and cleanup
+     were not reached. Identify the changing version field and observation
+     boundary before changing the integrity check. The installer remains
+     for the repeat. The guest and overlay were removed, the temporary
+     compression stage was removed, and all four borrowed test binaries
+     were restored by hash. The fixture met the 24 GiB allocation floor.
+     [Installed failure](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_READONLY_ALIAS_FAILURE.json).
      [Private installer receipt](../.hermes/evidence/windows-admin-copy-package-current/READONLY_ALIAS_HOST_PAYLOAD.json).
      Crash recovery, cancellation, power loss and production latency
      remain separate gates.

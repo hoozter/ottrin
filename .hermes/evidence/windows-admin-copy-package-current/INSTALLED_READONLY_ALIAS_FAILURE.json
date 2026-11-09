@@ -1,0 +1,112 @@
+{
+  "status": "failed installed Replace after native UAC",
+  "source_revision": "6dd568dc9ecdff314b0445a82bf5553d778f6ea5",
+  "installer_sha256": "7b3568aa8f659e842ee3170a03d074ee4c10e3fd74de8fc7958ef6a574ac4955",
+  "ordinary_caller_and_alternate_administrator": true,
+  "real_uac_prompt_for_packaged_helper_observed": true,
+  "payload_files_verified": 59,
+  "actor": {
+    "mode": "copy",
+    "client_stderr": null,
+    "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+    "payload_files": 59,
+    "visible_controls": [
+      "Manage administrator helper",
+      "Services",
+      "Show hidden files",
+      "Hide command bar",
+      "2 items",
+      "copy failed and transaction cleanup is pending at \\\\?\\C:\\OttrinHelperPipeQA\\admin-only\\.ottrin-copy-cc53f43a0d09df3f39b6d3ea782ee978: copy failed and transaction cleanup is pending at \\\\?\\C:\\OttrinHelperPipeQA\\admin-only\\.ottrin-copy-cc53f43a0d09df3f39b6d3ea782ee978: filesystem operation failed: Windows Copy stream staging: existing tree version changed during observation; all versions retained. Original locations to inspect: \\\\?\\C:\\OttrinHelperPipeQA\\admin-only / \"ordinary-source.txt\" or \".ottrin-copy-cc53f43a0d09df3f39b6d3ea782ee978.original\"; new copy: \".ottrin-copy-cc53f43a0d09df3f39b6d3ea782ee978.candidate\"; Copy data and recovery evidence remain at the transaction's recorded locations",
+      ">",
+      "Command",
+      "admin-only",
+      "New tab",
+      "Close window",
+      "Maximize or restore window",
+      "Minimize window",
+      "Back",
+      "Forward",
+      "Parent folder",
+      "Menu",
+      "Switch to Grid view",
+      "View Options",
+      "Open C:\\",
+      "\u203a",
+      "Open C:\\OttrinHelperPipeQA",
+      "\u203a",
+      "Open C:\\OttrinHelperPipeQA\\admin-only",
+      "Expand locations rail",
+      "Home \u00b7 C:\\Users\\OttrinQaCaller",
+      "Root \u00b7 /",
+      "Desktop \u00b7 C:\\Users\\OttrinQaCaller\\Desktop",
+      "Downloads \u00b7 C:\\Users\\OttrinQaCaller\\Downloads",
+      "Documents \u00b7 C:\\Users\\OttrinQaCaller\\Documents",
+      "C: \u00b7 C:\\\nIndexed search: disabled",
+      "Sort",
+      "A-Z",
+      "100%",
+      "Reset current view size",
+      "destination-marker.txt",
+      "ordinary-source.txt",
+      "Show or hide info panel",
+      "Show or hide drop-folder panel",
+      "Toggle Search",
+      "Show or hide Activity",
+      "Show or hide Trash"
+    ],
+    "error": "Copy publication did not appear",
+    "phase": "failed",
+    "stack": "at Require, <No file>: line 10\r\nat <ScriptBlock>, <No file>: line 429\r\nat <ScriptBlock>, <No file>: line 1",
+    "client_pid": 8016,
+    "status": "failed"
+  },
+  "disk_after_failure": {
+    "source_sha256": "3fc5d485b7cbea0501dd61db76c43ff6dadea69e25a93ff970da52a3ec597073",
+    "source_present": true,
+    "target_present": false
+  },
+  "rendered_error": "Windows Copy stream staging: existing tree version changed during observation; all versions retained.",
+  "remaining_cases": [
+    "Determine which version field changed and at which observation boundary",
+    "Replace publication",
+    "Restart history",
+    "Undo",
+    "Cleanup"
+  ],
+  "capture": "readonly-alias-copy-failure.png",
+  "guest_teardown": {
+    "domain": "ottrin-init-helper-pipe-qa",
+    "uuid": "fdbe03ce-3b9c-4d87-80d6-c6179df273de",
+    "volume": "ottrin-init-helper-pipe-qa.qcow2",
+    "status": "pass",
+    "domain_removed": true,
+    "overlay_removed": true,
+    "protected_definitions_states_and_backing_unchanged": true
+  },
+  "storage": {
+    "fixture_exit": 1,
+    "free_before": 23413489664,
+    "free_at_fixture_start": 26247245824,
+    "lowest_observed_free": 24923770880,
+    "free_after": 23404544000,
+    "restored_by_hash": [
+      {
+        "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-e2d6933b1ac22a07.exe",
+        "sha256": "17c5edb3db97a06169cad8041246aba8a356ebe145ea32e0266713ddf220f321"
+      },
+      {
+        "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-5d9606400e36b794.exe",
+        "sha256": "73e5752d7d8677e7e88c0187a08309e3c642bdbc58ebe5a3a1c1c921772fab7e"
+      },
+      {
+        "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_app-b14e5f4b4a3e18bf.exe",
+        "sha256": "c94272197bcfe863c99ecce770156e8fd9a49492b97ab4d00b8da88bf57bc9b1"
+      },
+      {
+        "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_indexd-2d6761405629f9c1.exe",
+        "sha256": "457fc7bfebcd6bce36fd1dc308eb32c98ba2c00e29a4ae10ba777a039f0df2fd"
+      }
+    ],
+    "compression_stage_removed": true
+  }
+}
