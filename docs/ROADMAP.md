@@ -678,8 +678,18 @@ Current source, test, package and owner/external scopes stay separate.
      cleanup cleared the retained data, and both target directories kept
      their original member contents. See the
      [installed directory-link Replace receipt](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_DIRECTORY_SYMLINK_OVERWRITE.json).
-     Read-only original-root behavior remains open. Preserve edited or
-     unknown payloads and refuse divergent journals.
+     Read-only original-root behavior remains open. A native NTFS probe on
+     Windows build 26100 under SYSTEM found that the read-only file opened
+     with maximum allowed access, but both FlushFileBuffers and
+     NtFlushBuffersFileEx rejected that handle. Explicit write-data and
+     append-data opens were denied. With backup and restore privileges
+     enabled, write and append were still denied, and the maximum-allowed
+     open was also denied. The writable control opened and flushed, and
+     the read-only fixture kept its attribute and bytes. This was a
+     Win32 access probe, separate from the installed helper.
+     Prototype a journaled read-only attribute transition for the pinned
+     original, with recovery across attribute changes, retention and Undo.
+     Preserve edited or unknown payloads and refuse divergent journals.
      [Hosted Windows verification](https://github.com/hoozter/ottrin/actions/runs/42451117154/job/128640353389).
    - Installed alternate-administrator UAC checks cover newly authenticated
      connections after app restart, termination of the launched helper,
