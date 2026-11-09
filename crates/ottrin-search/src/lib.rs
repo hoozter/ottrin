@@ -7861,6 +7861,22 @@ folder "quoted" \ 雪 & $literal
         );
     }
 
+    fn saved_content_during_watch(
+        store: &Path,
+        plan: &plan::ScanPlan,
+        term: &str,
+    ) -> Option<Vec<db::IndexedContentHit>> {
+        match db::indexed_content_hits(store, plan, term) {
+            Ok(hits) => Some(hits),
+            Err(db::SearchDbError::Sql(error))
+                if error.sqlite_error_code() == Some(rusqlite::ErrorCode::DatabaseBusy) =>
+            {
+                None
+            }
+            Err(error) => panic!("saved watcher poll failed for {term}: {error}"),
+        }
+    }
+
     #[test]
     fn unavailable_content_root_keeps_metadata_usable_and_recovers_its_watch() {
         let root = crate::test_temp_dir().join("content-root-availability");
@@ -7905,27 +7921,29 @@ folder "quoted" \ 雪 & $literal
         // Preserve the production 60-second registration backoff.
         let until = Instant::now() + Duration::from_secs(75);
         loop {
-            let hits = db::indexed_content_hits(&store, &plan, "returnneedle").unwrap();
-            if hits.len() == 1 && service.diagnostics().watcher_ready {
+            let hits = saved_content_during_watch(&store, &plan, "returnneedle");
+            if let Some(hits) = &hits
+                && hits.len() == 1
+                && service.diagnostics().watcher_ready
+            {
                 assert_eq!(hits[0].item.path, file);
                 break;
             }
             assert!(
                 Instant::now() < until,
-                "returning folder did not recover: {:?}; hits {}",
+                "returning folder did not recover: {:?}; hits {:?} (None means SQLite busy)",
                 service.diagnostics(),
-                hits.len()
+                hits.as_ref().map(Vec::len)
             );
             std::thread::sleep(Duration::from_millis(50));
         }
         fs::write(&file, "afterreturnneedle").unwrap();
         let until = Instant::now() + Duration::from_secs(10);
         loop {
-            if db::indexed_content_hits(&store, &plan, "afterreturnneedle")
-                .unwrap()
-                .len()
-                == 1
+            if let Some(hits) = saved_content_during_watch(&store, &plan, "afterreturnneedle")
+                && hits.len() == 1
             {
+                assert_eq!(hits[0].item.path, file);
                 break;
             }
             assert!(
@@ -7962,20 +7980,14 @@ folder "quoted" \ 雪 & $literal
             let plan = plan::ScanPlan::new(&config).unwrap();
             let deadline = Instant::now() + Duration::from_secs(10);
             loop {
-                let hits = match db::indexed_content_hits(&store, &plan, term) {
-                    Ok(hits) => hits,
-                    Err(db::SearchDbError::Sql(error))
-                        if error.sqlite_error_code() == Some(rusqlite::ErrorCode::DatabaseBusy) =>
-                    {
-                        assert!(
-                            Instant::now() < deadline,
-                            "saved watcher poll stayed busy for {term}: {error}"
-                        );
-                        busy_reads.fetch_add(1, Ordering::SeqCst);
-                        std::thread::sleep(Duration::from_millis(30));
-                        continue;
-                    }
-                    Err(error) => panic!("saved watcher poll failed for {term}: {error}"),
+                let Some(hits) = saved_content_during_watch(&store, &plan, term) else {
+                    assert!(
+                        Instant::now() < deadline,
+                        "saved watcher poll stayed busy for {term}"
+                    );
+                    busy_reads.fetch_add(1, Ordering::SeqCst);
+                    std::thread::sleep(Duration::from_millis(30));
+                    continue;
                 };
                 let got = hits
                     .into_iter()

@@ -3609,6 +3609,14 @@ history. Email delivery is a separate observation.
 [Linux verification](https://github.com/hoozter/ottrin/actions/runs/42446285622/job/128625792211)
 and [Windows verification](https://github.com/hoozter/ottrin/actions/runs/42446285622/job/128625792385).
 
+The Linux verification job in [run 42575304043](https://github.com/hoozter/ottrin/actions/runs/42575304043/job/129021563369)
+failed in the unavailable content-root fixture. Its read-only SQLite poll
+returned DatabaseBusy while the watcher recovered. The fixture now shares
+the existing bounded Busy handling with the deliberate contention control.
+Both locally passed, including the 60-second recovery and detection of a
+later write at the exact path. Other SQL errors still fail the test. Search
+runtime behavior did not change.
+
 ## Owner/external waiting list
 
 The active goal is to finish independently executable work. These entries do not
