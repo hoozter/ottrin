@@ -6579,6 +6579,17 @@ mod tests {
         }
     }
 
+    #[allow(
+        clippy::permissions_set_readonly_false,
+        reason = "Windows-only cleanup of a disposable NTFS fixture"
+    )]
+    fn clear_readonly_fixture(path: &Path) {
+        let mut permissions = std::fs::metadata(path).unwrap().permissions();
+        assert!(permissions.readonly());
+        permissions.set_readonly(false);
+        std::fs::set_permissions(path, permissions).unwrap();
+    }
+
     fn readonly_original_faults() -> [Step; 5] {
         [
             Step::ReadonlyWritable,
@@ -6659,10 +6670,7 @@ mod tests {
                     super::super::version(&source(&original)).unwrap().identity,
                     identity
                 );
-                let mut permissions = std::fs::metadata(&original).unwrap().permissions();
-                assert!(permissions.readonly());
-                permissions.set_readonly(false);
-                std::fs::set_permissions(&original, permissions).unwrap();
+                clear_readonly_fixture(&original);
             }
         }
     }
@@ -6707,15 +6715,7 @@ mod tests {
                     &target
                 };
                 assert_eq!(std::fs::read(original).unwrap(), b"old destination");
-                assert!(
-                    std::fs::metadata(original)
-                        .unwrap()
-                        .permissions()
-                        .readonly()
-                );
-                let mut permissions = std::fs::metadata(original).unwrap().permissions();
-                permissions.set_readonly(false);
-                std::fs::set_permissions(original, permissions).unwrap();
+                clear_readonly_fixture(original);
             }
         }
     }

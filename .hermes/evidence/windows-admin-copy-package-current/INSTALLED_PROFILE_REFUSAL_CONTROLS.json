@@ -1,0 +1,78 @@
+{
+  "source_revision": "f7ac407b1817b98fceb914bc55a7ab6a243d1a60",
+  "private_diff_sha256": "153874904f3d1fc51b0992014edcb4a8d5f0cef17627194914f8f13db81c3463",
+  "installer_sha256": "3247a76479cb8a33aadcb0b45573c35ae582bb1fada7765c42533f634f579ad7",
+  "actor_sha256": "37b45bc009013602b95b7871777674ddd22058958c65845ef954e59f43dd26dd",
+  "status": "pass",
+  "scope": "Installed private NSIS with real alternate-administrator UAC and an ordinary caller. Two fresh app launches.",
+  "controls": [
+    "Windows-owned redirected base with caller Full Control",
+    "Windows-owned default base with caller read access and directory creation denied"
+  ],
+  "phases": [
+    {
+      "mode": "copy",
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+      "payload_files": 59,
+      "profile_refusal": "filesystem operation failed: Windows Copy stream staging: Windows-owned Local AppData is redirected",
+      "client_exited": true,
+      "phase": "complete",
+      "client_exit": 0,
+      "journals_after": 0,
+      "client_pid": 7736,
+      "status": "pass",
+      "journals_before": 0,
+      "disk_checks": {
+        "destination_unchanged": true,
+        "redirect_unchanged": true,
+        "source_unchanged": true
+      }
+    },
+    {
+      "client_pid": 4728,
+      "caller_read_confirmed": true,
+      "journals_after": 0,
+      "payload_files": 59,
+      "client_exited": true,
+      "phase": "complete",
+      "profile_refusal": "filesystem operation failed: Windows Copy stream staging: Access is denied. (os error 5)",
+      "caller_create_denied": true,
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+      "journals_before": 0,
+      "status": "pass",
+      "mode": "write-denied",
+      "client_exit": 0,
+      "disk_checks": {
+        "destination_unchanged": true,
+        "redirect_unchanged": true,
+        "source_unchanged": true
+      }
+    }
+  ],
+  "first_attempt": {
+    "profile_error": "filesystem operation failed: Windows Copy stream staging: Windows-owned Local AppData is redirected",
+    "fixture_error": "Refused profile created a caller registry",
+    "disk": {
+      "source_sha256": "3fc5d485b7cbea0501dd61db76c43ff6dadea69e25a93ff970da52a3ec597073",
+      "source_present": true,
+      "target_present": false
+    },
+    "screenshot_sha256": "0016914ab37e7350a57bf2f8704260835387c3ed112f2b2c93afd7062f5615bd"
+  },
+  "capture_sha256": {
+    "copy-ordinary-denial.png": "b79493a255d7c905296fff8add22d79418511b4789007d09343827850e911792",
+    "copy-profile-refused.png": "28cb31b46058217ad2a8d78aea6bb961650166c0ffff0497be6480d2d2aeb4ac",
+    "write-denied-ordinary-denial.png": "e47f29bf4017fbd210ab5398a895c25335ef1416c4b030cb1ff4252386d0e94d",
+    "write-denied-profile-refused.png": "36d07a3cbfa52e5b672fa835b514998050ddb1b8f4ece546dd5da906ca890b32"
+  },
+  "cleanup": {
+    "domain": "ottrin-init-helper-pipe-qa",
+    "uuid": "d06a15ae-fc9d-463e-9a65-f17e458042bf",
+    "volume": "ottrin-init-helper-pipe-qa.qcow2",
+    "status": "pass",
+    "domain_removed": true,
+    "overlay_removed": true,
+    "protected_definitions_states_and_backing_unchanged": true
+  },
+  "compiler_executables_restored_by_hash": true
+}

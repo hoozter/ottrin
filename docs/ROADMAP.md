@@ -781,9 +781,14 @@ Current source, test, package and owner/external scopes stay separate.
      The fixture set only the disposable Local AppData owner to BUILTIN\Administrators
      and preserved its group and DACL. The journal remained under the
      caller's profile, and the administrator's separate registry marker
-     and permissions survived every phase. Installed redirected-path and
-     caller-write-denial controls remain open.
+     and permissions survived every phase. The same installer also refused
+     an administrator-owned redirect even with caller write access, and
+     refused the default base when the caller could list it but could not
+     create a directory. Real alternate-administrator UAC ran in both
+     cases. Source and destination bytes were unchanged and the caller
+     acquired no recovery journal.
      [Installed profile-owner pass](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_PROFILE_OWNER_PASS.json).
+     [Installed profile refusal controls](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_PROFILE_REFUSAL_CONTROLS.json).
      Keep read-only originals with hard-link aliases open separately.
 
    Missing member IDs never license deletion or a completed original-batch claim.
