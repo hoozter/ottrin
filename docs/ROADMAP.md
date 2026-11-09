@@ -8,7 +8,7 @@ not complete a broader native, platform or user-acceptance requirement.
 
 | Platform | Launchable locally | Next delivery |
 | --- | --- | --- |
-| Linux | `b1bc72fe` AppImage, portable archive, DEB and RPM in `dist/packages/`. [Exact package receipt](../dist/packages/LINUX_PACKAGES_ACCEPTANCE.json). | `4d3f11a3` passed mounted Dark and Light menu and Smart Panel checks, and watcher and restart checks. Promotion waits for the [hosted matrix](https://github.com/hoozter/ottrin/actions/runs/42687932598). |
+| Linux | `4d3f11a3` AppImage, portable archive, DEB and RPM in `dist/packages/`. [Exact package receipt](../dist/packages/LINUX_PACKAGES_ACCEPTANCE.json). | Promoted after mounted Dark and Light menu and Smart Panel checks, watcher and restart checks, and all four [hosted jobs](https://github.com/hoozter/ottrin/actions/runs/42687932598). |
 | Windows | `a9c718a2` portable ZIP, NSIS and development MSIX 31 in `dist/windows-candidate/`. [Exact package receipt](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json). | `4d3f11a3` passed native MSIX 32 deployment and upgrade and portable theme rendering. The staged installer still needs native NSIS lifecycle acceptance. |
 
 The [ordered work](#current-ordered-work) tracks the remaining software
@@ -1216,6 +1216,11 @@ Current source, test, package and owner/external scopes stay separate.
    FileManager1 dispatch and the Save caller workflow. All private
    profiles and the package extraction were removed.
    [Packaged menu divider result](../.hermes/evidence/view-options-alignment-current/PACKAGED_MENU_ACCEPTANCE.json).
+   All four source-equivalent hosted jobs passed. The four packages were
+   promoted and rechecked by hash. The managed index returned to Ready
+   with its sign-in setting, preferences and database identity preserved.
+   The stage, superseded packages and previous managed mount were removed.
+   [Linux promotion receipt](../.hermes/evidence/view-options-alignment-current/PROMOTION.json).
 
    The Windows ZIP and NSIS from the same source are staged. All 59
    files match across the two payloads and both artifact hashes were
