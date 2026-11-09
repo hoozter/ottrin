@@ -1309,8 +1309,8 @@ pub struct PrivilegedContext {
 pub const PRIVILEGED_HELPER_PROTOCOL_VERSION: u32 = 5;
 
 /// One capability gate for the helper probe and its recovery interface.
-/// Windows remains disabled until caller, UI, UAC and package acceptance pass.
-pub const PRIVILEGED_COPY_RECOVERY_SUPPORTED: bool = cfg!(target_os = "linux");
+pub const PRIVILEGED_COPY_RECOVERY_SUPPORTED: bool =
+    cfg!(any(target_os = "linux", target_os = "windows"));
 
 /// Request payload sent from unprivileged app process to elevated helper.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
