@@ -1664,9 +1664,15 @@ Current source, test, package and owner/external scopes stay separate.
    Ottrin CLI call. The ordinary-user checks preserved the index identity,
    preferences and fixture bytes. Removal cleared the package, its
    processes, tasks and COM registration. The disposable guest, two
-   volumes and duplicate export were removed. The startup-disabled
-   upgrade and installed NSIS checks remain open.
+   volumes and duplicate export were removed.
    [Enabled upgrade receipt](../.hermes/evidence/theme-editor-pointer-fix-current/runtime31-upgrade/ACCEPTANCE.json).
+
+   The startup-disabled upgrade passed on the same candidate. No daemon
+   appeared during 180 seconds after an actual sign-in and before any
+   Ottrin command ran. Ordinary-user runtime, index identity, preference
+   preservation, removal and owned teardown passed. The installed NSIS
+   checks remain open.
+   [Disabled upgrade receipt](../.hermes/evidence/theme-editor-pointer-fix-current/runtime31-disabled/ACCEPTANCE.json).
 
    Verify every supported role/control against the actual interface and logical
    hierarchy; field-map/test/capture counts do not close this audit.
