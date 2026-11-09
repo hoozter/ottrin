@@ -1426,7 +1426,15 @@ Current source, test, package and owner/external scopes stay separate.
    regression invokes a sample menu action and then Cancel in both palettes.
    It verifies the editor close command and preservation of saved themes.
    All 553 active Linux UI tests and strict Linux and Windows-target UI
-   lint passed. Native installed verification of this change remains open.
+   lint passed. The exact `bbe3f27f` NSIS, SHA-256
+   `981ca07b8927fcab38e185158e6dbf9333cc38bc060fd8c918b59af82cd40310`,
+   passed installed Dark again and reproduced Light Cancel leaving the
+   editor open. The failure capture shows the preview menu still open.
+   The native check must distinguish popup dismissal, physical click
+   delivery and invocation of Cancel before further lifecycle changes.
+   The owned guest and overlay were removed and borrowed executables
+   restored by hash. The current Windows packages remain available.
+   [Native repeat](../.hermes/evidence/theme-editor-close-current/native-close/GUEST_RESULT.json).
 
    Verify every supported role/control against the actual interface and logical
    hierarchy; field-map/test/capture counts do not close this audit.
