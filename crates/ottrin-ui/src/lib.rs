@@ -5358,7 +5358,7 @@ impl OttrinApp {
                 "File names, folder icons and category styling. List headers and metadata use the shared text and raised-surface colors below."
             }
             ThemePreviewRegion::Sidebar => {
-                "Info, Drop Folder, Search, Activity and Trash controls, panel background and shared contrast."
+                "Info, Drop Folder, Search, Activity and Trash controls. Open a panel in the preview to see its heading and dimmed header icon."
             }
             ThemePreviewRegion::StatusBar => {
                 "Bottom status bar, file counts and utility controls. Shared text and accent colors also affect other components. Preview controls select styling without operating services or files."
@@ -5455,6 +5455,7 @@ impl OttrinApp {
             ThemePreviewRegion::SelectedRow => &[ThemeColorField::Accent],
             ThemePreviewRegion::Sidebar => &[
                 ThemeColorField::TextMuted,
+                ThemeColorField::TextDim,
                 ThemeColorField::TextHeading,
                 ThemeColorField::Accent,
                 ThemeColorField::Selection,

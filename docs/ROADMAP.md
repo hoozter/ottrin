@@ -1154,6 +1154,11 @@ Current source, test, package and owner/external scopes stay separate.
    shared Surface corners from 14 to 0 squares the selected Grid tile.
    Cancel preserves the saved theme and view.
    [Selection and property receipt](../.hermes/evidence/theme-editor-pointer-fix-linux-current/selection-scale150/ACCEPTANCE.json).
+   The Smart Panel editor now exposes shared Secondary text alongside
+   Heading text. Its real Search header icon uses Secondary text in the
+   app and preview. All 37 focused Appearance tests passed, including
+   control discovery in Dark and Light and the rendered icon color.
+   This checkpoint is source-only.
    Broader platform and theme-property coverage and whole-interface
    alignment/grouping remain open. The theme-library miniature now
    paints square selected-row fills, rounds only outer title/status corners and

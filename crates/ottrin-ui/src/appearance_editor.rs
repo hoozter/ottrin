@@ -1929,6 +1929,16 @@ mod tests {
                 OttrinApp::theme_color_field_value(&app.theme_editor.custom, field),
                 seed
             );
+
+            app.theme_editor.selected_region = ThemePreviewRegion::Sidebar;
+            let output = render(&mut app, &ctx, vec![]);
+            let dimmed_label = OttrinApp::theme_color_field_label(ThemeColorField::TextDim);
+            let _ = node_id(
+                &output,
+                Role::ColorWell,
+                &format!("Choose {dimmed_label}"),
+                Action::Click,
+            );
         }
     }
 
@@ -1938,7 +1948,8 @@ mod tests {
 
         let ctx = Context::default();
         ctx.enable_accesskit();
-        let c = Colors::preset(ThemePreset::Nord, true);
+        let mut c = Colors::preset(ThemePreset::Nord, true);
+        c.text_dim = Color32::from_rgb(215, 112, 63);
         let render = |mut view, events| {
             let mut picked = None;
             let output = ctx.run(
@@ -2042,6 +2053,11 @@ mod tests {
         );
         let (expanded, _) = render(ViewMode::Miller, vec![]);
         assert!(expanded.shapes.iter().any(|shape| matches!(&shape.shape, egui::epaint::Shape::Text(t) if t.galley.job.text == "Search")), "The real header appears when Search opens");
+        assert!(expanded.shapes.iter().any(|shape| matches!(
+            &shape.shape,
+            egui::Shape::Text(text) if text.galley.job.text == MI_SEARCH
+                && text.galley.job.sections.iter().all(|section| section.format.color == c.text_dim)
+        )), "The Search header icon uses the Secondary text color");
         assert!(expanded.shapes.iter().any(|shape| matches!(&shape.shape, egui::epaint::Shape::Rect(r) if r.fill == c.selected_bg && r.rect.width() == SMART_PANEL_STRIP_WIDTH && r.corner_radius.nw == c.button_radius)));
         render(ViewMode::Miller, click(MI_SEARCH));
         let (collapsed, _) = render(ViewMode::Miller, vec![]);
