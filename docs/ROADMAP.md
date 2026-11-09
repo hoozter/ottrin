@@ -206,6 +206,18 @@ Promotion retired the superseded cohort and preserved the Linux artifacts
 and held MSI. See [current Windows delivery](../.hermes/evidence/windows-shared-ui-current/WINDOWS_DELIVERY.json)
 and `dist/WINDOWS_CANDIDATE_ACCEPTANCE.json`.
 
+The normal Windows candidate ZIP and NSIS from `381ef193` are staged
+in `.hermes/packaging-tmp/.windows-save-identity-stage/`. The two formats
+match all 59 payload files. The exact NSIS passed standard-user
+installation, Dark and Light Save reconfirmation after same-name,
+same-size, same-mtime replacement, and uninstall with all original
+and replacement files preserved. Administrator Copy stays gated in
+this candidate. The daemon payload changed, so verify its native
+transition and installer lifecycle and assemble and exercise
+development MSIX 30 before replacing the stable paths.
+[Staged payload](../.hermes/evidence/windows-save-identity-delivery-current/HOST_PAYLOAD.json).
+[Installed Save](../.hermes/evidence/windows-save-identity-delivery-current/INSTALLED_SAVE_IDENTITY.json).
+
 The preceding Windows cohort used `7992ad1e` and development MSIX 28.
 The installed Save fix passed in Dark and Light. NSIS passed running-index
 upgrade, reinstall intent preservation, locked-cache uninstall refusal and
