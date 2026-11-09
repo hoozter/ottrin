@@ -1575,6 +1575,16 @@ Current source, test, package and owner/external scopes stay separate.
    removal of the interrupted build's detached worktree and scratch.
    [Delayed-click AppImage receipt](../.hermes/evidence/theme-editor-pointer-fix-linux-current/MENU_UI_ACCEPTANCE.json).
 
+   The same AppImage passed the three private FileManager1 methods,
+   backend repair with a live Properties window, and registration
+   removal. The themed Save chooser still returned the exact native
+   path after confirmation and cancelled cleanly on caller disconnect.
+   Test files, preferences and the temporary AppImage copy were
+   preserved or retired as appropriate. Guarded promotion checks both
+   receipts against the delivered image hash.
+   [Folder integration](../.hermes/evidence/theme-editor-pointer-fix-linux-current/FILE_MANAGER_DBUS_ACCEPTANCE.json).
+   [Picker caller](../.hermes/evidence/theme-editor-pointer-fix-linux-current/picker-save/RESULT.json).
+
    Verify every supported role/control against the actual interface and logical
    hierarchy; field-map/test/capture counts do not close this audit.
 3. Close remaining supported themed-picker, Linux FileChooser/FileManager1 and
