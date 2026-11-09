@@ -1636,6 +1636,15 @@ Current source, test, package and owner/external scopes stay separate.
    and deployment checks proceed independently.
    [Installer retry result](../.hermes/evidence/theme-editor-pointer-fix-current/native-installed-retry/GUEST_RESULT.json).
 
+   The bounded ordinary-user retest of the same `a9c718a2` NSIS
+   installed successfully in 131 seconds. Physical delayed Cancel
+   closed the theme editor in Dark and Light. Both live and preview
+   application menus showed the expected rows, and the preview kept
+   Paste disabled. Both sessions exited normally and preserved the
+   test source. The guest, two volumes and discovery captures were
+   retired. The broader NSIS lifecycle remains a separate gate.
+   [Installed UI receipt](../.hermes/evidence/theme-editor-pointer-fix-current/native-installed-bounded/ACCEPTANCE.json).
+
    Native MakeAppx assembled unsigned development MSIX 31 from the
    exact `a9c718a2` portable payload. Native unpack and independent
    host verification matched all 59 payload members. The bundled
