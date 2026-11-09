@@ -339,6 +339,13 @@ and [first-run timeout](../.hermes/evidence/windows-picker-keyboard-current/nati
    candidate goes through the remaining package gates.
    [Candidate package verification](../.hermes/evidence/windows-admin-copy-delivery-current/HOST_PAYLOAD.json).
    [Installed Copy and recovery verification](../.hermes/evidence/windows-admin-copy-delivery-current/INSTALLED_ACCEPTANCE.json).
+   Native MakeAppx assembled development MSIX 33 from the same source
+   and verified all 59 payload files. Its daemon passed watcher and
+   restart checks and averaged 0.16% of one core during the private
+   idle sample. The assembly guest, volumes, source archive and clone
+   were removed. Fresh deployment, upgrade from 32 and administrator
+   Copy under package identity have separate acceptance gates.
+   [MSIX 33 assembly](../.hermes/evidence/windows-admin-copy-delivery-current/ASSEMBLY_ACCEPTANCE.json).
    Earlier private revision `94549b87` changes the shared capability
    gate relative to the delivered `d2031d5e` build. Its ZIP and NSIS matched
    across all 59 payload files. The installer ran as a standard user, and
