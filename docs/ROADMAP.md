@@ -39,6 +39,11 @@ while Windows verification in [the application-source run](https://github.com/ho
 is still running. The three finished jobs passed. See the
 [mounted acceptance](../.hermes/evidence/appearance-page-delivery-current/ACCEPTANCE.json)
 and [promotion preflight](../.hermes/evidence/appearance-page-delivery-current/PROMOTION_PREFLIGHT.json).
+The matching running daemon stayed Ready with its watcher active during a
+read-only 60-second sample. It advanced 20 snapshot revisions, averaged
+2.42% of one core and used 0.3–0.4% during the final three ten-second
+intervals. This is an ordinary-workload observation.
+[Service continuity sample](../.hermes/evidence/appearance-page-delivery-current/INDEX_PREPROMOTION_OBSERVATION.json).
 
 The preceding Linux cohort used `0eec7cb4`. Its four
 [hosted jobs](https://github.com/hoozter/ottrin/actions/runs/42461840752)

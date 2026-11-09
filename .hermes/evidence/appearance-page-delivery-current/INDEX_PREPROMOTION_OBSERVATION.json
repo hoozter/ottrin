@@ -1,0 +1,28 @@
+{
+  "status": "pass live service continuity preflight",
+  "pid": 1342,
+  "binary_sha256": "79f2abe711197c577154cd712fb733dc1c54db5fdee6c1aa5b4baffbc3724ec3",
+  "binary_matches_staged_appimage": true,
+  "source_revision": "60234de2917f4848262637203146737a012f49ca",
+  "seconds": 60.0,
+  "one_core_percent": 2.417,
+  "ten_second_intervals_percent": [
+    2.8,
+    3.7,
+    6.9,
+    0.4,
+    0.4,
+    0.3
+  ],
+  "first_status": {
+    "status": "Ready",
+    "watcher_ready": true,
+    "snapshot_revision": 14625
+  },
+  "last_status": {
+    "status": "Ready",
+    "watcher_ready": true,
+    "snapshot_revision": 14645
+  },
+  "scope": "Read-only observation of the personal service under ordinary workload; no controlled idle or promotion claim."
+}
