@@ -19,7 +19,7 @@ identity. The private NSIS from `15579628` also passed installed Dark
 and Light Save. Each same-name, same-size, same-mtime replacement
 required a second confirmation before returning the exact Windows
 path. Uninstall preserved both original and replacement files in
-both variants. Stable Windows package delivery remains open.
+both variants. The standard Windows candidate is now delivered below.
 [Installed Windows Save verification](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_SAVE_IDENTITY.json).
 
 The private old-to-new index transition preserved the database inode and
@@ -199,53 +199,40 @@ Previous List/Grid, Inspector and native distro-lifecycle receipts retain their
 original scopes.
 
 The stable local Windows portable ZIP, NSIS installer and unsigned development
-MSIX 29 use `d2031d5e` and are available at `dist/windows-candidate/`.
-The 59-file payload, installed UI, portable picker, NSIS lifecycle and all
-three MSIX deployment cases passed in the software Windows guest.
-Promotion retired the superseded cohort and preserved the Linux artifacts
-and held MSI. See [current Windows delivery](../.hermes/evidence/windows-shared-ui-current/WINDOWS_DELIVERY.json)
-and `dist/WINDOWS_CANDIDATE_ACCEPTANCE.json`.
+MSIX 30 use `381ef193` and are available at `dist/windows-candidate/`.
+All 59 payload files match across the three formats. The exact NSIS passed
+standard-user Dark and Light Save reconfirmation after a same-name, same-size,
+same-mtime replacement. Uninstall preserved all original and replacement
+files. Ten portable picker keyboard cases passed without starting the index.
+The NSIS lifecycle passed fresh install and uninstall, running-index upgrade
+from `d2031d5e`, three reinstall state combinations, and locked-cache
+uninstall refusal followed by a successful retry. The index database and
+preferences survived the upgrade. Administrator Copy remains gated.
 
-The normal Windows candidate ZIP and NSIS from `381ef193` are staged
-in `.hermes/packaging-tmp/.windows-save-identity-stage/`. The two formats
-match all 59 payload files. The exact NSIS passed standard-user
-installation, Dark and Light Save reconfirmation after same-name,
-same-size, same-mtime replacement, and uninstall with all original
-and replacement files preserved. Administrator Copy stays gated in
-this candidate. The unsigned development MSIX 30 was assembled with
-native MakeAppx, unpacked on Windows and independently checked against
-all 59 portable payload files. The exact portable daemon indexed 1,000
-files, tracked create/rename/delete, restarted cleanly and averaged
-0.31% of one core over a 30-second idle sample in the disposable guest.
-Fresh MSIX 30 deployment passed under an ordinary Windows account.
-Explorer background, multi-selection and drive actions worked. A real
-sign-in started the index before any Ottrin command ran. Removal cleared
-the package, processes, startup task and shell registration and preserved
-preferences and fixture files. The MSIX 29-to-30 upgrade cases remain
-pending before replacing the stable paths.
-The first enabled MSIX upgrade installed revision 30 under the same
-package identity and stopped the revision 29 daemon. The post-upgrade
-fixture then attributed a PowerShell command line to an Ottrin process
-during its Explorer probe. The retry requires a matching executable path
-and a populated command line before comparing launch arguments. The
-disabled upgrade case also checks the saved checkbox state and restores
-that choice after exercising the toggle.
-The NSIS lifecycle retry passed all ten portable picker cases, fresh
-install and uninstall, and an upgrade from `d2031d5e` with its index
-running. The new daemon took over with the same database and preferences.
-Reinstall preserved the selected sign-in and running states. A locked
-cache caused uninstall to refuse while preserving the task and daemon,
-and the retry passed after the lock was released. The first attempt was
-interrupted by the host free-space guard. Both disposable overlays and
-the bulk exports were removed.
-[Staged payload](../.hermes/evidence/windows-save-identity-delivery-current/HOST_PAYLOAD.json).
-[Installed Save](../.hermes/evidence/windows-save-identity-delivery-current/INSTALLED_SAVE_IDENTITY.json).
-[MSIX assembly](../.hermes/evidence/windows-save-identity-delivery-current/ASSEMBLY_ACCEPTANCE.json).
-[Daemon runtime](../.hermes/evidence/windows-save-identity-delivery-current/WINDOWS_DAEMON_RUNTIME.json).
-[Fresh MSIX deployment](../.hermes/evidence/windows-save-identity-delivery-current/runtime30-fresh/ACCEPTANCE.json).
-[First MSIX upgrade attempt](../.hermes/evidence/windows-save-identity-delivery-current/runtime30-upgrade/ATTEMPT.json).
-[First NSIS lifecycle attempt](../.hermes/evidence/windows-save-identity-delivery-current/nsis30-lifecycle/ATTEMPT.json).
-[NSIS lifecycle acceptance](../.hermes/evidence/windows-save-identity-delivery-current/nsis30-lifecycle-retry/ACCEPTANCE.json).
+The development MSIX passed fresh deployment and both startup choices in a
+29-to-30 upgrade. Explorer background, multiple-selection and drive actions
+worked. A real sign-in started the enabled daemon before any Ottrin command
+ran. The disabled case observed zero daemon processes for 180 seconds.
+Removal cleared the package, processes, startup task and shell registration
+while preserving preferences and fixture files. The exact portable daemon
+indexed 1,000 files, tracked create/rename/delete, restarted cleanly and
+averaged 0.31% of one core over 30 idle seconds in the disposable guest.
+All four exact-source [hosted jobs](https://github.com/hoozter/ottrin/actions/runs/42582687209)
+passed. Local promotion removed the staged copy and superseded cohort and
+preserved the Linux artifacts and held MSI. See
+[Windows delivery](../.hermes/evidence/windows-save-identity-delivery-current/WINDOWS_DELIVERY.json),
+[installed Save](../.hermes/evidence/windows-save-identity-delivery-current/INSTALLED_SAVE_IDENTITY.json),
+[NSIS lifecycle](../.hermes/evidence/windows-save-identity-delivery-current/nsis30-lifecycle-retry/ACCEPTANCE.json),
+[fresh MSIX](../.hermes/evidence/windows-save-identity-delivery-current/runtime30-fresh/ACCEPTANCE.json),
+[enabled MSIX upgrade](../.hermes/evidence/windows-save-identity-delivery-current/runtime30-upgrade-full-headroom/ACCEPTANCE.json)
+and [disabled MSIX upgrade](../.hermes/evidence/windows-save-identity-delivery-current/runtime30-disabled/ACCEPTANCE.json).
+The initial fixture and storage interruptions retain their scoped receipts.
+
+The preceding `d2031d5e` Windows cohort with development MSIX 29 passed
+installed UI, portable picker, NSIS lifecycle and all three MSIX deployment
+cases in the software Windows guest. Its
+[delivery receipt](../.hermes/evidence/windows-shared-ui-current/WINDOWS_DELIVERY.json)
+keeps the original source and verification scope.
 
 The preceding Windows cohort used `7992ad1e` and development MSIX 28.
 The installed Save fix passed in Dark and Light. NSIS passed running-index
@@ -465,8 +452,9 @@ and the held MSI were preserved. See
    normal entry points against the packages being delivered. Keep public
    signing, Store submission, physical-device tests and personal acceptance
    in the waiting list with their own evidence. Linux is already delivered
-   for the current Vivaldi and index checkpoint. The delivered Windows ZIP and
-   NSIS use `d2031d5e`. The host verified all 59 payload files,
+   for the current Vivaldi and index checkpoint. Windows `381ef193` is
+   delivered with the Save and installer checks above. In the preceding
+   `d2031d5e` cohort, the host verified all 59 payload files,
    provenance and the installer transaction script. The exact NSIS passed
    installed Borders field checks in both editing variants after invoking
    the component by its accessible action and confirming the resulting
