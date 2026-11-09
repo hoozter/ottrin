@@ -82,7 +82,7 @@
     {
       "id": "U06",
       "requirement": "Theme editor selects the exact production element and only its intended themeable roles, including the tab bar.",
-      "current_scope": "Shared navigation, tab, Smart Panel, Locations, status bar and Inspector presenters have scoped checks. Exact 21f18bbe verifies file-manager frame, title bar and status bar selection. The full preview-to-live mapping and native Windows checks remain open.",
+      "current_scope": "Shared navigation, tab, Smart Panel, Locations, status bar and Inspector presenters have scoped checks. Exact 21f18bbe verifies file-manager frame, title bar and status bar selection. The full preview-to-live mapping and native Windows checks remain open. The exact stable Linux a9c718a2 at 150% selects the painted List row and Grid tile and exposes Selected files. This is additional component evidence. Complete production-role mapping remains open.",
       "evidence": [
         ".hermes/evidence/theme-layout-delivery-current/THEME_UI_ACCEPTANCE.json",
         ".hermes/evidence/inspector-delivery-current/THEME_UI_ACCEPTANCE.json",
@@ -91,13 +91,14 @@
         ".hermes/evidence/inspector-visual-delivery-current/THEME_UI_ACCEPTANCE.json",
         ".hermes/evidence/locations-rail-delivery-current/THEME_UI_ACCEPTANCE.json",
         ".hermes/evidence/locations-rail-delivery-current/PROMOTION.json",
-        ".hermes/evidence/theme-selection-delivery-current/MOUNTED_THEME_SELECTION_ACCEPTANCE.json"
+        ".hermes/evidence/theme-selection-delivery-current/MOUNTED_THEME_SELECTION_ACCEPTANCE.json",
+        ".hermes/evidence/theme-editor-pointer-fix-linux-current/selection-scale150/ACCEPTANCE.json"
       ]
     },
     {
       "id": "U07",
       "requirement": "Expose every supported theme property and explain shared defaults; radius/border/color changes must reach every intended window/control.",
-      "current_scope": "Separate window, surface and button roles retain historical scoped evidence. Exact 21f18bbe verifies quarter-pixel themed border visibility during frame and component selection at 100% and 125% in Dark and Light. Every current property, consumer and supported platform still requires a complete audit.",
+      "current_scope": "Separate window, surface and button roles retain historical scoped evidence. Exact 21f18bbe verifies quarter-pixel themed border visibility during frame and component selection at 100% and 125% in Dark and Light. Every current property, consumer and supported platform still requires a complete audit. Staged Linux b1bc72fe exposes Secondary text from Smart Panel. Both variants recolor the painted Search header icon and restore it exactly at 150% X11. The all-property and all-window audit remains open.",
       "evidence": [
         ".hermes/evidence/inspector-theme-roles-current/ACCEPTANCE.json",
         ".hermes/evidence/inspector-editor-current/ACCEPTANCE.json",
@@ -108,13 +109,14 @@
         ".hermes/evidence/locations-rail-delivery-current/THEME_UI_ACCEPTANCE.json",
         ".hermes/evidence/locations-rail-delivery-current/PROMOTION.json",
         ".hermes/evidence/theme-selection-delivery-current/MOUNTED_THEME_SELECTION_ACCEPTANCE.json",
-        ".hermes/evidence/theme-selection-delivery-current/FRACTIONAL_SCALE_ACCEPTANCE.json"
+        ".hermes/evidence/theme-selection-delivery-current/FRACTIONAL_SCALE_ACCEPTANCE.json",
+        ".hermes/evidence/smart-panel-secondary-text-current/THEME_UI_ACCEPTANCE.json"
       ]
     },
     {
       "id": "U08",
       "requirement": "Preview selection outlines match actual geometry; production Smart-panel controls and shared themed chrome replace invented preview controls.",
-      "current_scope": "The exact 21f18bbe mounted candidate separates the whole-frame selection from the themed stroke and preserves actual window-border ink during title-bar and status-bar selection, in Dark and Light at 100% and 125%. Earlier Smart Panel and Inspector content samples keep their original scopes. Installed Office preview parity and full platform coverage remain open.",
+      "current_scope": "The exact 21f18bbe mounted candidate separates the whole-frame selection from the themed stroke and preserves actual window-border ink during title-bar and status-bar selection, in Dark and Light at 100% and 125%. Earlier Smart Panel and Inspector content samples keep their original scopes. Installed Office preview parity and full platform coverage remain open. Stable Linux a9c718a2 at 150% verifies exact List and Grid selection geometry. Staged Linux b1bc72fe opens the Search panel from the preview and renders its real header icon with the selected color. Native Windows appearance and full geometry coverage remain open.",
       "evidence": [
         ".hermes/evidence/grid-label-layout-current/SOURCE_CHECKS.json",
         ".hermes/evidence/recovery-transport-delivery-current/REPLACEMENT_CAPTURE_REVIEW.json",
@@ -135,7 +137,9 @@
         ".hermes/evidence/locations-rail-delivery-current/THEME_UI_ACCEPTANCE.json",
         ".hermes/evidence/locations-rail-delivery-current/PROMOTION.json",
         ".hermes/evidence/theme-selection-delivery-current/MOUNTED_THEME_SELECTION_ACCEPTANCE.json",
-        ".hermes/evidence/theme-selection-delivery-current/FRACTIONAL_SCALE_ACCEPTANCE.json"
+        ".hermes/evidence/theme-selection-delivery-current/FRACTIONAL_SCALE_ACCEPTANCE.json",
+        ".hermes/evidence/theme-editor-pointer-fix-linux-current/selection-scale150/ACCEPTANCE.json",
+        ".hermes/evidence/smart-panel-secondary-text-current/THEME_UI_ACCEPTANCE.json"
       ]
     },
     {
@@ -179,7 +183,7 @@
     {
       "id": "U13",
       "requirement": "Must-have themed open/save picker and reversible supported default-folder integration; no unnecessary always-on picker process.",
-      "current_scope": "Exact 45a89d62 Linux AppImage passed installed Firefox Open and Save with browser attribution; earlier GTK and FileManager1 receipts retain their exact scopes. Stable e2c1b926 reproduced rejection of the installed Vivaldi parent XID. Staged 46802ab4 passed real Vivaldi Open and Save, exact output bytes, native transient parenting and no index startup. It is pending CI and promotion. Windows 67d3cbe1 retains ordinary-user NSIS folder restoration and development MSIX Explorer checks. MSIX default folder registration and native Save validation of staged 7992ad1e remain open.",
+      "current_scope": "Linux package tests cover Firefox, GTK, Flatpak and the delivered Vivaldi parenting fix within their recorded caller scopes. Staged b1bc72fe independently passes FileManager1 dispatch and Save caller lifecycle. Delivered Windows a9c718a2 passes ordinary-user multi-folder Select All and Enter in both themes without indexing, plus the installed NSIS and development MSIX scopes in the current manifest. Earlier ordinary-user default-folder restoration remains scoped to its original NSIS. MSIX default-folder registration and broader caller acceptance remain open.",
       "evidence": [
         ".hermes/evidence/current-firefox-picker/ACCEPTANCE.json",
         ".hermes/evidence/theme-selection-delivery-current/DESKTOP_INTEGRATION_ACCEPTANCE.json",
@@ -187,13 +191,17 @@
         "dist/WINDOWS_CANDIDATE_ACCEPTANCE.json",
         ".hermes/evidence/windows-picker-keyboard-current/NATIVE_PREFLIGHT.json",
         ".hermes/evidence/current-vivaldi-picker/REPRODUCTION.json",
-        ".hermes/evidence/current-vivaldi-picker/ACCEPTANCE.json"
+        ".hermes/evidence/current-vivaldi-picker/ACCEPTANCE.json",
+        ".hermes/evidence/vivaldi-picker-delivery-current/PROMOTION.json",
+        ".hermes/evidence/smart-panel-secondary-text-current/FILE_MANAGER_DBUS_ACCEPTANCE.json",
+        ".hermes/evidence/smart-panel-secondary-text-current/picker-save/RESULT.json",
+        ".hermes/evidence/windows-native-picker-folders-current/ACCEPTANCE.json"
       ]
     },
     {
       "id": "U14",
       "requirement": "Keep one stable usable package path, current GitHub checkpoints, honest status/roadmap/waiting list and no failure-email flood.",
-      "current_scope": "Stable Linux 0eec7cb4 and Windows 67d3cbe1 match the recorded package authorities. The four source-equivalent jobs in run 42461840752 passed, and the Linux cancellation cohort was promoted. Vivaldi 46802ab4 is pushed and awaits run 42465900817. Public release and notification-email delivery are separate.",
+      "current_scope": "Stable Linux and Windows both use a9c718a2. Linux b1bc72fe is built and independently verified locally, with promotion waiting on source-equivalent hosted run 42678015279. The source-only Smart Panel run failed scheduling, and full CI is now manually dispatchable. Public release and notification-email delivery remain separate.",
       "evidence": [
         ".hermes/evidence/recovery-transport-delivery-current/PROGRESS.json",
         ".hermes/evidence/recovery-transport-delivery-current/NATIVE_CLEANUP_CURRENT.json",
@@ -208,13 +216,16 @@
         ".hermes/evidence/locations-rail-delivery-current/CI_CURRENT.json",
         ".hermes/evidence/locations-rail-delivery-current/PROMOTION.json",
         ".hermes/evidence/search-stalled-theme-current/PROMOTION.json",
-        ".hermes/evidence/office-label-delivery-current/PROMOTION.json"
+        ".hermes/evidence/office-label-delivery-current/PROMOTION.json",
+        ".hermes/evidence/theme-editor-pointer-fix-current/WINDOWS_DELIVERY.json",
+        ".hermes/evidence/theme-editor-pointer-fix-linux-current/PROMOTION.json",
+        ".hermes/evidence/smart-panel-secondary-text-current/PROMOTION_PREFLIGHT.json"
       ]
     },
     {
       "id": "U15",
       "requirement": "Remove owned obsolete build/QA output and test processes while preserving user data, protected VMs, useful caches and current deliverables.",
-      "current_scope": "Linux e2c1b926 promotion removed its consumed stage and superseded packages. Later Ubuntu and Fedora test guests, private browser profiles, transient service, AppImage mounts and disposable scripts were removed. The cancellation stage and superseded packages were retired on promotion. The Vivaldi Linux stage and the 95 MiB Windows stage have named promotion or native acceptance consumers. Protected Windows guest storage, user data and active packages remain retained. This is scoped project cleanup.",
+      "current_scope": "Windows a9c718a2 promotion retired its stage and superseded package cohort. Native picker teardown removed the VM, volumes and export and restored 20 borrowed test executables by hash. Six superseded compiler sessions were removed during Linux QA. The current Linux stage remains owned pending promotion.",
       "evidence": [
         ".hermes/evidence/release-audit-current/CLEANUP.json",
         ".hermes/evidence/release-audit-current/cohort/EXTRACTION_CLEANUP.json",
@@ -232,7 +243,10 @@
         ".hermes/evidence/services-startup-delivery-current/PROMOTION.json",
         ".hermes/evidence/office-label-delivery-current/PROMOTION.json",
         ".hermes/evidence/vivaldi-native-transition-current/ACCEPTANCE.json",
-        ".hermes/evidence/vivaldi-picker-delivery-current/MANAGED_INDEX_TRANSITION.json"
+        ".hermes/evidence/vivaldi-picker-delivery-current/MANAGED_INDEX_TRANSITION.json",
+        ".hermes/evidence/theme-editor-pointer-fix-current/WINDOWS_DELIVERY.json",
+        ".hermes/evidence/windows-native-picker-folders-current/ACCEPTANCE.json",
+        ".hermes/evidence/smart-panel-secondary-text-current/STORAGE_AFTER_LOCAL_QA.txt"
       ]
     }
   ],
@@ -242,16 +256,14 @@
     "No macOS build; owner signing/Store/final human acceptance remain explicit waits."
   ],
   "latest_scope_reconciliation": {
-    "date": "2026-11-08",
-    "stable_linux": "0eec7cb42b8aeec4e250fce6930dac134def4b0a",
-    "stable_windows": "67d3cbe14c03f1b8021284454e46ed046795131e",
+    "date": "2026-11-09",
+    "stable_linux": "a9c718a2f21f9c1c45e798f2fc83a3f59b96bbae",
+    "stable_windows": "a9c718a2f21f9c1c45e798f2fc83a3f59b96bbae",
     "staged_linux": [
-      "46802ab4360f25770ff525b297b716954006e76a"
+      "b1bc72fe369fea5e0f3892701b67a26833a653cd"
     ],
-    "staged_windows": [
-      "7992ad1e702976ca8a1e8bf698ddb4010af75647"
-    ],
-    "note": "Reconciled U13–U15 with stable and staged package scopes, live CI and owned teardown. Other clauses retain their previous evidence scope."
+    "staged_windows": [],
+    "note": "Reconciled U06–U08 and U13–U15 with current exact package evidence and open boundaries. Other clauses retain their prior scopes."
   },
   "reviewed_source_revision": "2bb6da9635f8a0eb50b2d598e97ac8e3f97bc89d",
   "historical_source_revision": "7d10a8b6eba74e642fcf5028af737a98bb5c0958",
