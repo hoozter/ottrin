@@ -1078,10 +1078,20 @@ Current source, test, package and owner/external scopes stay separate.
      fell from 69.27 to 48.18 seconds across the two VM runs. The standard
      caller verified the published hash, and disk checks confirmed caller
      ownership and preservation of the original and its hard link. The
-     same-run ordinary copy control took 4.05 seconds. Profile the remaining
-     gap and repeat before enabling Administrator Copy in standard packages.
+     same-run ordinary copy control took 4.05 seconds.
+     A second installed run passed the same integrity checks and captured
+     32 samples from the exact rebuilt helper after publication. Direct
+     instructions were in the Windows native library in 31 samples and
+     SHA-256 in one. Possible return addresses included Backup reads in
+     15 samples, caller-profile validation in 11 and retained-tree
+     revalidation in seven. These raw stack words locate candidate code
+     paths without measuring how much elapsed time each path consumed.
+     Measure payload verification and caller-profile validation separately,
+     then retest any optimization with caller drift and changed-payload
+     refusal coverage before enabling Administrator Copy in standard packages.
      [Native receipt checks](../.hermes/evidence/windows-alias-receipt-current/native/NATIVE_TEST.json).
      [Installed receipt timing](../.hermes/evidence/windows-alias-receipt-installed-current/ACCEPTANCE.json).
+     [Post-publication helper profile](../.hermes/evidence/windows-alias-finalization-profile-current/FINDING.json).
 
    Missing member IDs never license deletion or a completed original-batch claim.
    These are implementation/QA tasks, not owner waits. Personal authentication,
