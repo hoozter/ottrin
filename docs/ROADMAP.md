@@ -1230,6 +1230,14 @@ Current source, test, package and owner/external scopes stay separate.
    executables were restored by hash. Native UI, deployment and
    lifecycle acceptance remain open.
    [MSIX 32 assembly receipt](../.hermes/evidence/windows-menu-divider-delivery-current/ASSEMBLY_ACCEPTANCE.json).
+   The exact development MSIX 32 passed fresh deployment as a standard
+   Windows user, index startup after real sign-in, Explorer background,
+   multiple-folder and drive actions, and removal. The fixture verified
+   that preferences and test files survived and the default folder app
+   registration stayed intact. The fresh guest, both owned volumes and
+   duplicate export files were removed. Upgrades from MSIX 31 with
+   startup enabled and disabled remain separate gates.
+   [Fresh MSIX 32 acceptance](../.hermes/evidence/windows-menu-divider-delivery-current/runtime32-fresh/ACCEPTANCE.json).
    The exact portable Windows actor completed both variants and
    preserved preferences after physical Cancel. The native capture
    review did not verify the requested colors in both variants or all
