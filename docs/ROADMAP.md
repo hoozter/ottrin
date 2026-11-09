@@ -317,11 +317,18 @@ and the held MSI were preserved. See
    cases but was interrupted before the test reported a result. The
    disposable guest grew past 20 GB and host free space fell below 3 GiB.
    Teardown removed the guest, overlay and fixture media and restored the
-   temporarily moved compiler file by hash. The native driver now enforces
-   that runtime floor. A full repeat needs additional host headroom beyond
-   the existing 24 GiB startup check. See the
+   temporarily moved compiler file by hash. See the
    [interruption receipt](../.hermes/evidence/caller-profile-init-current/CURRENT_AUTHENTICATED_RECOVERY_INTERRUPTED.json).
-   The private
+   The full repeat passed on Windows 11 build 26300 using the exact
+   platform test executable built from `1469f98c`. One ordinary-client and
+   25 SYSTEM checks passed, including fresh-context Resume and Undo for
+   files and directories and all 150 dispatcher interruption boundaries.
+   The clone used discard and temporarily borrowed compiler space above
+   the runtime floor. All five moved files were restored by hash and the
+   clone and its media were removed. See the
+   [native original-caller receipt](../.hermes/evidence/caller-profile-init-current/CURRENT_AUTHENTICATED_RECOVERY_PASS.json).
+   All four [hosted jobs](https://github.com/hoozter/ottrin/actions/runs/42541958483)
+   passed on the stopped Copy count revision `94c25f54`. The private
    installer for that work is staged under
    `.hermes/packaging-tmp/.windows-admin-copy-stopped-ui/`. The build worktree,
    unpacked payload, duplicate ZIP, superseded installer and disposable

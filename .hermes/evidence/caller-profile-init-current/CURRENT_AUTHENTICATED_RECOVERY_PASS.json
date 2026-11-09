@@ -1,0 +1,168 @@
+{
+  "status": "pass",
+  "scope": "Native Windows platform regression with a fresh standard user and independent SYSTEM companion. Installed alternate-administrator UAC and package acceptance are recorded separately.",
+  "platform_source_revision": "1469f98c74fe167ebedc12d89f2e86d94237160b",
+  "input": {
+    "source_revision": "18f1e6abee363221ee3b7e1631a84152ffccbaee",
+    "source_test_sha256": "af5435367b21365fd9a2a8c3d88c4526e5303596789379d49c69c793562d5433",
+    "test_sha256": "50ddd13c85ce92f67ed00ca408448c0285a37ebbd4927f9f865eb7e8e8724668",
+    "source_bytes": 700664731,
+    "staged_bytes": 679141443,
+    "strip_command": [
+      "x86_64-w64-mingw32-strip",
+      "--strip-debug"
+    ],
+    "unchanged_executable_text": {
+      "entry_rva": 5136,
+      "bytes": 530683904,
+      "sha256": "409e0451630cb6dec8a47b3d67aee1c8fb309749c5a8e05c92be22a839d226df"
+    },
+    "actor_sha256": "357dade56295ae9b1528fd895fc7aac8e262ed580605e0b8bc8ed2d64afc4cba",
+    "scope": "Explicit ordinary-client/SYSTEM-companion native caller and ownership mechanism observation on an owned offline clone; not alternate-administrator UAC, enabled Copy, package or whole-roadmap acceptance.",
+    "system_companion_sha256": "5ebe34790edcaed569e4de78662e88318cd6e547f5bb0fa50aa68184a2343ca2",
+    "changed_product_sources": {},
+    "source_scope": "Git revision is the reference base; changed_product_sources binds any uncommitted product snapshot. Executable hash/text bind the actual staged native test."
+  },
+  "windows": {
+    "caption": "Microsoft Windows 11 Enterprise Evaluation",
+    "disable_msi": null,
+    "build": "26300",
+    "msi": "5.0.26100.9444"
+  },
+  "driver_sha256": "ad4e1399fb4b843a4fadb5f51936b0bf52fd6c8bb61d5e668de0220ff122c74e",
+  "guest_archive_sha256": "d06580446be788721d98add528cd0bc954acaa42ca5c5846507d7bd6968a9a9a",
+  "checks": [
+    {
+      "case": "ordinary cross-principal client",
+      "exit": 0
+    },
+    {
+      "case": "caller private helper",
+      "exit": 0
+    },
+    {
+      "case": "windows_native_copy_end_staging_preserves_all_data_and_releases_only_its_name",
+      "exit": 0
+    },
+    {
+      "case": "windows_native_copy_end_staging_refuses_live_changed_and_verified_controls",
+      "exit": 0
+    },
+    {
+      "case": "windows_native_copy_end_staging_paired_prefix_recovers_and_divergence_stays_reserved",
+      "exit": 0
+    },
+    {
+      "case": "windows_native_copy_name_release_admission_finishes_without_touching_retained_payload",
+      "exit": 0
+    },
+    {
+      "case": "windows_native_copy_name_release_admission_rejects_stale_claim_and_registry_changes",
+      "exit": 0
+    },
+    {
+      "case": "windows_native_copy_orphan_release_recovers_every_exact_prefix_without_rewriting_history",
+      "exit": 0
+    },
+    {
+      "case": "windows_native_copy_orphan_release_refuses_records_unknown_tails_and_streams_unchanged",
+      "exit": 0
+    },
+    {
+      "case": "windows_native_copy_release_repair_errors_and_process_exits_preserve_payload",
+      "exit": 0
+    },
+    {
+      "case": "windows_native_copy_ended_attempt_allows_unrelated_overwrite_and_cleanup",
+      "exit": 0
+    },
+    {
+      "case": "windows_native_copy_ended_attempt_still_protects_recorded_created_aliases",
+      "exit": 0
+    },
+    {
+      "case": "windows_native_copy_ended_dependency_requires_immutable_matching_journal_pair",
+      "exit": 0
+    },
+    {
+      "case": "history_interruption_is_a_request_error_instead_of_a_damaged_record",
+      "exit": 0
+    },
+    {
+      "case": "damaged_history_record_remains_inspectable_without_hiding_progress_errors",
+      "exit": 0
+    },
+    {
+      "case": "ignored_history_progress_failure_never_returns_success",
+      "exit": 0
+    },
+    {
+      "case": "windows_copy_stream_progress_preserves_completed_receipt",
+      "exit": 0
+    },
+    {
+      "case": "windows_copy_stream_stop_interrupts_blocked_io_and_preserves_receipt",
+      "exit": 0
+    },
+    {
+      "case": "windows_copy_stream_completed_operation_wins_late_stop",
+      "exit": 0
+    },
+    {
+      "case": "windows_copy_stream_disconnect_interrupts_blocked_io",
+      "exit": 0
+    },
+    {
+      "case": "windows_copy_stream_malformed_control_cannot_report_success",
+      "exit": 0
+    },
+    {
+      "case": "privileged_copy_progress_stops_before_helper_preflight",
+      "exit": 0
+    },
+    {
+      "case": "windows_copy_stream_presend_stop_sends_no_request",
+      "exit": 0
+    },
+    {
+      "case": "windows_copy_stream_callback_panic_joins_reader",
+      "exit": 0
+    },
+    {
+      "case": "windows_copy_stream_fragmented_frame_survives_read_timeouts",
+      "exit": 0
+    },
+    {
+      "case": "windows_copy_stream_reader_stop_without_pending_io",
+      "exit": 0
+    }
+  ],
+  "recovery_and_prefix_observations": [
+    "caller fresh recovery source_directory=false: recaptured-context discovery, restored Resume, restored Undo, cancellation and readonly evidence passed",
+    "caller fresh recovery source_directory=true: recaptured-context discovery, restored Resume, restored Undo, cancellation and readonly evidence passed",
+    "caller public dispatcher journal/native-creation prefix matrix directory=false: boundaries=54 refused=15 ended=3 resumed=17 undone=18 unregistered=18; actual public creation, readonly discovery, source and user data preserved; no process-restart/UAC acceptance",
+    "caller public dispatcher journal/native-creation prefix matrix directory=true: boundaries=96 refused=34 ended=12 resumed=31 undone=32 unregistered=18; actual public creation, readonly discovery, source and user data preserved; no process-restart/UAC acceptance",
+    "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 597 filtered out; finished in 1136.31s"
+  ],
+  "storage": {
+    "start": {
+      "available_bytes": 25876561920,
+      "minimum_headroom_bytes": 25769803776,
+      "path": "/var/lib/libvirt/images"
+    },
+    "owned_overlay_discard": "unmap",
+    "runtime_storage_stop": false,
+    "temporary_compiler_files_restored_by_hash": 5
+  },
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-boundary-client.qcow2",
+      "ottrin-boundary-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null,
+    "consumed_host_run_removed": true
+  }
+}
