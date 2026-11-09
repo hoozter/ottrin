@@ -1231,6 +1231,13 @@ Current source, test, package and owner/external scopes stay separate.
    executables were restored by hash. Native UI, deployment and
    lifecycle acceptance remain open.
    [MSIX 32 assembly receipt](../.hermes/evidence/windows-menu-divider-delivery-current/ASSEMBLY_ACCEPTANCE.json).
+   The exact portable Windows actor completed both variants and
+   preserved preferences after physical Cancel. The native capture
+   review did not verify the requested colors in both variants or all
+   menu frames. This is interaction evidence only. The native visual
+   fixture needs a verified color commit and capture with each popup
+   visibly open. MSIX deployment and update checks remain independent.
+   [Windows theme capture review](../.hermes/evidence/windows-menu-divider-delivery-current/NATIVE_THEME_VISUAL_REVIEW.json).
    Broader platform and theme-property coverage and whole-interface
    alignment/grouping remain open. The theme-library miniature now
    paints square selected-row fills, rounds only outer title/status corners and
