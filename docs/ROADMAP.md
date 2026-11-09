@@ -6,15 +6,14 @@ Updated 2026-11-09. This is the single active queue. Historical sections and
 receipts keep their original artifact/source scope. Passing a focused test does
 not complete a broader native, platform or user-acceptance requirement.
 
-The stable local Linux AppImage, portable archive, DEB and RPM are under
-`dist/packages/`. The stable Windows portable ZIP, NSIS installer and
-unsigned development MSIX are under `dist/windows-candidate/`. Their
-current source revisions, exact checksums and acceptance scopes are
-recorded in `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json` and
-`dist/WINDOWS_CANDIDATE_ACCEPTANCE.json`. Staged packages are tracked
-separately in the [ordered work](#current-ordered-work). The
-[owner and external waiting list](#ownerexternal-waiting-list) records
-which steps require input or unavailable resources.
+| Platform | Launchable locally | Next delivery |
+| --- | --- | --- |
+| Linux | `b1bc72fe` AppImage, portable archive, DEB and RPM in `dist/packages/`. [Exact package receipt](../dist/packages/LINUX_PACKAGES_ACCEPTANCE.json). | `4d3f11a3` passed mounted Dark and Light menu and Smart Panel checks, and watcher and restart checks. Promotion waits for the [hosted matrix](https://github.com/hoozter/ottrin/actions/runs/42687932598). |
+| Windows | `a9c718a2` portable ZIP, NSIS and development MSIX 31 in `dist/windows-candidate/`. [Exact package receipt](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json). | `4d3f11a3` is staged. MSIX 32 deployment and native visual verification are in the test queue. The NSIS lifecycle fixture verifies the staged installer against the current candidate after those guests release their resources. |
+
+The [ordered work](#current-ordered-work) tracks the remaining software
+and package acceptance. The [owner and external waiting list](#ownerexternal-waiting-list)
+records what depends on input, signing, devices or personal acceptance.
 
 ### Recent delivery evidence
 
