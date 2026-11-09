@@ -1,8 +1,8 @@
 {
-  "status": "scoped preflight passes; source-equivalent CI pending",
+  "status": "ready for guarded atomic publication",
   "source_revision": "60234de2917f4848262637203146737a012f49ca",
   "ci_run": 42569274820,
-  "ci_ready": false,
+  "ci_ready": true,
   "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
   "current_managed_unit": {
     "MainPID": "1342",

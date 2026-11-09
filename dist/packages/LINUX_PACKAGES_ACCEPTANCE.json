@@ -1,13 +1,13 @@
 {
-  "status": "pass scoped Linux Vivaldi picker delivery",
-  "source_revision": "46802ab4360f25770ff525b297b716954006e76a",
+  "status": "pass scoped Linux Appearance page delivery",
+  "source_revision": "60234de2917f4848262637203146737a012f49ca",
   "artifacts": {
-    "ottrin-0.1.0-1.x86_64.rpm": "84d467fd9a9129b075ee793023a48d37ec9066750b3114497aed946b3dfca22c",
-    "Ottrin-0.1.0-x86_64.AppImage": "8ae503256ab42fe0d2a4b5fcc82d85ee721b0e69ab28d81a06acbe56fe846121",
-    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "f542e835b1b5501b4c81ecf84af75f46293d432d64fcdc98bfa9ad32746572e9",
-    "ottrin_0.1.0_amd64.deb": "37b06f6147ccb107e02c83a29ef89e1773eae5d3d24d5dcd01dfb9dfce6dcc7f"
+    "ottrin-0.1.0-1.x86_64.rpm": "9871d729a19f952077ccd3a1f4ec1e7e45a1dc60f96d00d9dbe108990e26f5e2",
+    "Ottrin-0.1.0-x86_64.AppImage": "71bfe68b40c1442110e5b3b38ba967ebc5277ddb8e5907587f7d42500c45176e",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "442fbe744ff1ebd7e757f204b07060d62b4e7f6e82a714fc04c9f19b46bbf0d4",
+    "ottrin_0.1.0_amd64.deb": "d90bdd79f9c6469555594308429868fb4485cc77e92812338336554489b37004"
   },
-  "evidence": ".hermes/evidence/vivaldi-picker-delivery-current",
+  "evidence": ".hermes/evidence/appearance-page-delivery-current",
   "checks": [
     "production portable/AppImage runtime closure and playback checks",
     "production native payload, dependencies, policy, hooks and code identity blocks",
@@ -17,66 +17,34 @@
     "actual AppImage and RPM index daemon namespace/ownership refusal checks"
   ],
   "runtime_sha256": {
-    "application": "3ae9336aa2cb453bb4bc62b19d09e5614bb2d119be8875eda4b2a1c7c9a2315e",
+    "application": "241c7a202864f8c81caa7e6080d982a8e765acb732b67144ab6e5a5c32a312c5",
     "index_daemon": "79f2abe711197c577154cd712fb733dc1c54db5fdee6c1aa5b4baffbc3724ec3",
     "privileged_helper": "f123b93368d7919067bdcfe6f295c079fc1d000c38fdb2f3f493c465bd0f932f",
     "html_renderer": "f6a4ebe343c58ad3f06398c81574aa44d2b1afcfd7486e9e180c9368efefcbed"
   },
   "hosted_source": {
-    "run": 42469453296,
-    "tested_source_revision": "be6540b72b3908e1b40f519cf1f3d9face105867",
+    "run": 42569274820,
+    "tested_source_revision": "6bcd78671f5ff7e60bcd85cba0fb59f6c6d08ed8",
     "non_runtime_diff": [
-      "packaging/package-search-runtime.sh",
-      "packaging/search-runtime.json"
+      ".github/workflows/release.yml",
+      "docs/DEVELOPMENT.md",
+      "packaging/linux/package-appimage.sh"
     ],
-    "all_four_jobs_success": true,
-    "verified_jobs": {
-      "verify (windows-latest)": {
-        "run": 42469453296,
-        "source": "be6540b72b3908e1b40f519cf1f3d9face105867",
-        "job_id": 128696589291,
-        "status": "completed",
-        "conclusion": "success"
-      },
-      "verify (ubuntu-latest)": {
-        "run": 42469453296,
-        "source": "be6540b72b3908e1b40f519cf1f3d9face105867",
-        "job_id": 128696589396,
-        "status": "completed",
-        "conclusion": "success"
-      },
-      "search-performance (ubuntu-latest)": {
-        "run": 42469453296,
-        "source": "be6540b72b3908e1b40f519cf1f3d9face105867",
-        "job_id": 128696589554,
-        "status": "completed",
-        "conclusion": "success"
-      },
-      "search-performance (windows-latest)": {
-        "run": 42469453296,
-        "source": "be6540b72b3908e1b40f519cf1f3d9face105867",
-        "job_id": 128696589592,
-        "status": "completed",
-        "conclusion": "success"
-      }
-    }
+    "all_four_jobs_success": true
   },
-  "source_scope": ".hermes/evidence/vivaldi-picker-delivery-current/BUILD_SOURCE.json",
-  "vivaldi_acceptance": ".hermes/evidence/current-vivaldi-picker/ACCEPTANCE.json",
-  "runtime_transition": ".hermes/evidence/vivaldi-picker-delivery-current/RUNTIME_TRANSITION.json",
-  "managed_index_transition": ".hermes/evidence/vivaldi-picker-delivery-current/MANAGED_INDEX_TRANSITION.json",
-  "native_replacement": ".hermes/evidence/vivaldi-native-transition-current/ACCEPTANCE.json",
+  "source_scope": ".hermes/evidence/appearance-page-delivery-current/BUILD_SOURCE.json",
+  "mounted_appearance": ".hermes/evidence/appearance-page-delivery-current/ACCEPTANCE.json",
   "current_helper_read_only": [
-    ".hermes/evidence/vivaldi-picker-delivery-current/LINUX_HELPER_RUNTIME.json"
+    ".hermes/evidence/appearance-page-delivery-current/LINUX_HELPER_RUNTIME.json"
   ],
   "previous_cohort": {
-    "source_revision": "0eec7cb42b8aeec4e250fce6930dac134def4b0a",
-    "receipt": ".hermes/evidence/vivaldi-picker-delivery-current/PREVIOUS_LINUX_PACKAGES_ACCEPTANCE.json"
+    "source_revision": "46802ab4360f25770ff525b297b716954006e76a",
+    "receipt": ".hermes/evidence/appearance-page-delivery-current/PREVIOUS_LINUX_PACKAGES_ACCEPTANCE.json"
   },
   "limits": [
-    "Installed Vivaldi Open and Save on a private software X11 display with its real transient parent, exact bytes and no index startup.",
+    "Mounted software-X11 Dark 100% and Light 150% Appearance page, visually reviewed section hierarchy, equal theme-card gaps and editor open/close.",
     "Other portal, theme and native distro receipts retain their recorded package scopes.",
-    "Bundled administrator helper passed read-only protocol checks. Updating the installed system helper requires its own administrator action.",
-    "Packaged manuals are build-time snapshots at 46802ab4; repository metadata records later delivery."
+    "Daemon, helper and HTML renderer bytes match the previous cohort.",
+    "Packaged manuals are build-time snapshots at 60234de2; repository metadata records later delivery."
   ]
 }

@@ -2,11 +2,32 @@
 
 ## Current delivery and next work
 
-Updated 2026-11-08. This is the single active queue. Historical sections and
+Updated 2026-11-09. This is the single active queue. Historical sections and
 receipts keep their original artifact/source scope. Passing a focused test does
 not complete a broader native, platform or user-acceptance requirement.
 
-The stable local Linux AppImage, portable archive, DEB and RPM use source
+The stable local Linux AppImage, portable archive, DEB and RPM now use
+source `60234de2`. All four formats passed content and provenance checks,
+and the bundled helper passed ten protocol checks. The mounted AppImage
+passed Dark/Light Appearance layout and editor open/close. All four
+[hosted jobs](https://github.com/hoozter/ottrin/actions/runs/42569274820)
+passed on `6bcd7867`, with identical application inputs. The later
+packaging-only change was verified by the local four-format build. It
+validates AppStream metadata offline after GitHub returned HTTP 504 during
+the earlier build.
+
+Promotion preserved open Ottrin windows, preferences, the index database
+and the running Ready daemon. The AppImage daemon, administrator helper
+and HTML renderer match the previous cohort byte for byte. The stage and
+superseded package files were removed. A read-only preflight sample
+recorded 20 snapshot revisions, 2.42% of one CPU core on average and
+0.3–0.4% during the last three ten-second intervals.
+See [mounted acceptance](../.hermes/evidence/appearance-page-delivery-current/ACCEPTANCE.json),
+[promotion](../.hermes/evidence/appearance-page-delivery-current/PROMOTION.json),
+[service sample](../.hermes/evidence/appearance-page-delivery-current/INDEX_PREPROMOTION_OBSERVATION.json)
+and `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`.
+
+The previous Linux cohort used source
 `46802ab4`. Real Vivaldi Open and Save passed, including window parenting,
 cancellation and caller exit. Native Ubuntu and Fedora package transitions
 preserved index state. The four [hosted jobs](https://github.com/hoozter/ottrin/actions/runs/42469453296)
@@ -23,27 +44,7 @@ watcher active and about 248,640 indexed items. It averaged 0.19% of one
 CPU core and peaked at 0.20% per ten-second interval.
 See [steady index observation](../.hermes/evidence/vivaldi-picker-delivery-current/MANAGED_INDEX_STEADY.json).
 See [CI evidence mapping](../.hermes/evidence/vivaldi-picker-delivery-current/CI_EQUIVALENCE.json),
-[promotion receipt](../.hermes/evidence/vivaldi-picker-delivery-current/PROMOTION.json)
-and `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`.
-
-The Appearance update is staged in all four local Linux formats from
-`60234de2`. The first AppImage build stopped when the external homepage
-returned HTTP 504 during AppStream validation. The packager now validates
-the metadata offline before assembly. All four packages pass the production
-content checks and ten packaged helper protocol checks. The mounted AppImage
-passes Dark/Light layout and editor open/close, and private replacement
-preserves the already-open window. The bundled daemon, helper and HTML
-renderer match the current Linux delivery byte for byte. Promotion preflight
-passed with the managed index Ready. The stage remains the promotion input
-while Windows verification in [the application-source run](https://github.com/hoozter/ottrin/actions/runs/42569274820)
-is still running. The three finished jobs passed. See the
-[mounted acceptance](../.hermes/evidence/appearance-page-delivery-current/ACCEPTANCE.json)
-and [promotion preflight](../.hermes/evidence/appearance-page-delivery-current/PROMOTION_PREFLIGHT.json).
-The matching running daemon stayed Ready with its watcher active during a
-read-only 60-second sample. It advanced 20 snapshot revisions, averaged
-2.42% of one core and used 0.3–0.4% during the final three ten-second
-intervals. This is an ordinary-workload observation.
-[Service continuity sample](../.hermes/evidence/appearance-page-delivery-current/INDEX_PREPROMOTION_OBSERVATION.json).
+[promotion receipt](../.hermes/evidence/vivaldi-picker-delivery-current/PROMOTION.json).
 
 The preceding Linux cohort used `0eec7cb4`. Its four
 [hosted jobs](https://github.com/hoozter/ottrin/actions/runs/42461840752)
@@ -1123,7 +1124,8 @@ Current source, test, package and owner/external scopes stay separate.
    was reviewed in Dark at scale 1 and Light at scale 1.5, including scrolling
    to the lower sections. Both private desktops were retired.
    [Appearance page receipt](../.hermes/evidence/appearance-page-groups-final/ACCEPTANCE.json).
-   Native Windows and packaged acceptance for this change remain open.
+   The mounted Linux AppImage passed and is delivered. Native Windows
+   Appearance acceptance remains open.
 
    Verify every supported role/control against the actual interface and logical
    hierarchy; field-map/test/capture counts do not close this audit.
