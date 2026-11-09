@@ -1539,6 +1539,16 @@ Current source, test, package and owner/external scopes stay separate.
    were removed and borrowed executables restored by hash.
    [Reversed timing comparison](../.hermes/evidence/theme-preview-popup-current/native-cancel-timing-reverse/GUEST_RESULT.json).
 
+   The private diagnostic build completed and the NSIS and portable
+   payloads matched. The first native guest timed out in silent install
+   while the index daemon and installer PowerShell child were still
+   running. No editor input was captured. The guest and overlay were
+   retired and borrowed executables restored. The next diagnostic runs
+   the same instrumented executable from the verified portable archive
+   in a fresh guest, with installer lifecycle acceptance tracked
+   separately.
+   [Diagnostic installer result](../.hermes/evidence/theme-editor-app-trace-current/native-close/GUEST_RESULT.json).
+
    Verify every supported role/control against the actual interface and logical
    hierarchy; field-map/test/capture counts do not close this audit.
 3. Close remaining supported themed-picker, Linux FileChooser/FileManager1 and
