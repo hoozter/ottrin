@@ -1,0 +1,115 @@
+{
+  "source_revision": "f7ac407b1817b98fceb914bc55a7ab6a243d1a60",
+  "private_capability_diff_sha256": "153874904f3d1fc51b0992014edcb4a8d5f0cef17627194914f8f13db81c3463",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-caller-profile-qa",
+  "payload_files": 59,
+  "artifacts": {
+    "Ottrin-0.1.0-windows-x64-setup.exe": "3247a76479cb8a33aadcb0b45573c35ae582bb1fada7765c42533f634f579ad7",
+    "Ottrin-0.1.0-windows-x64-portable.zip": "c242fc150652ac4aa47cddf70f6634c5fc438d91849c774e6a2a387902ea0a67"
+  },
+  "portable_matches_stage": true,
+  "status": "pass",
+  "scope": "Private capability-enabled NSIS with standard caller and alternate-administrator UAC. Default Local AppData owned by BUILTIN Administrators.",
+  "installer": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-caller-profile-qa/Ottrin-0.1.0-windows-x64-setup.exe",
+  "source_fix_diff_sha256": "3d93bb6e6238d667fce39598d9f3945809c29c4b7569b256bf0df61240cceaf6",
+  "app_sha256": "be59a49a7e5494d4a154a41a642adf92d38cc3dc341d858d7aa7e2b757fe6ed3",
+  "helper_sha256": "06b39b327c7b2bc4a02d58a80bc29497488d1ef809354ea3f1d8daa5328c151c",
+  "actor_sha256": "b82437baa88086e801187820c4be84160665a202a353b51d2c2684004c31a827",
+  "phases": [
+    {
+      "caller_journals": 1,
+      "client_pid": 7880,
+      "phase": "complete",
+      "caller_registry": "C:\\Users\\OttrinQaCaller\\AppData\\Local\\Ottrin\\State\\copies",
+      "payload_files": 59,
+      "client_exited": true,
+      "mode": "copy",
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+      "ordinary_target_hash": "3fc5d485b7cbea0501dd61db76c43ff6dadea69e25a93ff970da52a3ec597073",
+      "status": "pass",
+      "local_app_data_owner": "S-1-5-32-544",
+      "client_exit": 0,
+      "profile_check": {
+        "caller_registry": "C:\\Users\\OttrinQaCaller\\AppData\\Local\\Ottrin\\State\\copies",
+        "administrator_registry_unchanged": true,
+        "administrator_registry": "C:\\Users\\OttrinQaAdmin\\AppData\\Local\\Ottrin\\State\\copies"
+      }
+    },
+    {
+      "client_pid": 3568,
+      "client_exit": 0,
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+      "payload_files": 59,
+      "caller_registry": "C:\\Users\\OttrinQaCaller\\AppData\\Local\\Ottrin\\State\\copies",
+      "client_exited": true,
+      "phase": "complete",
+      "local_app_data_owner": "S-1-5-32-544",
+      "caller_journals": 1,
+      "mode": "history-undo",
+      "status": "pass",
+      "profile_check": {
+        "caller_registry": "C:\\Users\\OttrinQaCaller\\AppData\\Local\\Ottrin\\State\\copies",
+        "administrator_registry_unchanged": true,
+        "administrator_registry": "C:\\Users\\OttrinQaAdmin\\AppData\\Local\\Ottrin\\State\\copies"
+      }
+    },
+    {
+      "client_pid": 6788,
+      "client_exit": 0,
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+      "payload_files": 59,
+      "caller_registry": "C:\\Users\\OttrinQaCaller\\AppData\\Local\\Ottrin\\State\\copies",
+      "client_exited": true,
+      "phase": "complete",
+      "local_app_data_owner": "S-1-5-32-544",
+      "caller_journals": 0,
+      "mode": "undone",
+      "status": "pass",
+      "profile_check": {
+        "caller_registry": "C:\\Users\\OttrinQaCaller\\AppData\\Local\\Ottrin\\State\\copies",
+        "administrator_registry_unchanged": true,
+        "administrator_registry": "C:\\Users\\OttrinQaAdmin\\AppData\\Local\\Ottrin\\State\\copies"
+      }
+    },
+    {
+      "client_pid": 2524,
+      "client_exit": 0,
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+      "payload_files": 59,
+      "caller_registry": "C:\\Users\\OttrinQaCaller\\AppData\\Local\\Ottrin\\State\\copies",
+      "client_exited": true,
+      "phase": "complete",
+      "local_app_data_owner": "S-1-5-32-544",
+      "caller_journals": 0,
+      "mode": "cleared",
+      "status": "pass",
+      "profile_check": {
+        "caller_registry": "C:\\Users\\OttrinQaCaller\\AppData\\Local\\Ottrin\\State\\copies",
+        "administrator_registry_unchanged": true,
+        "administrator_registry": "C:\\Users\\OttrinQaAdmin\\AppData\\Local\\Ottrin\\State\\copies"
+      }
+    }
+  ],
+  "owner_setup": "The disposable caller base initially belonged to the caller. The fixture reproduced the prior Windows layout by setting only its owner to S-1-5-32-544 and verifying unchanged DACL and group.",
+  "capture_sha256": {
+    "copy-ordinary-denial.png": "0a44be70a5567da650e9a7db7d12819456b0fe9683299e5760541324e25d75a5",
+    "copy-completed.png": "5902d9a3fa31ff10497d1bede2fd7719263d9df2cb088ba4678201056a44425b",
+    "history-undo-history.png": "6450538537da7c2935c9f026f3205d2a6e5caec2dbefc0e68cff44d11c5f62b3",
+    "history-undo-undone.png": "58161ea28ead2ec7c3abad14027be56af955d2bb83857cf8fd61352948d548fb",
+    "undone-undone.png": "c9c0fcc4585aeedf99da5c7576569f7a69a8af37236d2c07e507c1495c28db92",
+    "undone-cleared.png": "2f4dd55df35bdaee3758cacfcc0d249cdfc368281238c27a6050e9b41b298939",
+    "cleared-cleared.png": "99eb9238568ec68c563f306bfb07fb57cd6225a5da4dfde093489f381161d0cb"
+  },
+  "cleanup": {
+    "domain": "ottrin-init-helper-pipe-qa",
+    "uuid": "7c417f70-4148-49fa-9dcf-197a591eab45",
+    "volume": "ottrin-init-helper-pipe-qa.qcow2",
+    "status": "pass",
+    "domain_removed": true,
+    "overlay_removed": true,
+    "protected_definitions_states_and_backing_unchanged": true
+  },
+  "portable_and_expanded_stage_retired": true,
+  "compiler_executables_restored_by_hash": true,
+  "retained_for": "Installed redirected-path and caller-write-denial controls"
+}

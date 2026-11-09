@@ -25,8 +25,9 @@ use windows_sys::Win32::System::Threading::{
     PROCESS_QUERY_LIMITED_INFORMATION, PROCESS_SYNCHRONIZE, WaitForSingleObject,
 };
 use windows_sys::Win32::UI::Shell::{
-    FOLDERID_LocalAppData, KF_FLAG_DONT_VERIFY, SEE_MASK_FLAG_NO_UI, SEE_MASK_NOASYNC,
-    SEE_MASK_NOCLOSEPROCESS, SHELLEXECUTEINFOW, SHGetKnownFolderPath, ShellExecuteExW,
+    FOLDERID_LocalAppData, KF_FLAG_DEFAULT_PATH, KF_FLAG_DONT_VERIFY, KF_FLAG_NOT_PARENT_RELATIVE,
+    SEE_MASK_FLAG_NO_UI, SEE_MASK_NOASYNC, SEE_MASK_NOCLOSEPROCESS, SHELLEXECUTEINFOW,
+    SHGetKnownFolderPath, ShellExecuteExW,
 };
 use windows_sys::Win32::UI::WindowsAndMessaging::SW_HIDE;
 
@@ -108,7 +109,7 @@ fn process_token(process: &OwnedHandle, access: u32) -> io::Result<OwnedHandle> 
 /// Query Windows for the explicit token's registered folder, without creating
 /// it or consulting the helper's environment. The returned path is a locator,
 /// not permission to adopt a recovery registry or replay serialized authority.
-fn local_app_data(token: &OwnedHandle) -> io::Result<PathBuf> {
+fn local_app_data(token: &OwnedHandle, flags: u32) -> io::Result<PathBuf> {
     struct Buffer(*mut u16);
     impl Drop for Buffer {
         fn drop(&mut self) {
@@ -122,7 +123,7 @@ fn local_app_data(token: &OwnedHandle) -> io::Result<PathBuf> {
     let result = unsafe {
         SHGetKnownFolderPath(
             &FOLDERID_LocalAppData,
-            KF_FLAG_DONT_VERIFY as u32,
+            KF_FLAG_DONT_VERIFY as u32 | flags,
             token.as_raw_handle(),
             &mut buffer.0,
         )
@@ -223,7 +224,12 @@ impl CallerProcess {
         caller.validate()?;
         Ok(caller)
     }
+    #[cfg(test)]
     fn local_app_data(&self) -> io::Result<PathBuf> {
+        self.local_app_data_with_flags(0)
+    }
+
+    fn local_app_data_with_flags(&self, flags: u32) -> io::Result<PathBuf> {
         self.validate()?;
         // Additional token rights are requested only for profile lookup. Normal
         // helper admission still requires query access alone. No impersonation,
@@ -238,9 +244,38 @@ impl CallerProcess {
                 "Caller token user, default owner or primary group changed before profile lookup",
             ));
         }
-        let path = local_app_data(&token)?;
+        let path = local_app_data(&token, flags)?;
         self.validate()?;
         Ok(path)
+    }
+    /// Duplicate the kernel-bound original token and check the immutable
+    /// admitted principals. Derivation uses this snapshot, never helper policy.
+    fn snapshot_token(&self) -> io::Result<OwnedHandle> {
+        self.validate()?;
+        let source = process_token(&self.process, TOKEN_QUERY | TOKEN_DUPLICATE)?;
+        let mut raw = ptr::null_mut();
+        if unsafe {
+            windows_sys::Win32::Security::DuplicateTokenEx(
+                source.as_raw_handle().cast(),
+                TOKEN_QUERY | TOKEN_IMPERSONATE,
+                ptr::null(),
+                windows_sys::Win32::Security::SecurityImpersonation,
+                windows_sys::Win32::Security::TokenImpersonation,
+                &mut raw,
+            )
+        } == 0
+        {
+            return Err(io::Error::last_os_error());
+        }
+        let token = unsafe { OwnedHandle::from_raw_handle(raw.cast()) };
+        if CallerIdentity::capture(&token)? != self.identity {
+            return Err(io::Error::new(
+                io::ErrorKind::PermissionDenied,
+                "Caller token changed before Copy policy snapshot",
+            ));
+        }
+        self.validate()?;
+        Ok(token)
     }
     fn validate(&self) -> io::Result<()> {
         // SAFETY: capture retained the exact process with SYNCHRONIZE rights.
@@ -277,11 +312,35 @@ pub struct CallerCopyContext {
 }
 impl CallerCopyContext {
     fn capture(caller: Arc<CallerProcess>) -> io::Result<Self> {
-        let path = caller.local_app_data()?;
+        let path = caller.local_app_data_with_flags(0)?;
         let profile = crate::copy_transaction::CallerProfile::capture(
             &path,
             &caller.identity.user,
             &caller.identity.owner,
+            || {
+                use windows_sys::Win32::Storage::FileSystem::{
+                    FILE_GENERIC_READ, FILE_GENERIC_WRITE,
+                };
+
+                // Only Windows' default, non-redirected base may use the
+                // OS-owner exception. Obtain real directory access as the
+                // caller before giving the registry initializer a handle.
+                let default = caller.local_app_data_with_flags(
+                    (KF_FLAG_DEFAULT_PATH | KF_FLAG_NOT_PARENT_RELATIVE) as u32,
+                )?;
+                if path != default {
+                    return Err(io::Error::new(
+                        io::ErrorKind::PermissionDenied,
+                        "Windows-owned Local AppData is redirected",
+                    ));
+                }
+                let token = caller.snapshot_token()?;
+                let base = crate::windows_fs::with_thread_token(&token, || {
+                    crate::windows_fs::open_directory(&path, FILE_GENERIC_READ | FILE_GENERIC_WRITE)
+                })?;
+                caller.validate()?;
+                Ok(base)
+            },
         )
         .map_err(io::Error::other)?;
         let context = Self { caller, profile };
@@ -470,32 +529,9 @@ impl CallerCopyContext {
             )
         })
     }
-    /// Duplicate the kernel-bound original token and check the immutable
-    /// admitted principals. Derivation uses this snapshot, never helper policy.
     pub(crate) fn snapshot_token(&self) -> io::Result<OwnedHandle> {
         self.validate()?;
-        let source = process_token(&self.caller.process, TOKEN_QUERY | TOKEN_DUPLICATE)?;
-        let mut raw = ptr::null_mut();
-        if unsafe {
-            windows_sys::Win32::Security::DuplicateTokenEx(
-                source.as_raw_handle().cast(),
-                TOKEN_QUERY | TOKEN_IMPERSONATE,
-                ptr::null(),
-                windows_sys::Win32::Security::SecurityImpersonation,
-                windows_sys::Win32::Security::TokenImpersonation,
-                &mut raw,
-            )
-        } == 0
-        {
-            return Err(io::Error::last_os_error());
-        }
-        let token = unsafe { OwnedHandle::from_raw_handle(raw.cast()) };
-        if CallerIdentity::capture(&token)? != self.caller.identity {
-            return Err(io::Error::new(
-                io::ErrorKind::PermissionDenied,
-                "Caller token changed before Copy policy snapshot",
-            ));
-        }
+        let token = self.caller.snapshot_token()?;
         self.validate()?;
         Ok(token)
     }
@@ -1011,6 +1047,7 @@ mod tests {
                 &path,
                 &caller.identity.user,
                 &caller.identity.owner,
+                || Err(io::Error::from(io::ErrorKind::PermissionDenied)),
             )
             .unwrap(),
             caller,
@@ -1077,7 +1114,7 @@ mod tests {
             TOKEN_QUERY | TOKEN_IMPERSONATE | TOKEN_DUPLICATE,
         )
         .unwrap();
-        let expected = local_app_data(&token).unwrap();
+        let expected = local_app_data(&token, 0).unwrap();
         let root = tempfile::tempdir().unwrap();
         let false_profile = root.path().join("not the profile Ω");
         let nonce = nonce();

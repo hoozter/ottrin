@@ -21,7 +21,12 @@ struct Directory {
     binding: CallerDirectoryBinding,
 }
 impl Directory {
-    fn capture(file: File, user: &[u8], owner: &[u8]) -> Result<Self, PlatformError> {
+    fn capture(
+        file: File,
+        user: &[u8],
+        owner: &[u8],
+        allow_system_owner: bool,
+    ) -> Result<Self, PlatformError> {
         let identity = stable_identity_from_handle(&file).map_err(io)?;
         if !identity.is_directory_without_reparse() {
             return Err(io(
@@ -30,13 +35,21 @@ impl Directory {
         }
         let mut raw = capture(&file)?;
         let security = parts(raw.as_mut_ptr().cast())?;
+        let windows_owned = allow_system_owner
+            && windows_fs::valid_sid(&security.owner)
+            && [WinLocalSystemSid, WinBuiltinAdministratorsSid]
+                .iter()
+                .any(|kind| {
+                    // SAFETY: the native descriptor supplied a validated SID.
+                    unsafe { IsWellKnownSid(security.owner.as_ptr().cast_mut().cast(), *kind) != 0 }
+                });
         // Shared application/profile directories need not have a private DACL.
         // Their full native policy is pinned; ownership must belong to the
         // authenticated user or its distinct default file owner.
         if !security.valid_record()
             || !security.present
             || security.dacl.is_none()
-            || (security.owner != user && security.owner != owner)
+            || (security.owner != user && security.owner != owner && !windows_owned)
         {
             return Err(io(
                 "Original caller profile/state owner/group/DACL admission failed",
@@ -78,6 +91,7 @@ impl Directory {
 pub(crate) struct CallerProfile {
     registered: PathBuf,
     directory: Directory,
+    caller_write_base: Option<File>,
 }
 /// In-memory held ancestry. Every existing directory is observed, not adopted
 /// for deletion. Fixed native names cannot be selected by request or environment.
@@ -86,11 +100,27 @@ pub(crate) struct CallerRegistryParent {
     directories: Vec<Directory>,
 }
 impl CallerProfile {
-    pub(crate) fn capture(path: &Path, user: &[u8], owner: &[u8]) -> Result<Self, PlatformError> {
+    pub(crate) fn capture(
+        path: &Path,
+        user: &[u8],
+        owner: &[u8],
+        authorize_windows_base: impl FnOnce() -> std::io::Result<File>,
+    ) -> Result<Self, PlatformError> {
         let file = windows_fs::open_directory(path, FILE_GENERIC_READ).map_err(io)?;
+        let directory = Directory::capture(file, user, owner, true)?;
+        let caller_write_base = if directory.binding.security.owner == user
+            || directory.binding.security.owner == owner
+        {
+            None
+        } else {
+            let base = authorize_windows_base().map_err(io)?;
+            directory.validate_file(&base)?;
+            Some(base)
+        };
         let result = Self {
             registered: path.to_path_buf(),
-            directory: Directory::capture(file, user, owner)?,
+            directory,
+            caller_write_base,
         };
         result.validate()?;
         Ok(result)
@@ -113,7 +143,9 @@ impl CallerProfile {
     ) -> Result<Option<CallerRegistryParent>, PlatformError> {
         self.validate()?;
         let access = FILE_GENERIC_READ | if initialize { FILE_GENERIC_WRITE } else { 0 };
-        let base = if initialize {
+        let base = if let Some(base) = &self.caller_write_base {
+            base.try_clone().map_err(io)?
+        } else if initialize {
             windows_fs::with_file_privileges(|| {
                 windows_fs::open_directory(&self.registered, access)
             })
@@ -162,7 +194,7 @@ impl CallerProfile {
                 }
                 Err(error) => return Err(io(error)),
             };
-            let directory = Directory::capture(file, user, owner)?;
+            let directory = Directory::capture(file, user, owner, false)?;
             namespace::validate_binding_with(&parent.file, directory.binding.identity, || {
                 windows_fs::with_file_privileges(|| {
                     windows_fs::open_existing_for_caller(
