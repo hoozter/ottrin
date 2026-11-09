@@ -1,0 +1,81 @@
+{
+  "status": "pass",
+  "input": {
+    "source_revision": "f23b13b0b01f5c5a13cd8df8de712f0c4e47b0f1",
+    "installer_sha256": "f65fd03e76219c36fdf722edf22d884c5dca19ca5fa26be9f4340c8e075b3c38",
+    "source_sha256": "3fc5d485b7cbea0501dd61db76c43ff6dadea69e25a93ff970da52a3ec597073",
+    "interrupt": false,
+    "stop": false,
+    "stopped_ui": false,
+    "symlink": true,
+    "resume": false,
+    "late_stop": false,
+    "tree_count": null,
+    "actor_sha256": "25f6ee3a94ee2ec5a1ad9acd1dc1f020fc9b9cd7e06229bc895078c181be0dfe",
+    "observer_sha256": null,
+    "caller_sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+    "admin_sid": "S-1-5-21-3183210791-1673105385-3262580894-1032"
+  },
+  "phases": {
+    "copy": {
+      "mode": "copy",
+      "ordinary_target_hash": "3fc5d485b7cbea0501dd61db76c43ff6dadea69e25a93ff970da52a3ec597073",
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+      "payload_files": 59,
+      "client_exited": true,
+      "phase": "complete",
+      "client_exit": 0,
+      "client_pid": 7808,
+      "status": "pass"
+    },
+    "history-undo": {
+      "client_pid": 4196,
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+      "payload_files": 59,
+      "client_exited": true,
+      "phase": "complete",
+      "client_exit": 0,
+      "mode": "history-undo",
+      "status": "pass"
+    },
+    "undone": {
+      "client_pid": 2572,
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+      "payload_files": 59,
+      "client_exited": true,
+      "phase": "complete",
+      "client_exit": 0,
+      "mode": "undone",
+      "status": "pass"
+    },
+    "cleared": {
+      "client_pid": 5548,
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+      "payload_files": 59,
+      "client_exited": true,
+      "phase": "complete",
+      "client_exit": 0,
+      "mode": "cleared",
+      "status": "pass"
+    }
+  },
+  "checks": [
+    "Ordinary Paste did not publish into the protected directory.",
+    "Alternate-administrator UAC published a file symbolic link with the same destination as the source link.",
+    "A fresh app process discovered and undid the publication.",
+    "A third process cleared the retained Copy data and a fourth found no residual history.",
+    "The source symbolic link, external link target bytes and unrelated protected marker survived all four phases."
+  ],
+  "scope": "Exact private NSIS, file symbolic-link creation, Undo and Cleanup through installed standard-user UI and launched elevated helper. Directory symbolic links and overwrite restoration have separate native platform evidence.",
+  "cleanup": {
+    "domain": "ottrin-init-helper-pipe-qa",
+    "uuid": "cb0b10e5-45cf-42c0-a471-a24704ff7295",
+    "volume": "ottrin-init-helper-pipe-qa.qcow2",
+    "status": "pass",
+    "domain_removed": true,
+    "overlay_removed": true,
+    "protected_definitions_states_and_backing_unchanged": true,
+    "temporary_compiler_restored_by_hash": true,
+    "temporary_capture_and_result_files_removed": true
+  }
+}

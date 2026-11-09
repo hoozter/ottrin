@@ -658,9 +658,13 @@ Current source, test, package and owner/external scopes stay separate.
      Publications belonged to the original caller, Undo restored the original
      link identities and permissions, and both target contents were preserved.
      See the [authenticated symbolic-link receipt](../.hermes/evidence/caller-profile-init-current/AUTHENTICATED_SYMLINK_NATIVE.json).
-     Installed symbolic-link coverage and read-only original-root behavior
-     remain open. Preserve edited or unknown payloads and refuse divergent
-     journals.
+     The exact private NSIS also passed file symbolic-link publication,
+     restart, authenticated Undo and cleanup with a standard user and
+     alternate-administrator UAC. The source link and target bytes remained
+     intact. See the [installed file-link receipt](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_SYMLINK_COPY.json).
+     Installed directory-link and overwrite restoration coverage, and
+     read-only original-root behavior, remain open. Preserve edited or
+     unknown payloads and refuse divergent journals.
      [Hosted Windows verification](https://github.com/hoozter/ottrin/actions/runs/42451117154/job/128640353389).
    - Installed alternate-administrator UAC checks cover newly authenticated
      connections after app restart, termination of the launched helper,
@@ -674,7 +678,7 @@ Current source, test, package and owner/external scopes stay separate.
      the same. The captured caller rejects both revalidation and profile
      lookup. See the
      [native token-owner receipt](../.hermes/evidence/windows-admin-copy-package-current/TOKEN_OWNER_MUTATION_NATIVE.json).
-   - Keep installed symbolic-link, packaged identity, and remaining read-only
+   - Keep installed directory-link and link overwrite, packaged identity, and remaining read-only
      original-root cases open before enabling the feature. Preserve the
      original caller's authority and canonical registry throughout history,
      Undo, recovery and cleanup.
