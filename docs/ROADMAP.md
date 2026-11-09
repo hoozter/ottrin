@@ -1448,6 +1448,27 @@ Current source, test, package and owner/external scopes stay separate.
    Windows target pass. Exact rebuilt Windows acceptance is pending.
    [Native input diagnostic](../.hermes/evidence/theme-editor-close-current/native-cancel-diagnostic/GUEST_RESULT.json).
 
+   The rebuilt `9f27ece1` Linux AppImage passed real Dark and Light
+   sample-action dismissal, Escape, outside clicks, draft menu styling,
+   and physical Cancel with preferences and files preserved. All four
+   local Linux package formats passed payload verification. Private
+   daemon watcher/restart checks passed, with 0.05% of one core over
+   60 quiet seconds. Atomic AppImage replacement passed in isolation.
+   Stable delivery requires the remaining hosted verification and the
+   guarded promotion receipt.
+   [Linux package and UI evidence](../.hermes/evidence/theme-preview-popup-linux-current/MENU_UI_ACCEPTANCE.json).
+
+   The exact rebuilt `9f27ece1` Windows NSIS, SHA-256
+   `96a68d5907fd359c3f584991591602b7e6ebbe4ad66265a6a449f1b0c47209c3`,
+   passed the sample-popup dismissal assertion in both palettes and
+   completed the installed Dark flow. Light still left the editor open
+   after physical Cancel. The failure capture shows the popup dismissed
+   and the Cancel tooltip visible. Next, trace the physical button press
+   and release and compare accessible Cancel on the same native window
+   to distinguish pointer activation from viewport close handling.
+   The guest and overlay were retired and borrowed binaries restored.
+   [Windows native result](../.hermes/evidence/theme-preview-popup-current/native-close/GUEST_RESULT.json).
+
    Verify every supported role/control against the actual interface and logical
    hierarchy; field-map/test/capture counts do not close this audit.
 3. Close remaining supported themed-picker, Linux FileChooser/FileManager1 and
