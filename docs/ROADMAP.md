@@ -1045,9 +1045,16 @@ Current source, test, package and owner/external scopes stay separate.
      namespace, authority and journal mutation checks stay in place.
      Eight native Windows tests passed for cancellation, binding drift,
      late occupants, candidate tampering and buffer boundaries. Strict
-     Windows-target Clippy passed. Installed 1 GiB performance and
-     packaged acceptance remain open.
+     Windows-target Clippy passed. The private installed fixture with
+     the rebuilt release helper observed the 1 GiB replacement path
+     after 60.2 seconds from helper creation. The app still reported
+     Copying when the Undo observer's 25-second wait expired. The
+     SYSTEM fallback could not read the published path during that
+     phase. Verify the terminal response, bytes and final permissions
+     with a longer Undo observation before claiming installed
+     completion or enabling Administrator Copy.
      [Native stream checks](../.hermes/evidence/windows-alias-stream-progress-current/native/NATIVE_TEST.json).
+     [Rebuilt helper publication observation](../.hermes/evidence/windows-alias-performance-fixed-current/FINDING.json).
      [Native read-only alias probe](../.hermes/evidence/windows-admin-copy-package-current/READONLY_ALIAS_VOLUME_PROBE.json).
 
    Missing member IDs never license deletion or a completed original-batch claim.
