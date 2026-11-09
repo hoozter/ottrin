@@ -1638,6 +1638,16 @@ Current source, test, package and owner/external scopes stay separate.
    [Native MSIX assembly](../.hermes/evidence/theme-editor-pointer-fix-current/ASSEMBLY_ACCEPTANCE.json).
    [Packaged Windows daemon](../.hermes/evidence/theme-editor-pointer-fix-current/WINDOWS_DAEMON_RUNTIME.json).
 
+   Fresh development MSIX 31 deployment passed under an ordinary
+   Windows account. The actual sign-in started the packaged daemon
+   before any Ottrin CLI call. Explorer Background, Multiple and
+   Drive commands passed, and removal cleared package processes and
+   COM registration while preserving preferences and fixture bytes.
+   The result export matched the exact assembly hash and the guest
+   and volumes were removed. Enabled and disabled MSIX 30-to-31
+   upgrades remain separate gates.
+   [Fresh deployment result](../.hermes/evidence/theme-editor-pointer-fix-current/runtime31-fresh/RUNTIME_RESULT.json).
+
    Verify every supported role/control against the actual interface and logical
    hierarchy; field-map/test/capture counts do not close this audit.
 3. Close remaining supported themed-picker, Linux FileChooser/FileManager1 and
