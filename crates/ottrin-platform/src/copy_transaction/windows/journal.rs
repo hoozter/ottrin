@@ -3256,27 +3256,30 @@ impl PermissionStage {
             self.journal.failed = false;
             self.journal.persist(Record::SecurityApplied { index })?;
         }
-        self.validate(&mut progress)?;
-        if !self.journal.state.completion_verified {
-            self.journal.reserve_permission_tail()?;
-            for (index, version) in self
-                .plan
-                .final_versions()
-                .enumerate()
-                .skip(self.journal.state.final_versions.len())
-            {
-                progress(0)?;
-                self.journal.persist(Record::FinalEntry {
-                    index,
-                    version: Box::new(version.clone()),
-                })?;
-            }
-            self.validate(&mut progress)?;
-            self.journal.persist(Record::Finalized {
-                count: self.candidates.len(),
-                digest: super::evidence_digest(&self.journal.state.final_versions)?,
+        if self.journal.state.completion_verified {
+            return self.validate(&mut progress);
+        }
+        self.plan.validate_at(self.journal.state.permissions)?;
+        self.journal.reserve_permission_tail()?;
+        for (index, version) in self
+            .plan
+            .final_versions()
+            .enumerate()
+            .skip(self.journal.state.final_versions.len())
+        {
+            progress(0)?;
+            self.journal.persist(Record::FinalEntry {
+                index,
+                version: Box::new(version.clone()),
             })?;
         }
+        // Entry records are a resumable metadata prefix. Verify the complete
+        // payload and retained original once before sealing that prefix.
+        self.validate(&mut progress)?;
+        self.journal.persist(Record::Finalized {
+            count: self.candidates.len(),
+            digest: super::evidence_digest(&self.journal.state.final_versions)?,
+        })?;
         Ok(())
     }
     #[cfg(test)]

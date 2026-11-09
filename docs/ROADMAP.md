@@ -1093,14 +1093,20 @@ Current source, test, package and owner/external scopes stay separate.
      Caller-context validation accounted for 13.59 seconds across 35,714
      calls. Permission application was the largest phase at 38.87 seconds,
      including 31.57 seconds of stream work and 6.94 seconds of caller
-     validation. Prioritize repeated stream verification under the held
-     publication capabilities. Retest caller drift, changed payloads, and
-     permission interruption before enabling Administrator Copy in standard
-     packages. These timings describe one instrumented VM run.
+     validation. These timings describe one instrumented VM run.
+     Permission finalization now checks metadata and security before writing
+     the resumable entry records, then verifies the complete payload and
+     retained original before sealing them. This removes one full stream
+     pass while retaining verification before completion. Strict Windows
+     Clippy and ten native platform tests under SYSTEM passed, including
+     interrupted finalization, permission and caller-profile drift, payload
+     tampering, and Undo receipt behavior. Rebuild and repeat the installed
+     1 GiB timing and integrity checks before considering promotion.
      [Native receipt checks](../.hermes/evidence/windows-alias-receipt-current/native/NATIVE_TEST.json).
      [Installed receipt timing](../.hermes/evidence/windows-alias-receipt-installed-current/ACCEPTANCE.json).
      [Post-publication helper profile](../.hermes/evidence/windows-alias-finalization-profile-current/FINDING.json).
      [Installed finalization timing](../.hermes/evidence/windows-alias-finalization-timing-current/FINDING.json).
+     [Native permission finalization checks](../.hermes/evidence/windows-alias-permission-finalization-current/native/NATIVE_TEST.json).
 
    Missing member IDs never license deletion or a completed original-batch claim.
    These are implementation/QA tasks, not owner waits. Personal authentication,
