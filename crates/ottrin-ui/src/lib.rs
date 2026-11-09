@@ -6694,7 +6694,13 @@ impl OttrinApp {
             }
             if let Some(warning) = res.warning {
                 self.command_frame.error = None;
-                self.command_frame.message = Some(warning);
+                self.command_frame.message = Some(
+                    if res.stopped && matches!(&completed_cmd, FileCommand::Copy { .. }) {
+                        "Copy stopped before finishing. See Activity for details.".into()
+                    } else {
+                        warning
+                    },
+                );
                 self.command_frame.visible = true;
             }
             self.pending_privileged_retry = None;
@@ -14854,7 +14860,7 @@ impl OttrinApp {
                 } else { match record.status {
                     OperationStatus::Queued => ("Queued", c.accent_dim, MI_HISTORY),
                     OperationStatus::Completed => ("Done", c.accent, MI_CHECK),
-                    OperationStatus::Stopped => ("Stopped", c.accent_dim, MI_CLEAR),
+                    OperationStatus::Stopped => ("Stopped", c.text, MI_CLEAR),
                     OperationStatus::Failed => ("Failed", c.error, MI_CLEAR),
                     OperationStatus::NeedsReview => ("Needs review", c.error, MI_HISTORY),
                 }};
@@ -14921,7 +14927,8 @@ impl OttrinApp {
                         let show_message = record.retained_copy.is_none();
                         #[cfg(any(target_os = "linux", target_os = "windows"))]
                         let show_message = show_message || privileged_copy_activity::is_privileged(record);
-                        if show_message && let Some(msg) = &record.message {
+                        let stopped = record.status == OperationStatus::Stopped;
+                        if show_message && !stopped && let Some(msg) = &record.message {
                             ui.add_space(4.0);
                             let message_color = if record.status == OperationStatus::Completed || matches!(record.path_move_undo, Some(PathMoveUndoState::Undone)) { c.text_muted } else { c.error };
                             ui.label(RichText::new(msg).color(message_color).size(10.0 * c.font_scale));
@@ -15111,11 +15118,14 @@ impl OttrinApp {
                             && ui.add_enabled(!self.copy_cleanup.running(), egui::Button::new(
                                 self.copy_cleanup.action_label(record)
                             ).themed(&c)).clicked() { clear_copy = Some(record.id); }
-                        if record.retained_copy.is_some() {
-                            egui::CollapsingHeader::new(RichText::new("Recovery details").color(c.text_muted).size(10.0 * c.font_scale))
+                        if record.retained_copy.is_some() || (stopped && record.message.is_some()) {
+                            let label = if record.retained_copy.is_some() { "Recovery details" } else { "Technical details" };
+                            egui::CollapsingHeader::new(RichText::new(label).color(c.text_muted).size(10.0 * c.font_scale))
                                 .id_salt(("activity_copy_recovery", record.id))
                                 .show(ui, |ui| {
-                                    ui.add(egui::Label::new(RichText::new(&record.detail).color(c.text_muted).size(10.0 * c.font_scale)).wrap().selectable(true));
+                                    if record.retained_copy.is_some() {
+                                        ui.add(egui::Label::new(RichText::new(&record.detail).color(c.text_muted).size(10.0 * c.font_scale)).wrap().selectable(true));
+                                    }
                                     #[cfg(target_os = "windows")]
                                     if let Some(location) = record.retained_copy.as_ref().and_then(|owner| owner.recovery_location.as_ref()) {
                                         ui.add_space(4.0);
@@ -26804,7 +26814,12 @@ mod tests {
                         "/very/deep/destination/with/a/long/file/name".repeat(6),
                         OperationRecoverability::NotUndoable,
                     );
-                    app.finish_operation_record(id, state, None);
+                    let diagnostic = "Nested native diagnostic with a long path";
+                    app.finish_operation_record(
+                        id,
+                        state,
+                        (state == OperationStatus::Stopped).then(|| diagnostic.to_owned()),
+                    );
                     let ctx = Context::default();
                     let mut frame = || {
                         ctx.run(
@@ -26823,6 +26838,15 @@ mod tests {
                     };
                     frame();
                     let output = frame();
+                    if state == OperationStatus::Stopped {
+                        let rendered = |text: &str| {
+                            output.shapes.iter().any(|shape| matches!(
+                                &shape.shape, egui::Shape::Text(item) if item.galley.job.text == text
+                            ))
+                        };
+                        assert!(rendered("Technical details"));
+                        assert!(!rendered(diagnostic));
+                    }
                     let text_rect = |text: &str| {
                         output
                             .shapes

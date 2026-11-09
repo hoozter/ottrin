@@ -303,8 +303,13 @@ and the held MSI were preserved. See
    caller ownership and the original and unrelated destination file were
    preserved. See the
    [installed late-Stop receipt](../.hermes/evidence/windows-admin-copy-package-current/LATE_STOP_INSTALLED.json).
-   The Dark Stopped badge and repeated technical errors need a presentation
-   pass. The expanded original-caller regression remains open.
+   The Stopped badge now uses the theme's normal text color. The command
+   area points to Activity, where the original diagnostic is available in
+   expandable details. Twenty-two focused Linux Activity tests passed,
+   including the rendered badge layout and collapsed diagnostic, and
+   Windows-target Clippy passed. Native Windows visual verification in
+   a rebuilt installer and the expanded original-caller regression remain
+   open.
    The temporary worktrees,
    unpacked payloads, duplicate ZIP, superseded private installer and
    disposable guests were removed. The rebuilt private installer remains
