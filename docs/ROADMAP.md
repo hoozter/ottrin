@@ -6,7 +6,19 @@ Updated 2026-11-09. This is the single active queue. Historical sections and
 receipts keep their original artifact/source scope. Passing a focused test does
 not complete a broader native, platform or user-acceptance requirement.
 
-The stable local Linux AppImage, portable archive, DEB and RPM now use
+The stable local Linux AppImage, portable archive, DEB and RPM are under
+`dist/packages/`. The stable Windows portable ZIP, NSIS installer and
+unsigned development MSIX are under `dist/windows-candidate/`. Their
+current source revisions, exact checksums and acceptance scopes are
+recorded in `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json` and
+`dist/WINDOWS_CANDIDATE_ACCEPTANCE.json`. Staged packages are tracked
+separately in the [ordered work](#current-ordered-work). The
+[owner and external waiting list](#ownerexternal-waiting-list) records
+which steps require input or unavailable resources.
+
+### Recent delivery evidence
+
+The earlier Linux AppImage, portable archive, DEB and RPM cohort used
 source `2fa925f0` for the Save confirmation fix. All four exact-source
 [hosted jobs](https://github.com/hoozter/ottrin/actions/runs/42576198057)
 passed, including the previously failing Linux watcher fixture.
