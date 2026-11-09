@@ -328,10 +328,15 @@ and [first-run timeout](../.hermes/evidence/windows-picker-keyboard-current/nati
    open at this checkpoint. The installed recovery and interruption
    receipts below cover those paths on capability-enabled private builds.
    Administrator Copy is still disabled in the current Windows candidate.
-   The matched installed timing comparison is complete. The next gate
-   is capability-enabled acceptance against the source intended for
-   delivery. Keep caller identity, journal recovery, Undo and the
-   observed latency in that assessment. Private revision `94549b87` changes the shared capability
+   The matched installed timing comparison is complete. Candidate
+   `c4c2f4be` enables the shared Windows capability on the current
+   product source. Its private ZIP and NSIS match across all 59 files
+   and rebuild all six first-party binaries. Native tests will use
+   the helper shipped in the installer for Copy, Undo and interruption
+   recovery. The stable package remains on `4d3f11a3` while the
+   candidate goes through installed acceptance.
+   [Candidate package verification](../.hermes/evidence/windows-admin-copy-delivery-current/HOST_PAYLOAD.json).
+   Earlier private revision `94549b87` changes the shared capability
    gate relative to the delivered `d2031d5e` build. Its ZIP and NSIS matched
    across all 59 payload files. The installer ran as a standard user, and
    the bundled helper advertised Copy recovery. An incomplete fixture
