@@ -1,0 +1,73 @@
+{
+  "status": "pass",
+  "input": {
+    "source_revision": "318438ac89fe911db1c8bdcfc2af7fc8b0949af5",
+    "installer_sha256": "c64d1dd30ee1d3f672c7196d73747decc897f6cb6b36e90aa26b75fd6a5b4089",
+    "source_sha256": "d8b2af1c85cdb4588e978aed5875e12cbfd20f68009823cf914b40cf41d8e4ce",
+    "interrupt": false,
+    "stop": false,
+    "resume": false,
+    "late_stop": true,
+    "tree_count": 96,
+    "actor_sha256": "6c5827a262f354683582e97d35dd5d70c7fe72d03c147f50ecfa50c3b08abe8b",
+    "observer_sha256": "b451d3053444695cee1f80788c1cd53c39282c5604dfa3dce88b145aafcc847d",
+    "caller_sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+    "admin_sid": "S-1-5-21-3183210791-1673105385-3262580894-1032"
+  },
+  "boundary": {
+    "helper_exited_before_stop": true,
+    "stop_visible_before_worker_resume": true,
+    "client_pid": 7476,
+    "helper_exit": 0,
+    "worker_tid": 3236,
+    "target_published_before_stop": true,
+    "helper_pid": 7640
+  },
+  "phases": [
+    {
+      "mode": "copy",
+      "client_exit": 0,
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+      "payload_files": 59,
+      "worker_resumed": true,
+      "client_exited": true,
+      "phase": "complete",
+      "worker_tid": 3236,
+      "client_pid": 7476,
+      "status": "pass",
+      "transaction": "646371832c02e76574f712d12cbf0fd8"
+    },
+    {
+      "client_pid": 3968,
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+      "payload_files": 59,
+      "client_exited": true,
+      "phase": "complete",
+      "client_exit": 0,
+      "mode": "resume-restored",
+      "status": "pass"
+    }
+  ],
+  "fixture_control": "Only the result-handling worker of the installed standard-user app was paused. The helper and the GUI continued to run, and the worker was resumed in the actor finally block.",
+  "first_attempt": "The SYSTEM observer could not identify the worker. The passing repeat suspended it from the standard-user actor and independently validated the helper process and exit in SYSTEM.",
+  "checks": [
+    "Helper exited zero and published before Stop",
+    "Activity rendered Stopping while the app worker was paused",
+    "The existing Activity row rendered Done with Undo copy after resumption",
+    "All 96 file names and bytes matched and the directory owner was the original standard user",
+    "Both sources and unrelated destination marker were preserved",
+    "A fresh app process loaded authenticated history with Undo available"
+  ],
+  "scope": "Exact capability-enabled private NSIS. Installed late-Stop ordering with OS-controlled worker scheduling. Undo execution in this race and production promotion remain separate.",
+  "cleanup": {
+    "domain": "ottrin-init-helper-pipe-qa",
+    "uuid": "f80090e3-59af-4688-aa4b-0781d1b32632",
+    "volume": "ottrin-init-helper-pipe-qa.qcow2",
+    "status": "pass",
+    "domain_removed": true,
+    "overlay_removed": true,
+    "protected_definitions_states_and_backing_unchanged": true,
+    "temporarily_moved_compiler_test_restored_by_hash": true,
+    "superseded_private_installer_removed_bytes": 41340928
+  }
+}

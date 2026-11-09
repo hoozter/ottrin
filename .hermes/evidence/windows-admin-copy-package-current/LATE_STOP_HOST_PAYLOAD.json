@@ -1,0 +1,15 @@
+{
+  "source_revision": "318438ac89fe911db1c8bdcfc2af7fc8b0949af5",
+  "base": "1469f98c",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-admin-copy-late-stop",
+  "payload_files": 59,
+  "artifacts": {
+    "Ottrin-0.1.0-windows-x64-setup.exe": "c64d1dd30ee1d3f672c7196d73747decc897f6cb6b36e90aa26b75fd6a5b4089",
+    "Ottrin-0.1.0-windows-x64-portable.zip": "1c6d18beb8f9c64970f06d8b8545d431258c7a2aaba8bb348b99297eb6f95978"
+  },
+  "portable_nsis_payloads_identical": true,
+  "uninstaller_sha256": "3429cfb36f6d092b2f5c114a175e7cb08c74239e0ccad98dd4032a84e166aa58",
+  "index_controller_matches_daemon": true,
+  "transaction_script_matches_source": true,
+  "scope": "Private NSIS host verification. Installed late-Stop race pending."
+}

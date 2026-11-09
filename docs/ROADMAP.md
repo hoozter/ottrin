@@ -294,9 +294,17 @@ and the held MSI were preserved. See
    named-pipe tests passed on native Windows build 26100, including the
    new case that closes the helper end before sending Stop. See the
    [native transport receipt](../.hermes/evidence/windows-admin-copy-package-current/LATE_STOP_NATIVE.json).
+   Rebuilt private NSIS `318438ac` matched all 59 portable payload files
+   and passed the installed late-Stop race. The fixture paused only the
+   app's result worker while the helper published a 96-file directory
+   and exited normally. Activity accepted Stop before the worker resumed.
+   The original row then showed Done and Undo. A fresh process loaded the
+   same Undo entry. Every copied file matched, the directory retained
+   caller ownership and the original and unrelated destination file were
+   preserved. See the
+   [installed late-Stop receipt](../.hermes/evidence/windows-admin-copy-package-current/LATE_STOP_INSTALLED.json).
    The Dark Stopped badge and repeated technical errors need a presentation
-   pass. Rebuild the private installer with the transport fix and verify
-   the installed race. The expanded original-caller regression remains open.
+   pass. The expanded original-caller regression remains open.
    The temporary worktrees,
    unpacked payloads, duplicate ZIP, superseded private installer and
    disposable guests were removed. The rebuilt private installer remains
