@@ -7,6 +7,30 @@ receipts keep their original artifact/source scope. Passing a focused test does
 not complete a broader native, platform or user-acceptance requirement.
 
 The stable local Linux AppImage, portable archive, DEB and RPM now use
+source `2fa925f0` for the Save confirmation fix. All four exact-source
+[hosted jobs](https://github.com/hoozter/ottrin/actions/runs/42576198057)
+passed, including the previously failing Linux watcher fixture.
+The mounted Dark GTK 3 Save dialog required a second confirmation
+after a same-name, same-size, same-mtime replacement. Light returned a
+new path without creating a file. Both returned the exact path without
+starting an index. The focused Windows test passed on native build
+26100 under SYSTEM and verified the dialog model and actual file
+identity. Installed Windows UI acceptance remains open.
+
+The private old-to-new index transition preserved the database inode and
+preferences, passed watcher and restart checks, and averaged 0.067% of
+one core during a 30-second idle sample. Promotion restarted the
+managed index with the verified binary and confirmed Ready with an
+active watcher. Startup, preferences, database identity, and stable
+Windows package hashes were preserved. The stage, superseded Linux
+packages and previous managed mount were removed.
+See [GTK acceptance](../.hermes/evidence/picker-overwrite-identity-delivery-current/gtk-save-dark/RESULT.json),
+[native Windows test](../.hermes/evidence/picker-overwrite-identity-delivery-current/WINDOWS_NATIVE_SAVE_IDENTITY.json),
+[index transition](../.hermes/evidence/picker-overwrite-identity-delivery-current/LINUX_DAEMON_RUNTIME.json),
+[promotion](../.hermes/evidence/picker-overwrite-identity-delivery-current/PROMOTION.json)
+and `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`.
+
+The preceding Linux AppImage, portable archive, DEB and RPM used
 source `60234de2`. All four formats passed content and provenance checks,
 and the bundled helper passed ten protocol checks. The mounted AppImage
 passed Dark/Light Appearance layout and editor open/close. All four
@@ -26,26 +50,6 @@ See [mounted acceptance](../.hermes/evidence/appearance-page-delivery-current/AC
 [promotion](../.hermes/evidence/appearance-page-delivery-current/PROMOTION.json),
 [service sample](../.hermes/evidence/appearance-page-delivery-current/INDEX_PREPROMOTION_OBSERVATION.json)
 and `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`.
-
-The four Linux formats from `2fa925f0` are staged for the Save confirmation
-fix. The mounted Dark GTK 3 Save dialog required a second confirmation
-after a same-name, same-size, same-mtime replacement. Light returned a
-new path without creating a file. Both returned the exact path and did
-not start an index. The matching focused Windows test passed on native
-build 26100 under SYSTEM. It covers the dialog model and real file
-identity, with installed Windows UI acceptance still open. The native
-Windows guest and overlay, Linux profiles, and package extractions were
-removed. The candidate daemon preserved the private database inode and
-preferences across the old-to-new transition, passed watcher and restart
-checks, and averaged 0.067% of one core during a 30-second idle sample.
-Local promotion preflight passed. The stage awaits Windows verification in
-[run 42576198057](https://github.com/hoozter/ottrin/actions/runs/42576198057).
-Linux verification and both performance jobs passed, including the
-previously failing Linux watcher fixture in the Linux verification job.
-See [GTK acceptance](../.hermes/evidence/picker-overwrite-identity-delivery-current/gtk-save-dark/RESULT.json),
-[native Windows test](../.hermes/evidence/picker-overwrite-identity-delivery-current/WINDOWS_NATIVE_SAVE_IDENTITY.json),
-[index transition](../.hermes/evidence/picker-overwrite-identity-delivery-current/LINUX_DAEMON_RUNTIME.json),
-and [promotion preflight](../.hermes/evidence/picker-overwrite-identity-delivery-current/PROMOTION_PREFLIGHT.json).
 
 The previous Linux cohort used source
 `46802ab4`. Real Vivaldi Open and Save passed, including window parenting,

@@ -1,13 +1,13 @@
 {
-  "status": "pass scoped Linux Appearance page delivery",
-  "source_revision": "60234de2917f4848262637203146737a012f49ca",
+  "status": "pass scoped Linux Save confirmation delivery",
+  "source_revision": "2fa925f0f895c34e67865ce2c48f562b5f5565f7",
   "artifacts": {
-    "ottrin-0.1.0-1.x86_64.rpm": "9871d729a19f952077ccd3a1f4ec1e7e45a1dc60f96d00d9dbe108990e26f5e2",
-    "Ottrin-0.1.0-x86_64.AppImage": "71bfe68b40c1442110e5b3b38ba967ebc5277ddb8e5907587f7d42500c45176e",
-    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "442fbe744ff1ebd7e757f204b07060d62b4e7f6e82a714fc04c9f19b46bbf0d4",
-    "ottrin_0.1.0_amd64.deb": "d90bdd79f9c6469555594308429868fb4485cc77e92812338336554489b37004"
+    "ottrin-0.1.0-1.x86_64.rpm": "2ef9aa400525aa9a538286b2ea2abdf1d2e06710a3be8ddc6ab3463384581622",
+    "Ottrin-0.1.0-x86_64.AppImage": "022083b67feadc38555fddbcca7b5578445e82500ca8fd8b274256e82bafbbc3",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "10564f0023ba2931c1bf1516c83dd84481f37fa3e088f7893a57ebb432038bae",
+    "ottrin_0.1.0_amd64.deb": "1aeb8839ef75c54d24200d0f7a821f267b8f94b51f55f3147e08d04a33c7407d"
   },
-  "evidence": ".hermes/evidence/appearance-page-delivery-current",
+  "evidence": ".hermes/evidence/picker-overwrite-identity-delivery-current",
   "checks": [
     "production portable/AppImage runtime closure and playback checks",
     "production native payload, dependencies, policy, hooks and code identity blocks",
@@ -17,34 +17,33 @@
     "actual AppImage and RPM index daemon namespace/ownership refusal checks"
   ],
   "runtime_sha256": {
-    "application": "241c7a202864f8c81caa7e6080d982a8e765acb732b67144ab6e5a5c32a312c5",
-    "index_daemon": "79f2abe711197c577154cd712fb733dc1c54db5fdee6c1aa5b4baffbc3724ec3",
+    "application": "eea8e8b5b16e833bf22e1c9a7752656c5c52b30e108ff71ea208baeb14fbc779",
+    "index_daemon": "f456fca656cb1c1dfe36832b4cf58beaefc0949d7bc065b6f673fe7afe613aaa",
     "privileged_helper": "f123b93368d7919067bdcfe6f295c079fc1d000c38fdb2f3f493c465bd0f932f",
     "html_renderer": "f6a4ebe343c58ad3f06398c81574aa44d2b1afcfd7486e9e180c9368efefcbed"
   },
   "hosted_source": {
-    "run": 42569274820,
-    "tested_source_revision": "6bcd78671f5ff7e60bcd85cba0fb59f6c6d08ed8",
-    "non_runtime_diff": [
-      ".github/workflows/release.yml",
-      "docs/DEVELOPMENT.md",
-      "packaging/linux/package-appimage.sh"
-    ],
+    "run": 42576198057,
+    "tested_source_revision": "2fa925f0f895c34e67865ce2c48f562b5f5565f7",
     "all_four_jobs_success": true
   },
-  "source_scope": ".hermes/evidence/appearance-page-delivery-current/BUILD_SOURCE.json",
-  "mounted_appearance": ".hermes/evidence/appearance-page-delivery-current/ACCEPTANCE.json",
+  "source_scope": ".hermes/evidence/picker-overwrite-identity-delivery-current/BUILD_SOURCE.json",
+  "mounted_gtk_save": [
+    ".hermes/evidence/picker-overwrite-identity-delivery-current/gtk-save-dark/RESULT.json",
+    ".hermes/evidence/picker-overwrite-identity-delivery-current/gtk-save-light/RESULT.json"
+  ],
+  "runtime_transition": ".hermes/evidence/picker-overwrite-identity-delivery-current/LINUX_DAEMON_RUNTIME.json",
   "current_helper_read_only": [
-    ".hermes/evidence/appearance-page-delivery-current/LINUX_HELPER_RUNTIME.json"
+    ".hermes/evidence/picker-overwrite-identity-delivery-current/LINUX_HELPER_RUNTIME.json"
   ],
   "previous_cohort": {
-    "source_revision": "46802ab4360f25770ff525b297b716954006e76a",
-    "receipt": ".hermes/evidence/appearance-page-delivery-current/PREVIOUS_LINUX_PACKAGES_ACCEPTANCE.json"
+    "source_revision": "60234de2917f4848262637203146737a012f49ca",
+    "receipt": ".hermes/evidence/picker-overwrite-identity-delivery-current/PREVIOUS_LINUX_PACKAGES_ACCEPTANCE.json"
   },
   "limits": [
-    "Mounted software-X11 Dark 100% and Light 150% Appearance page, visually reviewed section hierarchy, equal theme-card gaps and editor open/close.",
+    "Mounted GTK Save through a private X11 portal returned exact paths. Dark required renewed confirmation after a same-name replacement. Light returned an unused path without creating a file.",
     "Other portal, theme and native distro receipts retain their recorded package scopes.",
-    "Daemon, helper and HTML renderer bytes match the previous cohort.",
-    "Packaged manuals are build-time snapshots at 60234de2; repository metadata records later delivery."
+    "Bundled administrator helper passed read-only protocol checks. Updating the installed system helper requires its own administrator action.",
+    "Packaged manuals are build-time snapshots at 2fa925f0; repository metadata records later delivery."
   ]
 }
