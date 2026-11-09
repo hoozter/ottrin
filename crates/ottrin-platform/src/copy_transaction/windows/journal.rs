@@ -1989,6 +1989,7 @@ impl Journal {
             if completed.is_none() && intent && name == to {
                 self.state.validate_creation_epoch(kind, tree.root())?;
                 version.created = tree.root().created;
+                version.attributes = tree.root().attributes;
                 version.changed = tree.root().changed;
             }
             expected.entries[0].version = version;
@@ -2109,6 +2110,7 @@ impl Journal {
         if name == to {
             self.state.validate_creation_epoch(kind, tree.root())?;
             version.created = tree.root().created;
+            version.attributes = tree.root().attributes;
             version.changed = tree.root().changed;
         }
         expected.entries[0].version = version;
@@ -2141,6 +2143,7 @@ impl Journal {
         let mut expected = evidence.clone();
         let mut version = base.clone();
         version.created = tree.root().created;
+        version.attributes = tree.root().attributes;
         version.changed = tree.root().changed;
         expected.entries[0].version = version;
         tree.validate_existing(&expected, &mut progress)?;
@@ -3644,6 +3647,7 @@ impl HeldOriginal {
         if intent && completed.is_none() && name == to {
             state.validate_creation_epoch(kind, tree.root())?;
             evidence.entries[0].version.created = tree.root().created;
+            evidence.entries[0].version.attributes = tree.root().attributes;
             evidence.entries[0].version.changed = tree.root().changed;
         }
         let held = Self {
@@ -4484,7 +4488,14 @@ mod tests {
             std::fs::write(target.join("old"), b"old destination").unwrap();
             std::fs::write(target.join("second"), b"other destination").unwrap();
         } else {
+            use windows_sys::Win32::Storage::FileSystem::FILE_ATTRIBUTE_NORMAL;
+
             std::fs::write(&target, b"old destination").unwrap();
+            let file = std::fs::OpenOptions::new().write(true).open(&target).unwrap();
+            let before = super::super::version(&file).unwrap();
+            let mut normal = before.clone();
+            normal.attributes = FILE_ATTRIBUTE_NORMAL;
+            metadata::restore_rename_metadata(&file, &before, &normal).unwrap();
         }
         if readonly {
             let mut permissions = std::fs::metadata(&target).unwrap().permissions();
@@ -6415,6 +6426,14 @@ mod tests {
         } else {
             journal.header.original_name()
         });
+        if !directory {
+            use std::os::windows::fs::MetadataExt;
+            use windows_sys::Win32::Storage::FileSystem::FILE_ATTRIBUTE_NORMAL;
+            assert_eq!(
+                std::fs::metadata(&base).unwrap().file_attributes(),
+                FILE_ATTRIBUTE_NORMAL,
+            );
+        }
         assert_eq!(
             std::fs::read(if directory { base.join("old") } else { base }).unwrap(),
             b"old destination"

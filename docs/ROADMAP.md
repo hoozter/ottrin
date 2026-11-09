@@ -696,11 +696,17 @@ Current source, test, package and owner/external scopes stay separate.
      flag through its alias, so this approach needs a single-link check
      before the transition and at writer handoff. This was a handle API
      probe with a Win32 absolute rename, separate from Ottrin's relative
-     rename and installed helper. Prototype a journaled single-link
+     rename and installed helper. The original rename journal now accepts
+     only the possible archive-bit addition on an ordinary file after its
+     recorded move and restores the admitted attributes before
+     acknowledgement. Eleven native platform tests passed on build 26100
+     under SYSTEM across the original-move and overwrite suites, including
+     injected faults and actual process exits. The original-move file
+     fixture begins with the archive bit clear and checks its attributes
+     after recovery. This is source-level platform coverage. Implement a journaled single-link
      transition that restores and flushes attributes before rename, binds
      the allowed ChangeTime transition to the original's identity and
-     evidence, and accounts for the archive-bit effect before acknowledging
-     retention or Undo. Keep read-only alias behavior open separately.
+     evidence. Keep read-only alias behavior open separately.
      Preserve edited or unknown payloads and refuse divergent journals.
      [Hosted Windows verification](https://github.com/hoozter/ottrin/actions/runs/42451117154/job/128640353389).
    - Installed alternate-administrator UAC checks cover newly authenticated

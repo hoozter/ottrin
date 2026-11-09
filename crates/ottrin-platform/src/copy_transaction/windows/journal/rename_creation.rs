@@ -1,5 +1,6 @@
-//! Narrow, durable creation-time preservation after a recorded native rename.
+//! Durable preservation of admitted metadata after a recorded native rename.
 use super::*;
+use windows_sys::Win32::Storage::FileSystem::{FILE_ATTRIBUTE_ARCHIVE, FILE_ATTRIBUTE_NORMAL};
 
 pub(super) fn pending_undo_epochs(
     parent: &File,
@@ -64,6 +65,15 @@ impl RenameKind {
                 | (Self::RestoreOriginal, Record::OriginalRestored { .. })
         )
     }
+    fn original_archive_added(self, expected: &EntryVersion, actual: &EntryVersion) -> bool {
+        matches!(self, Self::RetainOriginal | Self::RestoreOriginal)
+            && !expected.directory
+            && expected.link.is_none()
+            && expected.attributes & FILE_ATTRIBUTE_ARCHIVE == 0
+            && actual.attributes
+                == (expected.attributes & !FILE_ATTRIBUTE_NORMAL) | FILE_ATTRIBUTE_ARCHIVE
+    }
+
     fn active(self, state: &State) -> bool {
         match self {
             Self::Publish => {
@@ -153,8 +163,9 @@ impl State {
             .find(|kind| kind.active(self) && name == kind.destination(header))
     }
 
-    /// Before a metadata intent, the recorded rename can change only creation
-    /// and native change time. All payload, security and other metadata remain
+    /// Before a metadata intent, the recorded rename can change creation
+    /// and native change time, and may add the archive bit to an original file.
+    /// All payload, security and other metadata remain
     /// the caller's independently verified evidence. Once intent exists, its
     /// observed epoch or the exact intended creation value are the only options.
     pub(super) fn validate_creation_epoch(
@@ -168,6 +179,9 @@ impl State {
         let mut expected = self.rename_expected(kind)?;
         expected.created = actual.created;
         expected.changed = actual.changed;
+        if kind.original_archive_added(&expected, actual) {
+            expected.attributes = actual.attributes;
+        }
         if matches!(kind, RenameKind::Publish | RenameKind::Withdraw)
             && self.readonly_pending == Some(0)
         {
@@ -198,7 +212,11 @@ impl State {
                     before.attributes = actual.attributes;
                 }
                 let mut completed = before.clone();
-                completed.created = self.rename_expected(kind)?.created;
+                let intended = self.rename_expected(kind)?;
+                completed.created = intended.created;
+                if self.readonly_pending != Some(0) {
+                    completed.attributes = intended.attributes;
+                }
                 completed.changed = actual.changed;
                 if actual != &before && actual != &completed {
                     return Err(io("Copy creation-time intent epoch changed; data retained"));
@@ -242,7 +260,11 @@ impl State {
             Record::RenameCreationIntent { kind, before } => {
                 if self.rename_creation.is_some()
                     || !kind.active(self)
-                    || before.created == self.rename_expected(*kind)?.created
+                    || {
+                        let expected = self.rename_expected(*kind)?;
+                        before.created == expected.created
+                            && !kind.original_archive_added(&expected, before)
+                    }
                     || self.readonly_pending.is_some()
                 {
                     return Err(invalid());
@@ -253,7 +275,9 @@ impl State {
             Record::RenameCreationApplied { kind, after } => {
                 let intent = self.rename_creation.as_ref().ok_or_else(invalid)?;
                 let mut expected = intent.epoch.clone();
-                expected.created = self.rename_expected(*kind)?.created;
+                let intended = self.rename_expected(*kind)?;
+                expected.created = intended.created;
+                expected.attributes = intended.attributes;
                 expected.changed = after.changed;
                 if intent.kind != *kind || intent.applied.is_some() || **after != expected {
                     return Err(invalid());
@@ -294,6 +318,13 @@ impl Journal {
         after.changed = i64::MIN;
         let mut before = after.clone();
         before.created = i64::MIN;
+        if matches!(
+            kind,
+            RenameKind::RetainOriginal | RenameKind::RestoreOriginal
+        ) {
+            // Reserve for the observed attributes, which may include the archive bit.
+            before.attributes = u32::MAX;
+        }
         if let Some(intent) = &self.state.rename_creation
             && intent.kind == kind
         {
@@ -338,9 +369,9 @@ impl Journal {
             &kind.destination(&self.header),
             actual.identity,
         )?;
-        let created = self.state.rename_expected(kind)?.created;
+        let expected = self.state.rename_expected(kind)?;
         if self.state.rename_creation.is_none() {
-            if actual.created == created {
+            if actual.created == expected.created && actual.attributes == expected.attributes {
                 return Ok(actual);
             }
             self.persist(Record::RenameCreationIntent {
@@ -359,14 +390,17 @@ impl Journal {
             return Ok(actual);
         }
         self.failed = true;
-        if actual.created != created {
-            metadata::set_creation_time(root, &actual, created)?;
+        if actual.created != expected.created || actual.attributes != expected.attributes {
+            metadata::restore_rename_metadata(root, &actual, &expected)?;
         }
         boundary(self.sequence, Step::CreationRestored)?;
         root.sync_all().map_err(io)?;
         boundary(self.sequence, Step::CreationFlushed)?;
         let after = super::super::version(root)?;
         self.state.validate_creation_epoch(kind, &after)?;
+        if after.created != expected.created || after.attributes != expected.attributes {
+            return Err(io("Copy rename metadata restoration did not match"));
+        }
         self.bindings()?;
         self.failed = false;
         self.persist(Record::RenameCreationApplied {

@@ -22,18 +22,32 @@ pub(super) const ADMITTED_ATTRIBUTES: u32 = ORDINARY_ATTRIBUTES
     | FILE_ATTRIBUTE_SPARSE_FILE;
 
 /// Only a paired, identity-bound rename metadata intent authorizes this write.
-/// It preserves the creation time through NTFS tunneling without rewriting
-/// access/write times, attributes, compression or payload.
-pub(super) fn set_creation_time(
+/// It restores the admitted creation time and any archive-bit change caused
+/// by rename, without rewriting access/write times, compression or payload.
+pub(super) fn restore_rename_metadata(
     file: &File,
     before: &EntryVersion,
-    created: i64,
+    expected: &EntryVersion,
 ) -> Result<(), PlatformError> {
     if version(file)? != *before {
         return Err(io("Copy creation-time intent changed before its write"));
     }
     let info = FILE_BASIC_INFO {
-        CreationTime: created,
+        CreationTime: if before.created == expected.created {
+            0
+        } else {
+            expected.created
+        },
+        FileAttributes: if before.attributes == expected.attributes {
+            0
+        } else {
+            let attributes = expected.attributes & ORDINARY_ATTRIBUTES;
+            if attributes == 0 {
+                FILE_ATTRIBUTE_NORMAL
+            } else {
+                attributes
+            }
+        },
         ..Default::default()
     };
     if unsafe {
