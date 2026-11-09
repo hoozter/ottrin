@@ -1100,13 +1100,22 @@ Current source, test, package and owner/external scopes stay separate.
      pass while retaining verification before completion. Strict Windows
      Clippy and ten native platform tests under SYSTEM passed, including
      interrupted finalization, permission and caller-profile drift, payload
-     tampering, and Undo receipt behavior. Rebuild and repeat the installed
-     1 GiB timing and integrity checks before considering promotion.
+     tampering, and Undo receipt behavior. The installed 1 GiB retest passed
+     with the same private installer and an uninstrumented rebuilt helper.
+     Publication appeared at 80.70 seconds and Undo at 126.62 seconds. The
+     post-publication gap was 45.92 seconds, compared with 48.18 in the
+     preceding uninstrumented run. The ordinary control also took longer
+     (8.77 versus 4.05 seconds). This pair of runs does not establish an
+     end-to-end speedup. The caller verified the replacement hash and disk
+     checks confirmed ownership and preservation of the retained original
+     and hard link. Keep promotion open and use phase-specific measurements
+     and a matched control to evaluate further reductions.
      [Native receipt checks](../.hermes/evidence/windows-alias-receipt-current/native/NATIVE_TEST.json).
      [Installed receipt timing](../.hermes/evidence/windows-alias-receipt-installed-current/ACCEPTANCE.json).
      [Post-publication helper profile](../.hermes/evidence/windows-alias-finalization-profile-current/FINDING.json).
      [Installed finalization timing](../.hermes/evidence/windows-alias-finalization-timing-current/FINDING.json).
      [Native permission finalization checks](../.hermes/evidence/windows-alias-permission-finalization-current/native/NATIVE_TEST.json).
+     [Installed permission finalization retest](../.hermes/evidence/windows-alias-permission-installed-current/ACCEPTANCE.json).
 
    Missing member IDs never license deletion or a completed original-batch claim.
    These are implementation/QA tasks, not owner waits. Personal authentication,
