@@ -727,8 +727,14 @@ Current source, test, package and owner/external scopes stay separate.
      remained available. The read-only backup-intent open now requests
      explicit access without MAXIMUM_ALLOWED, which the earlier native
      access probe showed could fail under restore privilege. The Windows
-     cross-target test compilation passes. Rebuild the private NSIS and
-     repeat Replace, Undo and Cleanup before accepting this path.
+     cross-target test compilation passes. The rebuilt private NSIS at
+     `732b9d43` passed installed read-only Replace, authenticated Undo,
+     and cleanup through four launches. The replacement belonged to the
+     caller. The retained and restored original kept its NTFS identity,
+     owner/group/DACL, attributes and bytes. A final history load found no
+     remaining activity or transaction journal. The private installer is
+     retained for the next launched-helper lifetime checks.
+     [Installed pass receipt](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_READONLY_OVERWRITE.json).
      [Installed refusal receipt](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_READONLY_FIRST_REFUSAL.json).
      Keep read-only alias behavior open separately.
      Preserve edited or unknown payloads and refuse divergent journals.

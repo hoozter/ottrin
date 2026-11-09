@@ -2013,7 +2013,8 @@ impl Journal {
             return Ok(());
         }
         let readonly = !base.directory
-            && base.attributes & windows_sys::Win32::Storage::FileSystem::FILE_ATTRIBUTE_READONLY != 0;
+            && base.attributes & windows_sys::Win32::Storage::FileSystem::FILE_ATTRIBUTE_READONLY
+                != 0;
         if readonly && !self.state.original_readonly_transition(&base) {
             return Err(PlatformError::UnsupportedSafeCopy(
                 "readonly original must be an ordinary file with one hard-link name".into(),
@@ -2022,7 +2023,11 @@ impl Journal {
         // A paired rename-metadata acknowledgement already flushed the exact
         // observed version. Avoid a second attribute transition on replay.
         if name == to
-            && self.state.rename_creation.as_ref().is_some_and(|entry| entry.applied.is_some())
+            && self
+                .state
+                .rename_creation
+                .as_ref()
+                .is_some_and(|entry| entry.applied.is_some())
         {
             return self.persist(direction.ack(observed_version));
         }
@@ -2100,14 +2105,17 @@ impl Journal {
         // The shared verifier checks every stream, member, alias and descriptor
         // again under the root capability. Close descendants for native rename.
         expected.entries[0].version =
-            self.state.original_version_at(kind, &name, &base, tree.root(), true)?;
+            self.state
+                .original_version_at(kind, &name, &base, tree.root(), true)?;
         tree.validate_existing(&expected, &mut progress)?;
         self.authority
             .binding(&self.parent_dir, &name, base.identity)?;
         drop(tree);
         progress(0)?;
         if readonly {
-            use windows_sys::Win32::Storage::FileSystem::{FILE_ATTRIBUTE_NORMAL, FILE_ATTRIBUTE_READONLY};
+            use windows_sys::Win32::Storage::FileSystem::{
+                FILE_ATTRIBUTE_NORMAL, FILE_ATTRIBUTE_READONLY,
+            };
 
             // The paired move intent authorizes this one-bit transition on
             // the pinned original, at either side of the recorded rename.
@@ -2120,22 +2128,20 @@ impl Journal {
             boundary(self.sequence, Step::ReadonlyWritable)?;
             drop(root);
             root = self.authority.open_candidate(&self.parent_dir, &name)?;
-            let tree = tree::PinnedTree::open(
-                &self.authority,
-                &root,
-                evidence.entries.len(),
-                |_| Ok(()),
-            )?;
+            let tree =
+                tree::PinnedTree::open(&self.authority, &root, evidence.entries.len(), |_| Ok(()))?;
             expected.entries[0].version =
-                self.state.original_version_at(kind, &name, &base, tree.root(), true)?;
+                self.state
+                    .original_version_at(kind, &name, &base, tree.root(), true)?;
             if tree.root().attributes != writable.attributes {
                 return Err(io("Original attributes changed during readonly reopening"));
             }
             tree.validate_existing(&expected, |_| Ok(()))?;
-            self.authority.binding(&self.parent_dir, &name, base.identity)?;
+            self.authority
+                .binding(&self.parent_dir, &name, base.identity)?;
             let mut restored = tree.root().clone();
-            restored.attributes = (restored.attributes & !FILE_ATTRIBUTE_NORMAL)
-                | FILE_ATTRIBUTE_READONLY;
+            restored.attributes =
+                (restored.attributes & !FILE_ATTRIBUTE_NORMAL) | FILE_ATTRIBUTE_READONLY;
             metadata::restore_rename_metadata(&root, tree.root(), &restored)?;
             boundary(self.sequence, Step::ReadonlyRestored)?;
             drop(tree);
@@ -2165,7 +2171,8 @@ impl Journal {
             &mut progress,
         )?;
         expected.entries[0].version =
-            self.state.original_version_at(kind, &to, &base, tree.root(), true)?;
+            self.state
+                .original_version_at(kind, &to, &base, tree.root(), true)?;
         tree.validate_existing(&expected, &mut progress)?;
         self.authority
             .binding(&self.parent_dir, &to, expected.entries[0].version.identity)?;
@@ -4519,7 +4526,10 @@ mod tests {
             use windows_sys::Win32::Storage::FileSystem::FILE_ATTRIBUTE_NORMAL;
 
             std::fs::write(&target, b"old destination").unwrap();
-            let file = std::fs::OpenOptions::new().write(true).open(&target).unwrap();
+            let file = std::fs::OpenOptions::new()
+                .write(true)
+                .open(&target)
+                .unwrap();
             let before = super::super::version(&file).unwrap();
             let mut normal = before.clone();
             normal.attributes = FILE_ATTRIBUTE_NORMAL;
@@ -6283,16 +6293,23 @@ mod tests {
             journal.prepare_original(100, |_| Ok(())).unwrap();
             let step = readonly_original_faults()[index];
             if restore {
-                journal.move_original(None, OriginalMove::Retain, |_| Ok(())).unwrap();
+                journal
+                    .move_original(None, OriginalMove::Retain, |_| Ok(()))
+                    .unwrap();
                 drop(journal);
                 overwrite_publish(&root, &name).unwrap();
                 let sequence = original_journal(&root, &name).sequence;
                 FAULT.with(|fault| fault.set(Some((sequence + 3, step, true))));
-                panic!("Expected abrupt Undo exit: {:?}", overwrite_undo(&root, &name));
+                panic!(
+                    "Expected abrupt Undo exit: {:?}",
+                    overwrite_undo(&root, &name)
+                );
             }
             FAULT.with(|fault| fault.set(Some((journal.sequence + 1, step, true))));
-            panic!("Expected abrupt retention exit: {:?}",
-                journal.move_original(None, OriginalMove::Retain, |_| Ok(())));
+            panic!(
+                "Expected abrupt retention exit: {:?}",
+                journal.move_original(None, OriginalMove::Retain, |_| Ok(()))
+            );
         }
         let name = original_move_fixture(&root, directory, restore);
         let mut journal = original_journal(&root, &name);
@@ -6604,19 +6621,32 @@ mod tests {
                 assert_eq!(std::fs::read(&mirror).unwrap(), bytes);
                 if !restore {
                     let mut resume = RetainedCopyResumePlan::admit(
-                        &Authority::Process, &central, &header.transaction, |_| Ok(()),
-                    ).unwrap();
+                        &Authority::Process,
+                        &central,
+                        &header.transaction,
+                        |_| Ok(()),
+                    )
+                    .unwrap();
                     assert_eq!(resume.admitted_phase(), WindowsCopyPhase::RetainingOriginal);
                     assert_eq!(std::fs::read(&local).unwrap(), bytes);
                     assert_eq!(std::fs::read(&mirror).unwrap(), bytes);
                     resume.resume(|_| Ok(())).unwrap();
                     assert!(resume.complete());
                     let retained = destination.join(header.original_name());
-                    assert!(std::fs::metadata(retained).unwrap().permissions().readonly());
+                    assert!(
+                        std::fs::metadata(retained)
+                            .unwrap()
+                            .permissions()
+                            .readonly()
+                    );
                 }
                 let mut undo = RetainedCopyUndoPlan::admit(
-                    &Authority::Process, &central, &header.transaction, |_| Ok(()),
-                ).unwrap();
+                    &Authority::Process,
+                    &central,
+                    &header.transaction,
+                    |_| Ok(()),
+                )
+                .unwrap();
                 if restore {
                     assert_eq!(std::fs::read(&local).unwrap(), bytes);
                     assert_eq!(std::fs::read(&mirror).unwrap(), bytes);
@@ -6625,7 +6655,10 @@ mod tests {
                 assert_eq!(undo.remaining(), 0);
                 assert_overwrite_versions(root.path(), &name, false);
                 let original = destination.join("copy");
-                assert_eq!(super::super::version(&source(&original)).unwrap().identity, identity);
+                assert_eq!(
+                    super::super::version(&source(&original)).unwrap().identity,
+                    identity
+                );
                 let mut permissions = std::fs::metadata(&original).unwrap().permissions();
                 assert!(permissions.readonly());
                 permissions.set_readonly(false);
@@ -6643,9 +6676,14 @@ mod tests {
                 let mut journal = original_journal(root.path(), &name);
                 journal.prepare_original(100, |_| Ok(())).unwrap();
                 let target = root.path().join("destination/copy");
-                let private = root.path().join("destination").join(journal.header.original_name());
+                let private = root
+                    .path()
+                    .join("destination")
+                    .join(journal.header.original_name());
                 if direction == OriginalMove::Restore {
-                    journal.move_original(None, OriginalMove::Retain, |_| Ok(())).unwrap();
+                    journal
+                        .move_original(None, OriginalMove::Retain, |_| Ok(()))
+                        .unwrap();
                 }
                 FAULT.with(|fault| fault.set(Some((journal.sequence + 1, step, false))));
                 let result = journal.move_original(None, direction, |_| Ok(()));
@@ -6659,11 +6697,22 @@ mod tests {
                     &journal.parent_dir,
                     &journal.state,
                     &mut |_| Ok(()),
-                ).unwrap().unwrap();
+                )
+                .unwrap()
+                .unwrap();
                 journal.move_original(None, direction, |_| Ok(())).unwrap();
-                let original = if direction == OriginalMove::Retain { &private } else { &target };
+                let original = if direction == OriginalMove::Retain {
+                    &private
+                } else {
+                    &target
+                };
                 assert_eq!(std::fs::read(original).unwrap(), b"old destination");
-                assert!(std::fs::metadata(original).unwrap().permissions().readonly());
+                assert!(
+                    std::fs::metadata(original)
+                        .unwrap()
+                        .permissions()
+                        .readonly()
+                );
                 let mut permissions = std::fs::metadata(original).unwrap().permissions();
                 permissions.set_readonly(false);
                 std::fs::set_permissions(original, permissions).unwrap();

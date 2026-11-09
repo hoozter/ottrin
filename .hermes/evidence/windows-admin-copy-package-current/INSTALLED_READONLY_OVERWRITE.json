@@ -1,0 +1,90 @@
+{
+  "source_revision": "732b9d43ca1b340f1c7cfe99f6616ec4869e04dc",
+  "private_capability_diff_sha256": "b0c7961ee6acef2cb1a2560f57c8c3ea21d93ef700fed7499e9dfa4e50409281",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-readonly-original-qa",
+  "payload_files": 59,
+  "artifacts": {
+    "Ottrin-0.1.0-windows-x64-setup.exe": "af14561c9d5e940ef3f814bcd4b4fc93c927e56407a69dacaf8c6f3543de8707",
+    "Ottrin-0.1.0-windows-x64-portable.zip": "992d4f392d67c8262b2b7baf125248f34c9f8257319be5336f7a7f44c4ffcc6c"
+  },
+  "portable_matches_stage": true,
+  "status": "pass",
+  "scope": "Private capability-enabled NSIS, standard caller and alternate-administrator UAC. Read-only ordinary file original with one link.",
+  "installer": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-readonly-original-qa/Ottrin-0.1.0-windows-x64-setup.exe",
+  "app_sha256": "1720233429e827b51e2537bfc41dfaf41fe115e5bfb3bfe3f04b76acf47d81c9",
+  "helper_sha256": "85a267305e6f5a0db4b58ea56923a470f5ecf3df15289e78817b818c3b05b837",
+  "source_sha256": "3fc5d485b7cbea0501dd61db76c43ff6dadea69e25a93ff970da52a3ec597073",
+  "actor_sha256": "1f534885632632d73d19c92fbaefdcb22b17c7c6d75f3728d5070fad836c0448",
+  "phases": [
+    {
+      "mode": "copy",
+      "ordinary_target_hash": "3fc5d485b7cbea0501dd61db76c43ff6dadea69e25a93ff970da52a3ec597073",
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+      "payload_files": 59,
+      "client_exited": true,
+      "phase": "complete",
+      "client_exit": 0,
+      "client_pid": 7336,
+      "status": "pass"
+    },
+    {
+      "client_pid": 3872,
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+      "payload_files": 59,
+      "client_exited": true,
+      "phase": "complete",
+      "client_exit": 0,
+      "mode": "history-undo",
+      "status": "pass"
+    },
+    {
+      "client_pid": 3936,
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+      "payload_files": 59,
+      "client_exited": true,
+      "phase": "complete",
+      "client_exit": 0,
+      "mode": "undone",
+      "status": "pass"
+    },
+    {
+      "client_pid": 7824,
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+      "payload_files": 59,
+      "client_exited": true,
+      "phase": "complete",
+      "client_exit": 0,
+      "mode": "cleared",
+      "status": "pass"
+    }
+  ],
+  "disk_checks": [
+    "Ordinary Replace refusal preserved the original",
+    "Replacement bytes matched source and owner matched original caller",
+    "Retained and restored originals matched initial NTFS file ID, SDDL, attributes and bytes",
+    "Source and unrelated destination marker survived",
+    "Cleanup retired destination recovery data and caller journal",
+    "Fresh history showed no activity"
+  ],
+  "capture_sha256": {
+    "copy-ordinary-denial.png": "e8edd97664dbbea3096a06beb4081d02f3c7aca5a82274506915300f87093cea",
+    "copy-completed.png": "3d7630b213d9182dacf195c014d557de4fb4ef8c281245222f98fab1b66cf89a",
+    "history-undo-history.png": "d8263dafa7c0aebd9c3267f9ce272377f58c1d819b4ef0aea14de0c83c1dd085",
+    "history-undo-undone.png": "26cae825f4559009b3a54c66ec5dce8dc34b4109283f36a964f6c7196c9ee82e",
+    "undone-undone.png": "b34b06b266153663354b0473d12f559051c7dae63ff59b64e9a55d37f7d82b69",
+    "undone-cleared.png": "9b0bbb07a54577e171834cefe6690ae11e14c4e1f0d4282eb468b8cadf327a45",
+    "cleared-cleared.png": "805e10dc0730e86b1e5c575f984eba00f11cac261893c4c61ffaff477514186f"
+  },
+  "cleanup": {
+    "domain": "ottrin-init-helper-pipe-qa",
+    "uuid": "29be0202-ec7d-481e-88d8-2aae161b82ed",
+    "volume": "ottrin-init-helper-pipe-qa.qcow2",
+    "status": "pass",
+    "domain_removed": true,
+    "overlay_removed": true,
+    "protected_definitions_states_and_backing_unchanged": true
+  },
+  "portable_and_expanded_stage_retired": true,
+  "compiler_executables_restored_by_hash": true,
+  "retained_for": "Next launched-helper lifetime checks using this exact private package"
+}
