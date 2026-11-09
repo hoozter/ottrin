@@ -986,8 +986,16 @@ Current source, test, package and owner/external scopes stay separate.
      journal, so that part of the result uses the caller's evidence.
      Both disposable guests were removed.
      [Installed Stop](../.hermes/evidence/windows-alias-stop-retry-current/ACCEPTANCE.json).
-     Crash recovery, power loss and production latency for this
-     protected Replace case remain separate gates.
+     The exact private NSIS passed helper process termination during
+     staging of an approved 512 MiB Replace. The standard user's
+     installed app retained the matching journal. Two fresh app
+     processes then loaded and ended the recovered attempt and
+     confirmed Ended on another reload. The original and hard link
+     retained their identity, security, attributes, bytes and named
+     stream at every phase, and the source and marker stayed intact.
+     [Installed helper crash recovery](../.hermes/evidence/windows-alias-helper-crash-current/ACCEPTANCE.json).
+     Application process crash, guest power loss and production
+     latency for this protected Replace case remain separate gates.
      [Native read-only alias probe](../.hermes/evidence/windows-admin-copy-package-current/READONLY_ALIAS_VOLUME_PROBE.json).
 
    Missing member IDs never license deletion or a completed original-batch claim.
