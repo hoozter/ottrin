@@ -703,7 +703,11 @@ Current source, test, package and owner/external scopes stay separate.
      under SYSTEM across the original-move and overwrite suites, including
      injected faults and actual process exits. The original-move file
      fixture begins with the archive bit clear and checks its attributes
-     after recovery. This is source-level platform coverage. Implement a journaled single-link
+     after recovery. Read-only discovery, writer handoff and post-rename
+     verification now share the rule for when the observed original can
+     differ from its frozen metadata. All five original-move tests passed
+     again on build 26100 after that consolidation. This is source-level
+     platform coverage. Implement a journaled single-link
      transition that restores and flushes attributes before rename, binds
      the allowed ChangeTime transition to the original's identity and
      evidence. Keep read-only alias behavior open separately.

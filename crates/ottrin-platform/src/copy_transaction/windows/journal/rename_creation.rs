@@ -123,6 +123,25 @@ impl State {
         }
         Ok(())
     }
+    /// Only a pending move at its recorded destination may use the observed
+    /// rename epoch. Every other location must match the frozen root version.
+    pub(super) fn original_version_at(
+        &self,
+        kind: RenameKind,
+        name: &OsStr,
+        expected: &EntryVersion,
+        observed: &EntryVersion,
+        pending: bool,
+    ) -> Result<EntryVersion, PlatformError> {
+        self.validate_creation_location(kind, name)?;
+        if pending && name == kind.destination(self.header.as_ref().unwrap()) {
+            self.validate_creation_epoch(kind, observed)?;
+            Ok(observed.clone())
+        } else {
+            Ok(expected.clone())
+        }
+    }
+
     pub(super) fn admitted_rename_matches(
         &self,
         kind: RenameKind,

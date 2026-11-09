@@ -1979,27 +1979,7 @@ impl Journal {
                 )),
             }
         };
-        let validate = |tree: &tree::PinnedTree,
-                        name: &OsStr,
-                        intent: bool,
-                        progress: &mut dyn FnMut(u64) -> Result<(), PlatformError>|
-         -> Result<EntryVersion, PlatformError> {
-            let mut expected = evidence.clone();
-            let mut version = completed.as_ref().unwrap_or(&base).clone();
-            if completed.is_none() && intent && name == to {
-                self.state.validate_creation_epoch(kind, tree.root())?;
-                version.created = tree.root().created;
-                version.attributes = tree.root().attributes;
-                version.changed = tree.root().changed;
-            }
-            expected.entries[0].version = version;
-            tree.validate_existing(&expected, progress)?;
-            self.authority
-                .binding(&self.parent_dir, name, base.identity)?;
-            Ok(tree.root().clone())
-        };
         let name = resolve(intent, completed.is_some())?;
-        self.state.validate_creation_location(kind, &name)?;
         let read = namespace::open_source_with(&self.authority, &self.parent_dir, &name, None)?;
         let tree = tree::PinnedTree::open(
             &self.authority,
@@ -2007,7 +1987,18 @@ impl Journal {
             evidence.entries.len(),
             &mut progress,
         )?;
-        validate(&tree, &name, intent, &mut progress)?;
+        let mut expected = evidence.clone();
+        let expected_root = completed.as_ref().unwrap_or(&base);
+        expected.entries[0].version = self.state.original_version_at(
+            kind,
+            &name,
+            expected_root,
+            tree.root(),
+            intent && completed.is_none(),
+        )?;
+        tree.validate_existing(&expected, &mut progress)?;
+        self.authority
+            .binding(&self.parent_dir, &name, expected_root.identity)?;
         if let Some(admitted) = admitted
             && name == to
             && !self
@@ -2093,7 +2084,6 @@ impl Journal {
             }
         };
         let root = self.authority.open_candidate(&self.parent_dir, &name)?;
-        self.state.validate_creation_location(kind, &name)?;
         let tree = tree::PinnedTree::open(
             &self.authority,
             &root,
@@ -2105,15 +2095,8 @@ impl Journal {
         }
         // The shared verifier checks every stream, member, alias and descriptor
         // again under the root capability. Close descendants for native rename.
-        let mut expected = evidence.clone();
-        let mut version = base.clone();
-        if name == to {
-            self.state.validate_creation_epoch(kind, tree.root())?;
-            version.created = tree.root().created;
-            version.attributes = tree.root().attributes;
-            version.changed = tree.root().changed;
-        }
-        expected.entries[0].version = version;
+        expected.entries[0].version =
+            self.state.original_version_at(kind, &name, &base, tree.root(), true)?;
         tree.validate_existing(&expected, &mut progress)?;
         self.authority
             .binding(&self.parent_dir, &name, base.identity)?;
@@ -2139,13 +2122,8 @@ impl Journal {
             evidence.entries.len(),
             &mut progress,
         )?;
-        self.state.validate_creation_epoch(kind, tree.root())?;
-        let mut expected = evidence.clone();
-        let mut version = base.clone();
-        version.created = tree.root().created;
-        version.attributes = tree.root().attributes;
-        version.changed = tree.root().changed;
-        expected.entries[0].version = version;
+        expected.entries[0].version =
+            self.state.original_version_at(kind, &to, &base, tree.root(), true)?;
         tree.validate_existing(&expected, &mut progress)?;
         self.authority
             .binding(&self.parent_dir, &to, expected.entries[0].version.identity)?;
@@ -3634,7 +3612,6 @@ impl HeldOriginal {
         } else {
             RenameKind::RetainOriginal
         };
-        state.validate_creation_location(kind, &name)?;
         let root = namespace::open_source_with(authority, parent, &name, None)?;
         let tree = tree::PinnedTree::open(
             authority,
@@ -3643,13 +3620,13 @@ impl HeldOriginal {
             &mut *progress,
         )?;
         let mut evidence = plan.evidence.clone();
-        evidence.entries[0].version = completed.unwrap_or(base).clone();
-        if intent && completed.is_none() && name == to {
-            state.validate_creation_epoch(kind, tree.root())?;
-            evidence.entries[0].version.created = tree.root().created;
-            evidence.entries[0].version.attributes = tree.root().attributes;
-            evidence.entries[0].version.changed = tree.root().changed;
-        }
+        evidence.entries[0].version = state.original_version_at(
+            kind,
+            &name,
+            completed.unwrap_or(base),
+            tree.root(),
+            intent && completed.is_none(),
+        )?;
         let held = Self {
             authority: authority.clone(),
             tree,
