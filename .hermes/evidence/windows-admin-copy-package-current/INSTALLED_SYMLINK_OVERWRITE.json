@@ -1,0 +1,84 @@
+{
+  "status": "pass",
+  "input": {
+    "source_revision": "f23b13b0b01f5c5a13cd8df8de712f0c4e47b0f1",
+    "installer_sha256": "f65fd03e76219c36fdf722edf22d884c5dca19ca5fa26be9f4340c8e075b3c38",
+    "source_sha256": "3fc5d485b7cbea0501dd61db76c43ff6dadea69e25a93ff970da52a3ec597073",
+    "interrupt": false,
+    "stop": false,
+    "stopped_ui": false,
+    "symlink": true,
+    "directory_symlink": false,
+    "overwrite_symlink": true,
+    "resume": false,
+    "late_stop": false,
+    "tree_count": null,
+    "actor_sha256": "fcd19ef00f0a2177e93fd804f34ab834b5e4df4c31ddd8d95b9d34367e373760",
+    "observer_sha256": null,
+    "caller_sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+    "admin_sid": "S-1-5-21-3183210791-1673105385-3262580894-1032"
+  },
+  "phases": {
+    "copy": {
+      "mode": "copy",
+      "ordinary_target_hash": "3fc5d485b7cbea0501dd61db76c43ff6dadea69e25a93ff970da52a3ec597073",
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+      "payload_files": 59,
+      "client_exited": true,
+      "phase": "complete",
+      "client_exit": 0,
+      "client_pid": 608,
+      "status": "pass"
+    },
+    "history-undo": {
+      "client_pid": 6512,
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+      "payload_files": 59,
+      "client_exited": true,
+      "phase": "complete",
+      "client_exit": 0,
+      "mode": "history-undo",
+      "status": "pass"
+    },
+    "undone": {
+      "client_pid": 4972,
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+      "payload_files": 59,
+      "client_exited": true,
+      "phase": "complete",
+      "client_exit": 0,
+      "mode": "undone",
+      "status": "pass"
+    },
+    "cleared": {
+      "client_pid": 3348,
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+      "payload_files": 59,
+      "client_exited": true,
+      "phase": "complete",
+      "client_exit": 0,
+      "mode": "cleared",
+      "status": "pass"
+    }
+  },
+  "checks": [
+    "Ordinary Replace left the original protected symbolic link in place.",
+    "Alternate-administrator UAC published the incoming link at the protected destination.",
+    "A fresh app process loaded history and Undo restored the original link target.",
+    "Cleanup removed transaction data and a fourth process found no remaining activity.",
+    "Both external target payloads, the source link and the unrelated destination marker survived."
+  ],
+  "first_attempt": "INSTALLED_SYMLINK_OVERWRITE_FIRST_ATTEMPT.json",
+  "scope": "Exact private NSIS, installed file symbolic-link Replace, restart, authenticated Undo and Cleanup. Link destination and target bytes were verified. The separate native platform test covers restored object identity and security, and directory-link overwrite.",
+  "cleanup": {
+    "domain": "ottrin-init-helper-pipe-qa",
+    "uuid": "1e25db15-28c3-40a4-9e2c-701193285a02",
+    "volume": "ottrin-init-helper-pipe-qa.qcow2",
+    "status": "pass",
+    "domain_removed": true,
+    "overlay_removed": true,
+    "protected_definitions_states_and_backing_unchanged": true,
+    "temporary_compiler_restored_by_hash": true,
+    "temporary_capture_and_result_files_removed": true
+  }
+}
