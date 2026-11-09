@@ -212,11 +212,17 @@ match all 59 payload files. The exact NSIS passed standard-user
 installation, Dark and Light Save reconfirmation after same-name,
 same-size, same-mtime replacement, and uninstall with all original
 and replacement files preserved. Administrator Copy stays gated in
-this candidate. The daemon payload changed, so verify its native
-transition and installer lifecycle and assemble and exercise
-development MSIX 30 before replacing the stable paths.
+this candidate. The unsigned development MSIX 30 was assembled with
+native MakeAppx, unpacked on Windows and independently checked against
+all 59 portable payload files. The exact portable daemon indexed 1,000
+files, tracked create/rename/delete, restarted cleanly and averaged
+0.31% of one core over a 30-second idle sample in the disposable guest.
+MSIX deployment and upgrade, plus the NSIS lifecycle for this candidate,
+are pending before replacing the stable paths.
 [Staged payload](../.hermes/evidence/windows-save-identity-delivery-current/HOST_PAYLOAD.json).
 [Installed Save](../.hermes/evidence/windows-save-identity-delivery-current/INSTALLED_SAVE_IDENTITY.json).
+[MSIX assembly](../.hermes/evidence/windows-save-identity-delivery-current/ASSEMBLY_ACCEPTANCE.json).
+[Daemon runtime](../.hermes/evidence/windows-save-identity-delivery-current/WINDOWS_DAEMON_RUNTIME.json).
 
 The preceding Windows cohort used `7992ad1e` and development MSIX 28.
 The installed Save fix passed in Dark and Light. NSIS passed running-index
