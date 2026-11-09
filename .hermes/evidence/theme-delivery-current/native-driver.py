@@ -529,6 +529,12 @@ with ExitStack() as stack:
   for source in list(backend.findall('source')):backend.remove(source)  # libvirt provisions independent state for the new UUID.
  nv=root.find('./os/nvram');nv.text='/var/lib/libvirt/qemu/nvram/'+name+'_VARS.fd'
  disks=root.findall('./devices/disk');assert len(disks)==1;disks[0].find('source').set('file','/var/lib/libvirt/images/'+volume)
+ if args.application_system_companion:
+  driver=disks[0].find('driver')
+  assert driver is not None and driver.get('type')=='qcow2'
+  driver.set('discard','unmap')
+  driver.set('detect_zeroes','unmap')
+  state['owned_overlay_discard']='unmap'
  for interface in root.findall('./devices/interface'):root.find('devices').remove(interface)
  for tag in ['filesystem','hostdev','redirdev']:
   for device in root.findall('./devices/'+tag):root.find('devices').remove(device)
