@@ -1492,6 +1492,18 @@ Current source, test, package and owner/external scopes stay separate.
    overlay were removed and all borrowed executables restored by hash.
    [Native pointer trace](../.hermes/evidence/theme-preview-popup-current/native-cancel-trace/GUEST_RESULT.json).
 
+   A four-case comparison installed the same NSIS once and launched a
+   fresh process per case. Physical Cancel closed Dark after an 87 ms
+   press and Light after a 79 ms press. It left Light open after a 317 ms
+   press and Dark open after a 521 ms press. In both failures, invoking
+   accessible Cancel in the same window closed it and preserved the
+   settings and corpus. This isolates the reproduced failure to the
+   pointer activation path. The longer presses ran after the shorter
+   ones, so order and duration still need to be separated before
+   attributing a cause. The guest and overlay were removed, and all
+   borrowed executables were restored by hash.
+   [Native timing comparison](../.hermes/evidence/theme-preview-popup-current/native-cancel-timing/GUEST_RESULT.json).
+
    Verify every supported role/control against the actual interface and logical
    hierarchy; field-map/test/capture counts do not close this audit.
 3. Close remaining supported themed-picker, Linux FileChooser/FileManager1 and
