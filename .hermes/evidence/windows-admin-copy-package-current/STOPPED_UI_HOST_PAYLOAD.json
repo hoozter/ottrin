@@ -1,0 +1,15 @@
+{
+  "source_revision": "f23b13b0b01f5c5a13cd8df8de712f0c4e47b0f1",
+  "base": "94c25f542493e15131e20837f5f4189de32efdb9",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-admin-copy-stopped-ui",
+  "payload_files": 59,
+  "artifacts": {
+    "Ottrin-0.1.0-windows-x64-setup.exe": "f65fd03e76219c36fdf722edf22d884c5dca19ca5fa26be9f4340c8e075b3c38",
+    "Ottrin-0.1.0-windows-x64-portable.zip": "41d3e4237a6411c1385eb9f7dde623af4b6d143ee5891a17d3db9ff56b37b503"
+  },
+  "portable_nsis_payloads_identical": true,
+  "uninstaller_sha256": "3429cfb36f6d092b2f5c114a175e7cb08c74239e0ccad98dd4032a84e166aa58",
+  "index_controller_matches_daemon": true,
+  "transaction_script_matches_source": true,
+  "scope": "Private capability-enabled NSIS host verification for the stopped Copy presentation; installed visual verification pending."
+}

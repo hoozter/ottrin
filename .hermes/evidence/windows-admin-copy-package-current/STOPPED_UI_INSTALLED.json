@@ -1,0 +1,62 @@
+{
+  "status": "pass",
+  "scope": "Exact private NSIS, one installed Dark-mode Stop in a two-member administrator Copy through alternate-administrator UAC; verifies live Undo availability.",
+  "input": {
+    "source_revision": "f23b13b0b01f5c5a13cd8df8de712f0c4e47b0f1",
+    "installer_sha256": "f65fd03e76219c36fdf722edf22d884c5dca19ca5fa26be9f4340c8e075b3c38",
+    "source_sha256": "87e7c7d1965ebd6904a1e80e54750fb53ced36e8e85a78869e1d4cdaa3ce3170",
+    "interrupt": false,
+    "stop": true,
+    "stopped_ui": true,
+    "resume": false,
+    "late_stop": false,
+    "tree_count": null,
+    "actor_sha256": "6cc1177c76dc43b7b35258a1ff98964dfbf00bd21b0cae944ef926542bbb7d6c",
+    "observer_sha256": null,
+    "caller_sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+    "admin_sid": "S-1-5-21-3183210791-1673105385-3262580894-1032"
+  },
+  "actor": {
+    "stopped_ui": {
+      "completed_count": "1 of 2 items copied",
+      "raw_diagnostic_collapsed": true,
+      "technical_details_visible": true
+    },
+    "transactions": [
+      "1ead8af88b0a773709a968d763c048ec",
+      "b6ae917af107164b2209dd1b54bacd32"
+    ],
+    "client_pid": 5536,
+    "phase": "complete",
+    "payload_files": 59,
+    "client_exited": true,
+    "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+    "incomplete_hash": "4a7539a8ea63477c3e12f4d6c64dfed33f3f8b6a953836a91b3d5f303b90e431",
+    "incomplete_journal": "1ead8af88b0a773709a968d763c048ec.copy-journal",
+    "status": "pass",
+    "mode": "copy",
+    "client_exit": 0
+  },
+  "system_checks": [
+    "Published prefix matched source bytes and was owned by the original standard user",
+    "Stopped member remained unpublished and both transaction journals were retained",
+    "Source and unrelated marker were preserved"
+  ],
+  "visual_review": {
+    "sha256": "6725471972778ffe0f3a4f0d26668825fb18f2ddb2cb331f803ed131e575f19f",
+    "observed": "Stopped text readable in Dark; 1 of 2 items copied, Undo copy, collapsed Technical details, and short command-area message were visible."
+  },
+  "cleanup": {
+    "domain": "ottrin-init-helper-pipe-qa",
+    "uuid": "62697363-73b7-4a5f-9d89-9e140c699444",
+    "volume": "ottrin-init-helper-pipe-qa.qcow2",
+    "status": "pass",
+    "domain_removed": true,
+    "overlay_removed": true,
+    "protected_definitions_states_and_backing_unchanged": true,
+    "temporary_test_binaries_restored_and_verified": true,
+    "superseded_private_installer_removed_bytes": 41337867,
+    "obsolete_incremental_sessions_removed": 6,
+    "measured_incremental_recovery_gib": 0.31
+  }
+}

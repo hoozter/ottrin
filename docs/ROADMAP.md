@@ -305,15 +305,19 @@ and the held MSI were preserved. See
    [installed late-Stop receipt](../.hermes/evidence/windows-admin-copy-package-current/LATE_STOP_INSTALLED.json).
    The Stopped badge now uses the theme's normal text color. The command
    area points to Activity, where the original diagnostic is available in
-   expandable details. Twenty-two focused Linux Activity tests passed,
-   including the rendered badge layout and collapsed diagnostic, and
-   Windows-target Clippy passed. Native Windows visual verification in
-   a rebuilt installer and the expanded original-caller regression remain
-   open.
-   The temporary worktrees,
-   unpacked payloads, duplicate ZIP, superseded private installer and
-   disposable guests were removed. The rebuilt private installer remains
-   staged for the remaining native tests.
+   expandable details. The visible row keeps the count of items already
+   copied. Twenty-two focused Linux Activity tests passed, and the Windows
+   test targets compiled. Private NSIS `f23b13b0` matched all 59 portable
+   payload files. The installed Dark-mode run used alternate-administrator
+   UAC and stopped after the first of two files. Activity showed the readable
+   Stopped badge, the exact count and Undo. The published file matched the
+   source and was owned by the original standard user. See the
+   [installed Stop presentation receipt](../.hermes/evidence/windows-admin-copy-package-current/STOPPED_UI_INSTALLED.json).
+   The expanded original-caller regression remains open. The private
+   installer for that work is staged under
+   `.hermes/packaging-tmp/.windows-admin-copy-stopped-ui/`. The build worktree,
+   unpacked payload, duplicate ZIP, superseded installer and disposable
+   guest were removed.
    See [private package verification](../.hermes/evidence/windows-admin-copy-package-current/HOST_PAYLOAD.json)
    and [installed navigation observation](../.hermes/evidence/windows-admin-copy-package-current/NAVIGATION_ATTEMPT.json).
    See [installed Copy publication](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_COPY_PUBLICATION.json).
