@@ -1,0 +1,74 @@
+{
+  "source_revision": "732b9d43ca1b340f1c7cfe99f6616ec4869e04dc",
+  "installer_sha256": "af14561c9d5e940ef3f814bcd4b4fc93c927e56407a69dacaf8c6f3543de8707",
+  "actor_sha256": "f540e4a6d18a1ce396d51b5d1b6d947ea6ca32dc6531255491505465154d0dd9",
+  "status": "pass",
+  "scope": "Private installed NSIS, ordinary caller, real alternate-administrator UAC. Observer terminates only the app at the staging boundary.",
+  "boundary": {
+    "client_pid": 5344,
+    "target_absent": true,
+    "client_exit": -1,
+    "helper_exit": 1,
+    "helper_pid": 8160,
+    "helper_exit_after_client_kill_ms": 124,
+    "helper_terminated": true,
+    "client_disconnected": true,
+    "helper_owner_sid": "S-1-5-21-3183210791-1673105385-3262580894-1032",
+    "transaction": "bd9a7f702580f41c21c25765ac6157ef"
+  },
+  "phases": [
+    {
+      "mode": "copy",
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+      "payload_files": 59,
+      "client_exited": true,
+      "phase": "complete",
+      "client_exit": -1,
+      "client_pid": 5344,
+      "status": "pass",
+      "transaction": "bd9a7f702580f41c21c25765ac6157ef"
+    },
+    {
+      "client_pid": 3452,
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+      "payload_files": 59,
+      "client_exited": true,
+      "phase": "complete",
+      "client_exit": 0,
+      "mode": "interrupt-history",
+      "status": "pass"
+    },
+    {
+      "client_pid": 8040,
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+      "payload_files": 59,
+      "client_exited": true,
+      "phase": "complete",
+      "client_exit": 0,
+      "mode": "interrupt-ended",
+      "status": "pass"
+    }
+  ],
+  "checks": [
+    "Source bytes and unrelated destination marker preserved",
+    "Target remained unpublished",
+    "Retained staging and journal survived",
+    "Fresh authenticated session ended retained attempt",
+    "Another fresh launch confirmed ended attempt and retained records"
+  ],
+  "capture_sha256": {
+    "copy-ordinary-denial.png": "abdbbf51745c4b8da5b6fe0a6ea049de713d02c1e2720998c58902236bee7301",
+    "interrupt-history-ended.png": "52e3760baef96635628265a87db25ef2e68429c47af39897101de622aca1d702",
+    "interrupt-ended-ended.png": "77f9ea69498a7b533164759e5a2b2657daffad5c0ad0fa40baa8f227b38528da"
+  },
+  "cleanup": {
+    "domain": "ottrin-init-helper-pipe-qa",
+    "uuid": "896226ad-32e2-45a2-bdb0-556e7d66538c",
+    "volume": "ottrin-init-helper-pipe-qa.qcow2",
+    "status": "pass",
+    "domain_removed": true,
+    "overlay_removed": true,
+    "protected_definitions_states_and_backing_unchanged": true
+  },
+  "compiler_executables_restored_by_hash": true
+}

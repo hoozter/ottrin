@@ -743,8 +743,14 @@ Current source, test, package and owner/external scopes stay separate.
      connections after app restart, termination of the launched helper,
      forward Resume, Undo, cleanup, and ordinary-user GUI Stop with partial
      and late terminal results. The exact receipts above distinguish those
-     cases. The actual launched helper's lifetime when its client
-     disconnects and when the terminal reply is lost still needs evidence.
+     cases. The exact private `732b9d43` installer also passed a real
+     client disconnect during staging. Only the installed app was
+     terminated. Its UAC-launched helper exited independently within
+     124 ms, with the source and staging preserved and the target
+     unpublished. A fresh authenticated Activity session ended the
+     retained attempt, and another launch confirmed the ended state.
+     [Installed client-disconnect receipt](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_CLIENT_DISCONNECT.json).
+     A lost terminal reply after durable publication remains open.
    - The native Windows build 26100 token-mutation check changes a disposable
      child's live primary TokenOwner. The original query handle observes the
      new owner while TokenUser, primary group and process generation stay
