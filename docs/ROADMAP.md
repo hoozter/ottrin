@@ -221,8 +221,8 @@ Fresh MSIX 30 deployment passed under an ordinary Windows account.
 Explorer background, multi-selection and drive actions worked. A real
 sign-in started the index before any Ottrin command ran. Removal cleared
 the package, processes, startup task and shell registration and preserved
-preferences and fixture files. MSIX 29-to-30 upgrade and the NSIS lifecycle
-are pending before replacing the stable paths.
+preferences and fixture files. The MSIX 29-to-30 upgrade cases remain
+pending before replacing the stable paths.
 The first enabled MSIX upgrade installed revision 30 under the same
 package identity and stopped the revision 29 daemon. The post-upgrade
 fixture then attributed a PowerShell command line to an Ottrin process
@@ -230,11 +230,14 @@ during its Explorer probe. The retry requires a matching executable path
 and a populated command line before comparing launch arguments. The
 disabled upgrade case also checks the saved checkbox state and restores
 that choice after exercising the toggle.
-The NSIS lifecycle fixture passed all ten portable picker cases before
-the host free-space guard interrupted fresh-install testing. The
-disposable overlay and duplicate portable export were removed. The
-lifecycle retry requires more initial free space and keeps the same
-emergency floor.
+The NSIS lifecycle retry passed all ten portable picker cases, fresh
+install and uninstall, and an upgrade from `d2031d5e` with its index
+running. The new daemon took over with the same database and preferences.
+Reinstall preserved the selected sign-in and running states. A locked
+cache caused uninstall to refuse while preserving the task and daemon,
+and the retry passed after the lock was released. The first attempt was
+interrupted by the host free-space guard. Both disposable overlays and
+the bulk exports were removed.
 [Staged payload](../.hermes/evidence/windows-save-identity-delivery-current/HOST_PAYLOAD.json).
 [Installed Save](../.hermes/evidence/windows-save-identity-delivery-current/INSTALLED_SAVE_IDENTITY.json).
 [MSIX assembly](../.hermes/evidence/windows-save-identity-delivery-current/ASSEMBLY_ACCEPTANCE.json).
@@ -242,6 +245,7 @@ emergency floor.
 [Fresh MSIX deployment](../.hermes/evidence/windows-save-identity-delivery-current/runtime30-fresh/ACCEPTANCE.json).
 [First MSIX upgrade attempt](../.hermes/evidence/windows-save-identity-delivery-current/runtime30-upgrade/ATTEMPT.json).
 [First NSIS lifecycle attempt](../.hermes/evidence/windows-save-identity-delivery-current/nsis30-lifecycle/ATTEMPT.json).
+[NSIS lifecycle acceptance](../.hermes/evidence/windows-save-identity-delivery-current/nsis30-lifecycle-retry/ACCEPTANCE.json).
 
 The preceding Windows cohort used `7992ad1e` and development MSIX 28.
 The installed Save fix passed in Dark and Light. NSIS passed running-index
