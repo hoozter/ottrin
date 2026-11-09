@@ -17,6 +17,11 @@ APPIMAGETOOL_SHA256="${APPIMAGETOOL_SHA256:-b90f4a8b18967545fda78a445b27680a1642
 source "$ROOT/packaging/linux/package-pdfium.sh"
 source "$ROOT/packaging/package-search-runtime.sh"
 
+if ! command -v appstreamcli >/dev/null 2>&1; then
+  printf 'AppImage metadata validation requires appstreamcli (Ubuntu: apt install appstream).\n' >&2
+  exit 1
+fi
+
 cd "$ROOT"
 if [[ "${OTTRIN_SKIP_BUILD:-0}" != "1" ]]; then
     cargo build --release -p ottrin-app -p ottrin-platform -p ottrin-search
@@ -100,7 +105,10 @@ fi
 
 printf '%s  %s\n' "$APPIMAGETOOL_SHA256" "$APPIMAGETOOL" | sha256sum -c -
 
-ARCH=x86_64 "$APPIMAGETOOL" "$APPDIR" "$WORK/$(basename "$APPIMAGE")"
+# Validate the embedded metadata locally. A remote homepage outage must not
+# change the result of an otherwise identical package build.
+appstreamcli validate --no-net "$APPDIR/usr/share/metainfo/org.ottrin.Ottrin.appdata.xml"
+ARCH=x86_64 "$APPIMAGETOOL" --no-appstream "$APPDIR" "$WORK/$(basename "$APPIMAGE")"
 # The embedded record is the source snapshot. Publishing invalidates the old
 # cohort receipt, which may itself be tracked; it must not change this record.
 source_record="$APPDIR/usr/share/doc/ottrin/SOURCE_REVISION.txt"

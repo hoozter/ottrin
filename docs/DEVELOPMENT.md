@@ -721,7 +721,7 @@ Linux portable:
 ./packaging/linux/package-portable.sh
 ```
 
-Linux AppImage:
+Linux AppImage (requires `appstreamcli` from the `appstream` package):
 
 ```sh
 ./packaging/linux/package-appimage.sh
