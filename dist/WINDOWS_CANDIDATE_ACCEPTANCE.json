@@ -1,44 +1,46 @@
 {
-  "status": "pass scoped Windows Save, installer and desktop integration",
-  "source_commit": "381ef19397088c3ff9f0d1c30ecb1863c31757e5",
+  "status": "pass scoped Windows delayed-click, installer and desktop integration",
+  "source_commit": "a9c718a2f21f9c1c45e798f2fc83a3f59b96bbae",
   "working_tree_at_build": "clean",
   "candidate": "/home/campbell/Projects/Ottrin/dist/windows-candidate",
   "artifacts": {
-    "Ottrin-0.1.0-windows-x64-setup.exe": "c33c96ef5f9bae403d7c53bf03ed07c016ccb8ba39133ca64d8e8fdc3c32b205",
-    "Ottrin-0.1.0-windows-x64-portable.zip": "16a1f51eb8edda209dc215402e2d19bcbc70e4c54ef9144adc021f3e925ece46",
-    "Ottrin-0.1.0-windows-x64-development.msix": "73977f03c376650cbf8440c414fea1638a48c614ce61cc175e99fc3c8796ddc1"
+    "Ottrin-0.1.0-windows-x64-setup.exe": "b58938b254f05d84a51ae94243a7f517ebcd77b1edd9198b4f275f5eefd477b0",
+    "Ottrin-0.1.0-windows-x64-portable.zip": "ad11a3ebef6f5ca2c925992e6b33713683825b382d8d8566b14bf812f18029d7",
+    "Ottrin-0.1.0-windows-x64-development.msix": "308a9e9c320e9048087a2b962089d939e6281f334d27618a73b26fadd4c1cd09"
   },
   "payload_files": 59,
-  "evidence_directory": ".hermes/evidence/windows-save-identity-delivery-current",
+  "evidence_directory": ".hermes/evidence/theme-editor-pointer-fix-current",
   "hosted_source": {
-    "run": 42582687209,
-    "tested_source_revision": "381ef19397088c3ff9f0d1c30ecb1863c31757e5",
+    "run": 42653629672,
+    "tested_source_revision": "a9c718a2f21f9c1c45e798f2fc83a3f59b96bbae",
     "all_four_jobs_success": true
   },
   "host_content": "HOST_PAYLOAD.json",
-  "current_native_fields": ".hermes/evidence/windows-save-identity-delivery-current/INSTALLED_SAVE_IDENTITY.json",
-  "daemon_runtime": ".hermes/evidence/windows-save-identity-delivery-current/WINDOWS_DAEMON_RUNTIME.json",
+  "current_native_fields": ".hermes/evidence/theme-editor-pointer-fix-current/native-installed-bounded/GUEST_RESULT.json",
+  "daemon_runtime": ".hermes/evidence/theme-editor-pointer-fix-current/WINDOWS_DAEMON_RUNTIME.json",
   "native_msix": {
-    "current_assembly": ".hermes/evidence/windows-save-identity-delivery-current/ASSEMBLY_ACCEPTANCE.json",
-    "current_runtime_login_removal": ".hermes/evidence/windows-save-identity-delivery-current/runtime30-fresh/ACCEPTANCE.json",
-    "current_enabled_update": ".hermes/evidence/windows-save-identity-delivery-current/runtime30-upgrade-full-headroom/ACCEPTANCE.json",
-    "current_disabled_update": ".hermes/evidence/windows-save-identity-delivery-current/runtime30-disabled/ACCEPTANCE.json"
+    "current_assembly": ".hermes/evidence/theme-editor-pointer-fix-current/ASSEMBLY_ACCEPTANCE.json",
+    "current_runtime_login_removal": ".hermes/evidence/theme-editor-pointer-fix-current/runtime31-fresh/ACCEPTANCE.json",
+    "current_enabled_update": ".hermes/evidence/theme-editor-pointer-fix-current/runtime31-upgrade/ACCEPTANCE.json",
+    "current_disabled_update": ".hermes/evidence/theme-editor-pointer-fix-current/runtime31-disabled/ACCEPTANCE.json"
   },
   "native_msi_rollback": {
     "status": "held: ordinary-user registration rollback/retry failed on exact8ede diagnostic; no current accepted MSI",
     "release_accepted": false,
     "diagnostic_input": ".hermes/evidence/windows-msi-package-control-current/input/DIAGNOSTIC_INPUT.json"
   },
-  "source_scope": ".hermes/evidence/windows-save-identity-delivery-current/WINDOWS_DELIVERY.json",
+  "source_scope": ".hermes/evidence/theme-editor-pointer-fix-current/WINDOWS_DELIVERY.json",
   "public_release_published": false,
   "limits": [
     "Software Windows guest; physical GPU, Store, signing and human acceptance remain separate.",
-    "Earlier native Borders and NSIS default-folder receipts keep their prior source scope.",
+    "Earlier native Save, Borders and NSIS default-folder receipts keep their prior source scopes.",
     "MSIX exposes Explorer folder actions and preserves the default folder app.",
     "Administrator Copy remains disabled and ordinary MSI rollback remains held."
   ],
-  "previous_native_upgrade": ".hermes/evidence/windows-shared-ui-current/NSIS_LIFECYCLE_ACCEPTANCE.json",
+  "previous_native_upgrade": ".hermes/evidence/windows-save-identity-delivery-current/nsis30-lifecycle-retry/ACCEPTANCE.json",
   "native_default_capability": ".hermes/evidence/windows-picker-keyboard-current/native-default/ACCEPTANCE.json",
-  "native_upgrade": ".hermes/evidence/windows-save-identity-delivery-current/nsis30-lifecycle-retry/ACCEPTANCE.json",
-  "native_borders": ".hermes/evidence/windows-shared-ui-current/BORDERS_ACCEPTANCE.json"
+  "native_upgrade": ".hermes/evidence/theme-editor-pointer-fix-current/nsis31-lifecycle-headroom/ACCEPTANCE.json",
+  "native_borders": ".hermes/evidence/windows-shared-ui-current/BORDERS_ACCEPTANCE.json",
+  "native_pointer_portable": ".hermes/evidence/theme-editor-pointer-fix-current/native-portable/GUEST_RESULT.json",
+  "previous_native_save_identity": ".hermes/evidence/windows-save-identity-delivery-current/INSTALLED_SAVE_IDENTITY.json"
 }

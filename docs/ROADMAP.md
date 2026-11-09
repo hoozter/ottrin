@@ -211,7 +211,20 @@ Previous List/Grid, Inspector and native distro-lifecycle receipts retain their
 original scopes.
 
 The stable local Windows portable ZIP, NSIS installer and unsigned development
-MSIX 30 use `381ef193` and are available at `dist/windows-candidate/`.
+MSIX 31 use `a9c718a2` and are available at `dist/windows-candidate/`.
+The installed and portable builds passed delayed physical Cancel in the theme
+editor in Dark and Light. The exact NSIS passed ten portable picker cases,
+fresh install and uninstall, upgrade with the index running, all three
+reinstall states, and locked-cache uninstall refusal and retry. The exact
+development MSIX passed fresh deployment and 30-to-31 upgrade with index
+startup enabled and disabled. The guest and volume were removed, all 25
+borrowed test executables were restored by hash, and promotion removed the
+superseded cohort and staging. The Linux packages and held MSI were preserved.
+[Windows delivery](../.hermes/evidence/theme-editor-pointer-fix-current/WINDOWS_DELIVERY.json)
+and [NSIS lifecycle](../.hermes/evidence/theme-editor-pointer-fix-current/nsis31-lifecycle-headroom/ACCEPTANCE.json).
+
+The preceding Windows portable ZIP, NSIS installer and development MSIX 30
+used `381ef193`.
 All 59 payload files match across the three formats. The exact NSIS passed
 standard-user Dark and Light Save reconfirmation after a same-name, same-size,
 same-mtime replacement. Uninstall preserved all original and replacement
@@ -1697,8 +1710,9 @@ Current source, test, package and owner/external scopes stay separate.
    install and removal, and upgrade with the running index. The host
    storage guard stopped the run during the first reinstall case.
    Its verified interrupted export preserves those results. The guest,
-   two volumes and private desktop were removed. Reinstall and locked
-   cache recovery still need full native results before promotion.
+   two volumes and private desktop were removed. The higher-headroom
+   retry then completed all reinstall states and locked-cache recovery,
+   and the exact cohort was promoted to the stable Windows path.
    [Interrupted lifecycle export](../.hermes/evidence/theme-editor-pointer-fix-current/nsis31-lifecycle/INTERRUPTED_ARCHIVE_TRANSFER.json).
 
    Verify every supported role/control against the actual interface and logical
