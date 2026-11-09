@@ -1,0 +1,66 @@
+{
+  "status": "reproduced installed Replace failure with diagnostic helper",
+  "base_installer_source": "6dd568dc9ecdff314b0445a82bf5553d778f6ea5",
+  "base_installer_sha256": "7b3568aa8f659e842ee3170a03d074ee4c10e3fd74de8fc7958ef6a574ac4955",
+  "original_installed_payload_files_verified": 59,
+  "helper_only_substitution": true,
+  "diagnostic_commit": "3f635af86cabe55a2baddd435bb2e674170cf4f6",
+  "private_build_diff_sha256": "434f8f7b92756e52cdbcf71f46c2afcae82e1671d06c3f5bf3f84e76ee10ec78",
+  "diagnostic_helper_sha256": "1678e2fc678815cbc007a096dcb90ef60af4da7ab0a94e5b64d6ffce1711a109",
+  "real_alternate_administrator_uac": true,
+  "rendered_error": "existing tree entry 0 version changed after stream reads (attributes)",
+  "native_disk_observation": {
+    "original_pre_copy_attributes": 1,
+    "retained_original_attributes": 33,
+    "alias_attributes": 33,
+    "original_and_alias_match_original_file_id": true,
+    "file_id": "0x000000000000000000970000000269d2",
+    "original_and_alias_sha256": "685e9ea8b47dd711664318a6e1fb0d498afe8e27f0ff7e3cacf98bba0be0a3b7",
+    "retained_original_named_stream": "Original named stream",
+    "public_destination_present": false,
+    "private_candidate_length": 34
+  },
+  "disk_after_failure": {
+    "source_sha256": "3fc5d485b7cbea0501dd61db76c43ff6dadea69e25a93ff970da52a3ec597073",
+    "source_present": true,
+    "target_present": false
+  },
+  "capture": "readonly-alias-diagnostic-failure.png",
+  "guest_teardown": {
+    "domain": "ottrin-init-helper-pipe-qa",
+    "uuid": "1b9ef3e2-3eed-4dd3-8671-0889c17ce1f1",
+    "volume": "ottrin-init-helper-pipe-qa.qcow2",
+    "status": "pass",
+    "domain_removed": true,
+    "overlay_removed": true,
+    "protected_definitions_states_and_backing_unchanged": true
+  },
+  "storage": {
+    "fixture_exit": 1,
+    "free_before": 23129030656,
+    "free_at_fixture_start": 25962082304,
+    "lowest_observed_free": 24620650496,
+    "free_after": 23120248832,
+    "restored_by_hash": [
+      {
+        "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-e2d6933b1ac22a07.exe",
+        "sha256": "17c5edb3db97a06169cad8041246aba8a356ebe145ea32e0266713ddf220f321"
+      },
+      {
+        "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-5d9606400e36b794.exe",
+        "sha256": "73e5752d7d8677e7e88c0187a08309e3c642bdbc58ebe5a3a1c1c921772fab7e"
+      },
+      {
+        "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_app-b14e5f4b4a3e18bf.exe",
+        "sha256": "c94272197bcfe863c99ecce770156e8fd9a49492b97ab4d00b8da88bf57bc9b1"
+      },
+      {
+        "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_indexd-2d6761405629f9c1.exe",
+        "sha256": "457fc7bfebcd6bce36fd1dc308eb32c98ba2c00e29a4ae10ba777a039f0df2fd"
+      }
+    ],
+    "compression_stage_removed": true
+  },
+  "private_worktree_and_build_outputs_removed": true,
+  "cleanup_free_delta_bytes": 69033984
+}

@@ -871,6 +871,17 @@ Current source, test, package and owner/external scopes stay separate.
      compression stage was removed, and all four borrowed test binaries
      were restored by hash. The fixture met the 24 GiB allocation floor.
      [Installed failure](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_READONLY_ALIAS_FAILURE.json).
+     An instrumented helper, with the exact original installer verified
+     before substitution, reproduced the failure after real UAC. The
+     root attributes changed after stream reads. On disk the retained
+     original and hard-link alias both kept the original ID, bytes and
+     read-only bit, and both showed an added archive bit. The retained
+     original kept its named stream. The private candidate remained
+     and the public destination was absent. Verify whether the bit is
+     reported late after rename or set during stream observation before
+     changing the paired metadata repair. The guest, overlay, private
+     worktree and diagnostic build output were removed.
+     [Installed diagnostic](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_READONLY_ALIAS_DIAGNOSTIC.json).
      [Private installer receipt](../.hermes/evidence/windows-admin-copy-package-current/READONLY_ALIAS_HOST_PAYLOAD.json).
      Crash recovery, cancellation, power loss and production latency
      remain separate gates.
