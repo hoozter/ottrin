@@ -1,0 +1,83 @@
+{
+  "status": "pass",
+  "input": {
+    "source_revision": "f23b13b0b01f5c5a13cd8df8de712f0c4e47b0f1",
+    "installer_sha256": "f65fd03e76219c36fdf722edf22d884c5dca19ca5fa26be9f4340c8e075b3c38",
+    "source_sha256": "3fc5d485b7cbea0501dd61db76c43ff6dadea69e25a93ff970da52a3ec597073",
+    "interrupt": false,
+    "stop": false,
+    "stopped_ui": false,
+    "symlink": true,
+    "directory_symlink": true,
+    "overwrite_symlink": true,
+    "resume": false,
+    "late_stop": false,
+    "tree_count": null,
+    "actor_sha256": "d105605a45b1c4a12cd7c71294857cbe54996278225b4764a028691f2d1a8b75",
+    "observer_sha256": null,
+    "caller_sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+    "admin_sid": "S-1-5-21-3183210791-1673105385-3262580894-1032"
+  },
+  "phases": {
+    "copy": {
+      "mode": "copy",
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+      "payload_files": 59,
+      "ordinary_target_read_error": "You cannot call a method on a null-valued expression.",
+      "client_exited": true,
+      "phase": "complete",
+      "client_exit": 0,
+      "client_pid": 1232,
+      "status": "pass"
+    },
+    "history-undo": {
+      "client_pid": 5388,
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+      "payload_files": 59,
+      "client_exited": true,
+      "phase": "complete",
+      "client_exit": 0,
+      "mode": "history-undo",
+      "status": "pass"
+    },
+    "undone": {
+      "client_pid": 7640,
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+      "payload_files": 59,
+      "client_exited": true,
+      "phase": "complete",
+      "client_exit": 0,
+      "mode": "undone",
+      "status": "pass"
+    },
+    "cleared": {
+      "client_pid": 1496,
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+      "payload_files": 59,
+      "client_exited": true,
+      "phase": "complete",
+      "client_exit": 0,
+      "mode": "cleared",
+      "status": "pass"
+    }
+  },
+  "checks": [
+    "Ordinary Replace left the original protected directory link in place.",
+    "Alternate-administrator UAC published the incoming directory link.",
+    "After restart, authenticated Undo restored the original link target.",
+    "Cleanup cleared transaction data, and a fourth app process found no remaining history.",
+    "Both external directory members, the source link and the unrelated marker were preserved."
+  ],
+  "scope": "Exact private NSIS directory symbolic-link Replace, restart, authenticated Undo and Cleanup. Link target and payload evidence are separate from native platform verification of original identity and security.",
+  "cleanup": {
+    "domain": "ottrin-init-helper-pipe-qa",
+    "uuid": "c00d3b77-b4b7-430f-91a3-baa6b574ca29",
+    "volume": "ottrin-init-helper-pipe-qa.qcow2",
+    "status": "pass",
+    "domain_removed": true,
+    "overlay_removed": true,
+    "protected_definitions_states_and_backing_unchanged": true,
+    "temporary_compiler_restored_by_hash": true,
+    "temporary_capture_and_result_files_removed": true
+  }
+}
