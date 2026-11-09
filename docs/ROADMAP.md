@@ -1202,8 +1202,14 @@ Current source, test, package and owner/external scopes stay separate.
    lint passed. Source-built Dark and Light checks at 150% verified
    all three divider lines in the real main menu, View Options and
    the editor preview after a color edit. Cancel preserved preferences.
-   The private desktops were removed. This change is source-only.
-   [Menu divider result](../.hermes/evidence/view-options-alignment-current/ACCEPTANCE.json).
+   The private desktops were removed.
+   [Menu divider source result](../.hermes/evidence/view-options-alignment-current/ACCEPTANCE.json).
+   The four Linux formats from `4d3f11a3` are now staged and passed
+   package-content verification. The exact mounted AppImage reproduced
+   the same divider pixels and saved-state behavior at 150% in Dark
+   and Light. Its package extraction and both private profiles were
+   removed. Windows ZIP and NSIS compilation is in progress.
+   [Packaged menu divider result](../.hermes/evidence/view-options-alignment-current/PACKAGED_MENU_ACCEPTANCE.json).
    Broader platform and theme-property coverage and whole-interface
    alignment/grouping remain open. The theme-library miniature now
    paints square selected-row fills, rounds only outer title/status corners and
