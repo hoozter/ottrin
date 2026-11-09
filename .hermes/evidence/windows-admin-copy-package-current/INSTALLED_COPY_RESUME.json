@@ -1,0 +1,86 @@
+{
+  "status": "pass",
+  "input": {
+    "source_revision": "645b48f0415c8cf9a31921af7f33c2778ecceafb",
+    "installer_sha256": "4acde2f5ae486076f7bc6c456d54eb0338bf6f530b6b663aad8b24ba82e48ead",
+    "source_sha256": "d8b2af1c85cdb4588e978aed5875e12cbfd20f68009823cf914b40cf41d8e4ce",
+    "interrupt": false,
+    "stop": false,
+    "resume": true,
+    "tree_count": 192,
+    "actor_sha256": "6836b7fd71f611b85f093d205b285a98a35f6b64af96e5d843a1eaa99a2f0454",
+    "caller_sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+    "admin_sid": "S-1-5-21-3183210791-1673105385-3262580894-1032"
+  },
+  "boundary": {
+    "helper_terminated": true,
+    "target_absent": true,
+    "client_pid": 7872,
+    "transaction": "e3d1460f84095fe3f55596aa12a8e001",
+    "helper_owner_sid": "S-1-5-21-3183210791-1673105385-3262580894-1032",
+    "helper_pid": 7568
+  },
+  "phases": [
+    {
+      "mode": "copy",
+      "tree_verified": true,
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+      "payload_files": 59,
+      "client_exited": true,
+      "phase": "complete",
+      "client_exit": 0,
+      "client_pid": 7872,
+      "status": "pass",
+      "transaction": "e3d1460f84095fe3f55596aa12a8e001"
+    },
+    {
+      "client_pid": 4268,
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+      "payload_files": 59,
+      "client_exited": true,
+      "phase": "complete",
+      "client_exit": 0,
+      "mode": "resume-history",
+      "status": "pass"
+    },
+    {
+      "client_pid": 7176,
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+      "payload_files": 59,
+      "client_exited": true,
+      "phase": "complete",
+      "client_exit": 0,
+      "mode": "resume-restored",
+      "status": "pass"
+    }
+  ],
+  "bytes_per_file": 65536,
+  "native_approval_sequence": [
+    "Copy",
+    "load verified history after interruption",
+    "Resume copy",
+    "load completed history after second reopen"
+  ],
+  "checks": [
+    "Before Resume, the verified destination was unpublished and matching retained stage remained",
+    "After Resume, all 192 destination files had the expected names and bytes and the directory was owned by the standard caller",
+    "All original files and the unrelated destination marker were unchanged in all phases",
+    "A fresh process offered Undo and no longer offered Resume"
+  ],
+  "fixture_corrections": [
+    "Pass tree count and hash explicitly into the PowerShell verifier",
+    "Allow concurrent write and delete sharing while observing the live journal",
+    "Identify the stage root by the transaction ID so its candidate directory is counted separately"
+  ],
+  "scope": "Exact private NSIS, one directory Copy, real helper interruption after TreeVerified and before publication, authenticated Resume, and restored Undo availability. The source remained present, and the Undo action was not executed in this case.",
+  "cleanup": {
+    "domain": "ottrin-init-helper-pipe-qa",
+    "uuid": "0a5a55b7-ad10-4c4f-a16f-349f1c299756",
+    "volume": "ottrin-init-helper-pipe-qa.qcow2",
+    "status": "pass",
+    "domain_removed": true,
+    "overlay_removed": true,
+    "protected_definitions_states_and_backing_unchanged": true,
+    "temporarily_moved_compiler_test_restored_by_hash": true
+  }
+}

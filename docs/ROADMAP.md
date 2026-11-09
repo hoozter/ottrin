@@ -278,9 +278,19 @@ and the held MSI were preserved. See
    stayed intact. Neither target remained, both stages were retained and
    the incomplete journal stayed byte-for-byte unchanged. See the
    [stopped-batch Undo receipt](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_STOP_UNDO.json).
+   The same installer passed Resume of a verified 192-file directory after
+   terminating the installed helper before publication. The second process
+   used separate administrator approval to resume. All 192 names and file
+   hashes matched, and the directory retained caller ownership. The third
+   process offered Undo and no longer offered Resume. The source and the
+   unrelated destination marker were preserved. See the
+   [installed Resume receipt](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_COPY_RESUME.json).
+   The exact fix revision passed Windows source tests for late successful
+   results at the transport and Activity layers. See the
+   [hosted Windows verification](https://github.com/hoozter/ottrin/actions/runs/42532646750/job/128890027357).
    The Dark Stopped badge and repeated technical errors need a presentation
-   pass. Forward Resume, late terminal result handling and the expanded
-   platform regression remain open.
+   pass. The installed late-result race and the expanded platform
+   regression remain open.
    The temporary worktrees,
    unpacked payloads, duplicate ZIP, superseded private installer and
    disposable guests were removed. The rebuilt private installer remains
