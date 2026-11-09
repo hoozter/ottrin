@@ -217,12 +217,17 @@ native MakeAppx, unpacked on Windows and independently checked against
 all 59 portable payload files. The exact portable daemon indexed 1,000
 files, tracked create/rename/delete, restarted cleanly and averaged
 0.31% of one core over a 30-second idle sample in the disposable guest.
-MSIX deployment and upgrade, plus the NSIS lifecycle for this candidate,
+Fresh MSIX 30 deployment passed under an ordinary Windows account.
+Explorer background, multi-selection and drive actions worked. A real
+sign-in started the index before any Ottrin command ran. Removal cleared
+the package, processes, startup task and shell registration and preserved
+preferences and fixture files. MSIX 29-to-30 upgrade and the NSIS lifecycle
 are pending before replacing the stable paths.
 [Staged payload](../.hermes/evidence/windows-save-identity-delivery-current/HOST_PAYLOAD.json).
 [Installed Save](../.hermes/evidence/windows-save-identity-delivery-current/INSTALLED_SAVE_IDENTITY.json).
 [MSIX assembly](../.hermes/evidence/windows-save-identity-delivery-current/ASSEMBLY_ACCEPTANCE.json).
 [Daemon runtime](../.hermes/evidence/windows-save-identity-delivery-current/WINDOWS_DAEMON_RUNTIME.json).
+[Fresh MSIX deployment](../.hermes/evidence/windows-save-identity-delivery-current/runtime30-fresh/ACCEPTANCE.json).
 
 The preceding Windows cohort used `7992ad1e` and development MSIX 28.
 The installed Save fix passed in Dark and Light. NSIS passed running-index
