@@ -1585,6 +1585,17 @@ Current source, test, package and owner/external scopes stay separate.
    [Folder integration](../.hermes/evidence/theme-editor-pointer-fix-linux-current/FILE_MANAGER_DBUS_ACCEPTANCE.json).
    [Picker caller](../.hermes/evidence/theme-editor-pointer-fix-linux-current/picker-save/RESULT.json).
 
+   The exact `a9c718a2` Windows NSIS and portable ZIP matched across
+   59 payload files. The installed delayed-click run reached the host
+   storage floor while NSIS was still installing, before any editor
+   action. The owned guest and both volumes were removed, all borrowed
+   binaries were restored, and 14 obsolete compiler sessions plus the
+   superseded popup package stage were retired. A fresh portable test
+   of the same executable is running. Installed lifecycle acceptance
+   remains separate.
+   [Windows package identity](../.hermes/evidence/theme-editor-pointer-fix-current/HOST_PAYLOAD.json).
+   [Interrupted guest and cleanup](../.hermes/evidence/theme-editor-pointer-fix-current/native-close/OWNER.json).
+
    Verify every supported role/control against the actual interface and logical
    hierarchy; field-map/test/capture counts do not close this audit.
 3. Close remaining supported themed-picker, Linux FileChooser/FileManager1 and
