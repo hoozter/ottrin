@@ -601,7 +601,8 @@ Current source, test, package and owner/external scopes stay separate.
      directory. The fixture checks that read-only discovery preserves its
      identity and empty contents, verifies unchanged source and destination,
      then retires the empty directory as the original caller. Windows-target
-     strict test lint passes. Run this case natively before claiming acceptance.
+     strict test lint passed, followed by the
+     [native first-directory case](../.hermes/evidence/caller-profile-init-current/matrix-first-directory/ACCEPTANCE.json).
      Source `515c0d18` adds one selectable case per fresh owned profile for
      before/after State-directory, anchor-file and recovery-root creation.
      Set `OTTRIN_TEST_COPY_PROFILE_FAULT` only on the ignored SYSTEM companion
@@ -613,25 +614,18 @@ Current source, test, package and owner/external scopes stay separate.
      refusal with the same bytes and native identities. The
      `before-anchor-flush` case checks that a complete record remains
      readable in the running system after the injected failure, with no
-     destination file created. It does not test crash durability. Strict
-     Windows-target test lint passes. Native execution of the expanded
-     matrix remains open. The owned runner
-     `caller-profile-init-current/run-profile-fault.py` binds the exact
-     cross-built `e12187c7` executable and selects one case for a fresh
-     stock guest. All nine host preflights bind distinct companion inputs.
-     The existing 24 GiB guard correctly refused allocation at about
-     22.4 GiB free. Keep the retained Windows guests and current packages
-     while recovering verified disposable space.
+     destination file created. That check establishes readability in the
+     running system. Strict Windows-target test lint passed. The owned
+     runner selects one case per fresh stock guest and binds the executable
+     and companion inputs. Initial preflights correctly refused VM
+     allocation below 24 GiB free. The nine native cases subsequently
+     passed and are summarized under Current ordered work.
      The exact `21f18bbe` hosted Windows job passed 19 native tests
      across staging aborts, claim publication, release and retirement,
      including process exits and preservation of foreign controls.
      Its log explicitly marks the ordinary-client and SYSTEM-companion
-     tests ignored. The local runner now binds the cross-built
-     `9c41c355` executable after the picker parser change. The rebuild used
-     the same compiler settings and replaced the executable in place. All
-     nine preflights passed the source and artifact checks. The 24 GiB
-     guard still prevented native execution after removing two superseded
-     incremental sessions.
+     tests ignored. The local fresh-profile runs provide the separate
+     ordinary-client and SYSTEM-companion evidence.
      [Hosted Windows job](https://github.com/hoozter/ottrin/actions/runs/42430923563/job/128579415040).
    - Extend coverage through the remaining claim and native I/O boundaries.
      The exact `2afcfc5a` hosted Windows suite passed read-only candidate
