@@ -222,13 +222,37 @@ pub(super) struct ExistingEntry {
 impl PinnedTree {
     fn validate_sources(
         &self,
+        phase: &str,
         mut progress: impl FnMut() -> Result<(), PlatformError>,
     ) -> Result<(), PlatformError> {
         self.authority.validate()?;
-        for source in &self.sources {
+        for (index, source) in self.sources.iter().enumerate() {
             progress()?;
-            if version(&source.handle)? != source.before {
-                return Err(io("existing tree version changed during observation"));
+            let observed = version(&source.handle)?;
+            let before = &source.before;
+            if observed != *before {
+                let changes = [
+                    ("identity", observed.identity != before.identity),
+                    ("directory flag", observed.directory != before.directory),
+                    ("link data", observed.link != before.link),
+                    (
+                        "case sensitivity",
+                        observed.case_sensitive != before.case_sensitive,
+                    ),
+                    ("length", observed.length != before.length),
+                    ("creation time", observed.created != before.created),
+                    ("write time", observed.modified != before.modified),
+                    ("change time", observed.changed != before.changed),
+                    ("attributes", observed.attributes != before.attributes),
+                ];
+                let fields = changes
+                    .into_iter()
+                    .filter_map(|(field, changed)| changed.then_some(field))
+                    .collect::<Vec<_>>()
+                    .join(", ");
+                return Err(io(format_args!(
+                    "existing tree entry {index} version changed {phase} ({fields})"
+                )));
             }
             if let Some(parent) = source.parent {
                 self.authority.binding(
@@ -257,7 +281,7 @@ impl PinnedTree {
         mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<ExistingTreeEvidence, PlatformError> {
         use std::os::windows::ffi::OsStrExt;
-        self.validate_sources(|| progress(0))?;
+        self.validate_sources("before stream reads", || progress(0))?;
         let mut entries = Vec::with_capacity(self.sources.len());
         let mut total = 0u64;
         for source in &self.sources {
@@ -296,7 +320,7 @@ impl PinnedTree {
                 owner_group_dacl,
             });
         }
-        self.validate_sources(|| progress(total))?;
+        self.validate_sources("after stream reads", || progress(total))?;
         for (source, evidence) in self.sources.iter().zip(&entries) {
             progress(total)?;
             if namespace::link_count(&source.handle)? != evidence.links
@@ -306,7 +330,7 @@ impl PinnedTree {
                 return Err(io("existing tree security, compression or aliases changed"));
             }
         }
-        self.validate_sources(|| progress(total))?;
+        self.validate_sources("after security and link rechecks", || progress(total))?;
         Ok(ExistingTreeEvidence { entries })
     }
 
