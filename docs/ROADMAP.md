@@ -313,7 +313,15 @@ and the held MSI were preserved. See
    Stopped badge, the exact count and Undo. The published file matched the
    source and was owned by the original standard user. See the
    [installed Stop presentation receipt](../.hermes/evidence/windows-admin-copy-package-current/STOPPED_UI_INSTALLED.json).
-   The expanded original-caller regression remains open. The private
+   The expanded original-caller regression reached both fresh recovery
+   cases but was interrupted before the test reported a result. The
+   disposable guest grew past 20 GB and host free space fell below 3 GiB.
+   Teardown removed the guest, overlay and fixture media and restored the
+   temporarily moved compiler file by hash. The native driver now enforces
+   that runtime floor. A full repeat needs additional host headroom beyond
+   the existing 24 GiB startup check. See the
+   [interruption receipt](../.hermes/evidence/caller-profile-init-current/CURRENT_AUTHENTICATED_RECOVERY_INTERRUPTED.json).
+   The private
    installer for that work is staged under
    `.hermes/packaging-tmp/.windows-admin-copy-stopped-ui/`. The build worktree,
    unpacked payload, duplicate ZIP, superseded installer and disposable

@@ -738,6 +738,11 @@ with ExitStack() as stack:
  state['application_observation_timeout_seconds']=args.application_timeout_seconds;save('OWNER.json',state)
  time.sleep(8);deadline=time.monotonic()+args.application_timeout_seconds
  while True:
+  free=shutil.disk_usage(state['storage_at_start']['path']).free
+  storage_floor=3*1024**3
+  if free<storage_floor:
+   state['runtime_storage_stop']={'available_bytes':free,'minimum_free_bytes':storage_floor}
+   raise OSError('Owned Windows QA reached the host storage floor during native execution')
   try:
    result=ps("$p='"+owner['root']+"\\results\\RESULT.json';if(Test-Path $p){$s=[IO.File]::Open($p,'Open','Read',([IO.FileShare]::ReadWrite-bor[IO.FileShare]::Delete));$r=[IO.StreamReader]::new($s);try{$r.ReadToEnd()}finally{$r.Dispose()}}else{'{}'}",20)
    if result.get('exitcode')==0:

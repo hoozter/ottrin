@@ -1,0 +1,72 @@
+{
+  "status": "interrupted at host storage floor; no terminal test result",
+  "input": {
+    "source_revision": "a4ecbd38c54a03463194a752dcb0be77cb826c62",
+    "source_test_sha256": "af5435367b21365fd9a2a8c3d88c4526e5303596789379d49c69c793562d5433",
+    "test_sha256": "b417fd84d6313a6cf97fb0a5c12fb28cfbc38c1813e8ea4bffc7e7d14aae0d54",
+    "source_bytes": 700664731,
+    "staged_bytes": 679141443,
+    "strip_command": [
+      "x86_64-w64-mingw32-strip",
+      "--strip-debug"
+    ],
+    "unchanged_executable_text": {
+      "entry_rva": 5136,
+      "bytes": 530683904,
+      "sha256": "409e0451630cb6dec8a47b3d67aee1c8fb309749c5a8e05c92be22a839d226df"
+    },
+    "actor_sha256": "357dade56295ae9b1528fd895fc7aac8e262ed580605e0b8bc8ed2d64afc4cba",
+    "scope": "Explicit ordinary-client/SYSTEM-companion native caller and ownership mechanism observation on an owned offline clone; not alternate-administrator UAC, enabled Copy, package or whole-roadmap acceptance.",
+    "system_companion_sha256": "5ebe34790edcaed569e4de78662e88318cd6e547f5bb0fa50aa68184a2343ca2",
+    "changed_product_sources": {},
+    "source_scope": "Git revision is the reference base; changed_product_sources binds any uncommitted product snapshot. Executable hash/text bind the actual staged native test."
+  },
+  "windows": {
+    "caption": "Microsoft Windows 11 Enterprise Evaluation",
+    "disable_msi": null,
+    "build": "26300",
+    "msi": "5.0.26100.9444"
+  },
+  "actor": {
+    "identity": {
+      "sid": "S-1-5-21-3790294415-2606194316-2422870471-1002",
+      "administrator": false,
+      "session": 1
+    },
+    "phase": "ordinary cross-principal client",
+    "status": "running"
+  },
+  "system": {
+    "source_sha256": "b417fd84d6313a6cf97fb0a5c12fb28cfbc38c1813e8ea4bffc7e7d14aae0d54",
+    "expected_caller_sid": "S-1-5-21-3790294415-2606194316-2422870471-1002",
+    "pid": 2832
+  },
+  "storage_at_start": {
+    "available_bytes": 25909383168,
+    "minimum_headroom_bytes": 25769803776,
+    "path": "/var/lib/libvirt/images"
+  },
+  "stop": {
+    "available_bytes": 2998771712,
+    "minimum_free_bytes": 3221225472,
+    "exit": 143,
+    "method": "Exact live driver signaled to run its registered teardown"
+  },
+  "observations": [
+    "Ordinary and SYSTEM native test processes were live.",
+    "Owned destination directories for both fresh-recovery cases were observed. Those directories do not establish passing assertions."
+  ],
+  "interrupted_export_sha256": "6e4314d994e90662e74cff23158529889116d6387352325dfac3910e54a3e63e",
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-boundary-client.qcow2",
+      "ottrin-boundary-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null,
+    "temporarily_moved_compiler_test_restored_by_hash": true,
+    "consumed_host_run_removed": true
+  }
+}
