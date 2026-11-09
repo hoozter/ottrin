@@ -1,13 +1,13 @@
 {
   "status": "pass scoped Linux theme menu preview delivery",
-  "source_revision": "4c88e968b3ef3b749c00da72cd202eb1d6f0f1c4",
+  "source_revision": "9f27ece172a23d42155c8cbe6496248461f8e182",
   "artifacts": {
-    "ottrin-0.1.0-1.x86_64.rpm": "cf09cbd51b2cba58d87b33b21138755c5dc1c16ffe6dae1a08defca752af495a",
-    "Ottrin-0.1.0-x86_64.AppImage": "c460581c7a190915880d4526fec3a13c0d788593949634181b9dcd3355d42c82",
-    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "cba3c131c99105e06024bae7a84bf3fb70230aa548fb8f373f25fdb66a220642",
-    "ottrin_0.1.0_amd64.deb": "86f6c6e75b1febb898a39081c7b188311ff6600741cde59175349ea5ba551b73"
+    "ottrin-0.1.0-1.x86_64.rpm": "92cbdd8e4f455b618470b60bd87d2a4da729b2432fc6415bfa4a8f8a9d7f53bd",
+    "Ottrin-0.1.0-x86_64.AppImage": "92744f85c4904f597e24d07ab6afacca7472f38d898407157f7f84f60ff52c2a",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "994824e1df0328c7bc597b0ed027f915d41142de9eb0988e44a4e4c8406843d8",
+    "ottrin_0.1.0_amd64.deb": "937bfbcc2227ea6c650942b2abe188f9570b160dbc112f0508d1c524a790c38d"
   },
-  "evidence": ".hermes/evidence/appearance-live-menu-delivery-current",
+  "evidence": ".hermes/evidence/theme-preview-popup-linux-current",
   "checks": [
     "production portable/AppImage runtime closure and playback checks",
     "production native payload, dependencies, policy, hooks and code identity blocks",
@@ -17,30 +17,32 @@
     "actual AppImage and RPM index daemon namespace/ownership refusal checks"
   ],
   "runtime_sha256": {
-    "application": "c58fff8298e3c657e7dc312268893189b0bb84c1b3cab387b4281146953df24a",
+    "application": "54d4bb2e1c6acb1c523f7eacb637bd9ff01f7cc28f94223553e49c7578b6c832",
     "index_daemon": "f456fca656cb1c1dfe36832b4cf58beaefc0949d7bc065b6f673fe7afe613aaa",
     "privileged_helper": "f123b93368d7919067bdcfe6f295c079fc1d000c38fdb2f3f493c465bd0f932f",
     "html_renderer": "f6a4ebe343c58ad3f06398c81574aa44d2b1afcfd7486e9e180c9368efefcbed"
   },
   "hosted_source": {
-    "run": 42622696108,
-    "tested_source_revision": "4c88e968b3ef3b749c00da72cd202eb1d6f0f1c4",
+    "run": 42637304102,
+    "tested_source_revision": "9f27ece172a23d42155c8cbe6496248461f8e182",
     "all_four_jobs_success": true
   },
-  "source_scope": ".hermes/evidence/appearance-live-menu-delivery-current/BUILD_SOURCE.json",
-  "mounted_menu_preview": ".hermes/evidence/appearance-live-menu-delivery-current/MENU_UI_ACCEPTANCE.json",
-  "daemon_runtime": ".hermes/evidence/appearance-live-menu-delivery-current/LINUX_DAEMON_RUNTIME.json",
+  "source_scope": ".hermes/evidence/theme-preview-popup-linux-current/BUILD_SOURCE.json",
+  "mounted_menu_preview": ".hermes/evidence/theme-preview-popup-linux-current/MENU_UI_ACCEPTANCE.json",
+  "daemon_runtime": ".hermes/evidence/theme-preview-popup-linux-current/LINUX_DAEMON_RUNTIME.json",
   "current_helper_read_only": [
-    ".hermes/evidence/appearance-live-menu-delivery-current/LINUX_HELPER_RUNTIME.json"
+    ".hermes/evidence/theme-preview-popup-linux-current/LINUX_HELPER_RUNTIME.json"
   ],
   "previous_cohort": {
-    "source_revision": "2fa925f0f895c34e67865ce2c48f562b5f5565f7",
-    "receipt": ".hermes/evidence/appearance-live-menu-delivery-current/PREVIOUS_LINUX_PACKAGES_ACCEPTANCE.json"
+    "source_revision": "4c88e968b3ef3b749c00da72cd202eb1d6f0f1c4",
+    "receipt": ".hermes/evidence/theme-preview-popup-linux-current/PREVIOUS_LINUX_PACKAGES_ACCEPTANCE.json"
   },
   "limits": [
     "Mounted Dark and Light X11 verified live and preview menu rows, draft text and geometry, and Cancel. Native Windows appearance remains open.",
     "Other portal, theme and native distro receipts retain their recorded package scopes.",
     "Bundled administrator helper passed read-only protocol checks. Updating the installed system helper requires its own administrator action.",
-    "Packaged manuals are build-time snapshots at 4c88e968; repository metadata records later delivery."
-  ]
+    "Packaged manuals are build-time snapshots at 9f27ece1; repository metadata records later delivery."
+  ],
+  "mounted_file_manager": ".hermes/evidence/theme-preview-popup-linux-current/FILE_MANAGER_DBUS_ACCEPTANCE.json",
+  "mounted_picker_caller": ".hermes/evidence/theme-preview-popup-linux-current/picker-save/RESULT.json"
 }
