@@ -1,0 +1,191 @@
+{
+  "status": "pass native portable Windows visual retest",
+  "package": {
+    "source_revision": "4d3f11a379df2d58424093a0bb13fbf42b2aa8b4",
+    "files": [
+      {
+        "name": "portable.zip",
+        "sha256": "1759dce7320b0f5015e144db54880550044326a4c2687717fd7382e30b95c457"
+      }
+    ],
+    "actor_sha256": "13dc56225c7946bcd66d7e08049238f9d1905394d15c47b2f11e4c6cca83b1a0",
+    "scope": "Exact staged portable candidate for native theme rendering and Cancel. Installer lifecycle is separate."
+  },
+  "verified_export_sha256": "3337bf0e2a5e4f9b6127f8abcdc3ddf6906fbe585ea4d6ae9eb60766117cac29",
+  "pixels": {
+    "Dark": {
+      "main-divider": {
+        "x_range": [
+          815,
+          1005
+        ],
+        "rows": [
+          134,
+          306,
+          338
+        ],
+        "contiguous_pixels_per_row": [
+          190,
+          190,
+          190
+        ],
+        "rgb": "#2BBF73"
+      },
+      "view-divider": {
+        "x_range": [
+          700,
+          1010
+        ],
+        "rows": [
+          179,
+          242,
+          406,
+          512
+        ],
+        "contiguous_pixels_per_row": [
+          224,
+          224,
+          224,
+          224
+        ],
+        "rgb": "#2BBF73"
+      },
+      "preview-divider": {
+        "x_range": [
+          445,
+          645
+        ],
+        "rows": [
+          302,
+          474,
+          506
+        ],
+        "contiguous_pixels_per_row": [
+          190,
+          190,
+          190
+        ],
+        "rgb": "#2BBF73"
+      },
+      "smart_panel_search_header": {
+        "region": [
+          450,
+          247,
+          472,
+          272
+        ],
+        "exact_pixels": 13,
+        "rgb": "#F06E2D"
+      }
+    },
+    "Light": {
+      "main-divider": {
+        "x_range": [
+          815,
+          1005
+        ],
+        "rows": [
+          134,
+          306,
+          338
+        ],
+        "contiguous_pixels_per_row": [
+          190,
+          190,
+          190
+        ],
+        "rgb": "#2BBF73"
+      },
+      "view-divider": {
+        "x_range": [
+          700,
+          1010
+        ],
+        "rows": [
+          179,
+          242,
+          406,
+          512
+        ],
+        "contiguous_pixels_per_row": [
+          224,
+          224,
+          224,
+          224
+        ],
+        "rgb": "#2BBF73"
+      },
+      "preview-divider": {
+        "x_range": [
+          445,
+          645
+        ],
+        "rows": [
+          302,
+          474,
+          506
+        ],
+        "contiguous_pixels_per_row": [
+          190,
+          190,
+          190
+        ],
+        "rgb": "#2BBF73"
+      },
+      "smart_panel_search_header": {
+        "region": [
+          450,
+          247,
+          472,
+          272
+        ],
+        "exact_pixels": 3,
+        "rgb": "#F06E2D"
+      }
+    }
+  },
+  "color_field_readback": [
+    {
+      "control": "Borders and dividers (hex)",
+      "actual": "#2BBF73",
+      "requested": "#2BBF73",
+      "theme": "Dark"
+    },
+    {
+      "control": "Secondary text (hex)",
+      "actual": "#F06E2D",
+      "requested": "#F06E2D",
+      "theme": "Dark"
+    },
+    {
+      "control": "Borders and dividers (hex)",
+      "actual": "#2BBF73",
+      "requested": "#2BBF73",
+      "theme": "Light"
+    },
+    {
+      "control": "Secondary text (hex)",
+      "actual": "#F06E2D",
+      "requested": "#F06E2D",
+      "theme": "Light"
+    }
+  ],
+  "physical_cancel_preserved_saved_preferences_both_variants": true,
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "disposable_outputs_retired": [
+    ".hermes/evidence/windows-menu-divider-delivery-current/native-theme-retry/desktop-ready.png",
+    ".hermes/evidence/windows-menu-divider-delivery-current/native-theme-retry/privacy-accepted-0.png",
+    ".hermes/evidence/windows-menu-divider-delivery-current/native-theme-retry/privacy-accepted-1.png"
+  ],
+  "retained_visual_export": ".hermes/evidence/windows-menu-divider-delivery-current/native-theme-retry/RESULTS.zip",
+  "scope": "Exact portable candidate only. Installer lifecycle is separate."
+}

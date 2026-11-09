@@ -9,7 +9,7 @@ not complete a broader native, platform or user-acceptance requirement.
 | Platform | Launchable locally | Next delivery |
 | --- | --- | --- |
 | Linux | `b1bc72fe` AppImage, portable archive, DEB and RPM in `dist/packages/`. [Exact package receipt](../dist/packages/LINUX_PACKAGES_ACCEPTANCE.json). | `4d3f11a3` passed mounted Dark and Light menu and Smart Panel checks, and watcher and restart checks. Promotion waits for the [hosted matrix](https://github.com/hoozter/ottrin/actions/runs/42687932598). |
-| Windows | `a9c718a2` portable ZIP, NSIS and development MSIX 31 in `dist/windows-candidate/`. [Exact package receipt](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json). | `4d3f11a3` is staged. MSIX 32 deployment and native visual verification are in the test queue. The NSIS lifecycle fixture verifies the staged installer against the current candidate after those guests release their resources. |
+| Windows | `a9c718a2` portable ZIP, NSIS and development MSIX 31 in `dist/windows-candidate/`. [Exact package receipt](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json). | `4d3f11a3` passed native MSIX 32 deployment and upgrade and portable theme rendering. The staged installer still needs native NSIS lifecycle acceptance. |
 
 The [ordered work](#current-ordered-work) tracks the remaining software
 and package acceptance. The [owner and external waiting list](#ownerexternal-waiting-list)
@@ -1246,9 +1246,14 @@ Current source, test, package and owner/external scopes stay separate.
    preserved preferences after physical Cancel. The native capture
    review did not verify the requested colors in both variants or all
    menu frames. This is interaction evidence only. The native visual
-   fixture needs a verified color commit and capture with each popup
-   visibly open. MSIX deployment and update checks remain independent.
+   fixture was rerun with verified color field readback and each popup
+   visibly open. In both variants the exact staged ZIP rendered the
+   entered color on the live main menu, View Options and editor preview
+   dividers and the Smart Panel Search header icon. Physical Cancel
+   preserved saved preferences. The guest, its two volumes and duplicate
+   desktop captures were removed. This is portable Windows evidence.
    [Windows theme capture review](../.hermes/evidence/windows-menu-divider-delivery-current/NATIVE_THEME_VISUAL_REVIEW.json).
+   [Windows theme retest](../.hermes/evidence/windows-menu-divider-delivery-current/native-theme-retry/ACCEPTANCE.json).
    Broader platform and theme-property coverage and whole-interface
    alignment/grouping remain open. The theme-library miniature now
    paints square selected-row fills, rounds only outer title/status corners and
