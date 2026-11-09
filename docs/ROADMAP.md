@@ -789,19 +789,25 @@ Current source, test, package and owner/external scopes stay separate.
      acquired no recovery journal.
      [Installed profile-owner pass](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_PROFILE_OWNER_PASS.json).
      [Installed profile refusal controls](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_PROFILE_REFUSAL_CONTROLS.json).
-     Read-only originals with hard-link aliases remain open in the
-     transaction engine. A native Windows build 26100 NTFS probe refused
+     A native Windows build 26100 NTFS probe for read-only hard-link originals refused
      writable opens through both the default stream and an existing named
      stream, including through the alias. Under SYSTEM, a volume handle
      opened from the pinned file's final GUID path could be flushed before
      and after renaming the original in both directions. Both links kept
      the original file ID, read-only flag, and both stream payloads. The
      32-bit volume serials matched. FileIdInfo on the volume handle
-     returned error 87. This establishes a volume-flush candidate without
-     changing a shared attribute. Integrate only with a pinned local-volume
-     binding, before the first namespace mutation, and verify bounded
-     cancellation, journal recovery, and the installed administrator path
-     separately. The probe did not test power loss or production latency.
+     returned error 87. The journal now obtains a flush-only capability
+     for that local NTFS volume through the authenticated administrator
+     route before persisting a new move intent. It checks the original and
+     parent volume GUID and serial, rechecks the original after the writer
+     handoff, and uses the capability for retention, restoration and any
+     paired rename-metadata repair. The multi-link path keeps the shared
+     read-only bit set. Windows GNU test-target checking and strict
+     all-target Clippy pass. The installed Replace, restart, Undo and
+     cleanup fixture with an external alias and a named stream still needs
+     a newly built private installer and a native run. The installed guest
+     runner requires 24 GiB of free host disk space. Crash recovery,
+     cancellation, power loss and production latency remain separate gates.
      [Native read-only alias probe](../.hermes/evidence/windows-admin-copy-package-current/READONLY_ALIAS_VOLUME_PROBE.json).
 
    Missing member IDs never license deletion or a completed original-batch claim.

@@ -7,7 +7,7 @@ pub(crate) use identity::{
 };
 pub(crate) use privileges::{with_file_privileges, with_thread_token};
 pub(crate) mod journal_access;
-pub(crate) use recovery::Volumes;
+pub(crate) use recovery::{VolumeFlush, Volumes};
 use std::ffi::{OsStr, OsString, c_void};
 use std::fs::File;
 use std::io;
@@ -695,13 +695,17 @@ fn create_private_native(
 
 /// Diagnostic/recovery location of this actual object, never namespace authority.
 pub(crate) fn location(file: &File) -> io::Result<std::path::PathBuf> {
+    location_with_flags(file, FILE_NAME_NORMALIZED)
+}
+
+fn location_with_flags(file: &File, flags: u32) -> io::Result<std::path::PathBuf> {
     let mut buffer = vec![0u16; 32768];
     let length = unsafe {
         GetFinalPathNameByHandleW(
             file.as_raw_handle().cast(),
             buffer.as_mut_ptr(),
             buffer.len() as u32,
-            FILE_NAME_NORMALIZED,
+            flags,
         )
     };
     if length == 0 {

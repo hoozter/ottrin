@@ -2015,9 +2015,16 @@ impl Journal {
         let readonly = !base.directory
             && base.attributes & windows_sys::Win32::Storage::FileSystem::FILE_ATTRIBUTE_READONLY
                 != 0;
-        if readonly && !self.state.original_readonly_transition(&base) {
+        let transition_readonly = readonly && self.state.original_readonly_transition(&base);
+        let flush_volume = readonly && !transition_readonly;
+        if flush_volume
+            && (base.link.is_some()
+                || evidence.entries[0].links < 2
+                || !matches!(self.authority, Authority::Caller(_)))
+        {
             return Err(PlatformError::UnsupportedSafeCopy(
-                "readonly original must be an ordinary file with one hard-link name".into(),
+                "read-only hard-link replacement requires the authenticated administrator helper"
+                    .into(),
             ));
         }
         // A paired rename-metadata acknowledgement already flushed the exact
@@ -2073,6 +2080,17 @@ impl Journal {
         } else {
             None
         };
+        let volume = flush_volume
+            .then(|| {
+                self.authority.file_operation(|| {
+                    crate::windows_fs::VolumeFlush::open(&read, &self.parent_dir).map_err(io)
+                })
+            })
+            .transpose()?;
+        let flush_original = |root: &File| match &volume {
+            Some(volume) => volume.sync(root).map_err(io),
+            None => root.sync_all().map_err(io),
+        };
         if !intent {
             self.persist(direction.intent())?;
         }
@@ -2112,7 +2130,7 @@ impl Journal {
             .binding(&self.parent_dir, &name, base.identity)?;
         drop(tree);
         progress(0)?;
-        if readonly {
+        if transition_readonly {
             use windows_sys::Win32::Storage::FileSystem::{
                 FILE_ATTRIBUTE_NORMAL, FILE_ATTRIBUTE_READONLY,
             };
@@ -2149,7 +2167,8 @@ impl Journal {
             boundary(self.sequence, Step::ReadonlyFlushed)?;
             self.failed = false;
         } else {
-            root.sync_all().map_err(io)?;
+            flush_original(&root)?;
+            progress(0)?;
         }
         if name != to {
             self.authority.file_operation(|| {
@@ -2161,8 +2180,10 @@ impl Journal {
             })?;
         }
         boundary(self.sequence, Step::OriginalRenamed)?;
-        root.sync_all().map_err(io)?;
-        self.parent_dir.sync_all().map_err(io)?;
+        flush_original(&root)?;
+        if volume.is_none() {
+            self.parent_dir.sync_all().map_err(io)?;
+        }
         boundary(self.sequence, Step::OriginalFlushed)?;
         let tree = tree::PinnedTree::open(
             &self.authority,
@@ -2177,7 +2198,7 @@ impl Journal {
         self.authority
             .binding(&self.parent_dir, &to, expected.entries[0].version.identity)?;
         drop(tree);
-        self.finish_creation(kind, &root)?;
+        self.finish_creation(kind, &root, flush_original)?;
         let tree = tree::PinnedTree::open(
             &self.authority,
             &root,
@@ -3027,7 +3048,9 @@ impl PermissionStage {
                 )?;
                 proof.revalidate(parent, &journal.state, &mut progress)?;
                 journal
-                    .finish_creation(RenameKind::Publish, &root)
+                    .finish_creation(RenameKind::Publish, &root, |file| {
+                        file.sync_all().map_err(io)
+                    })
                     .map_err(|error| {
                         publication_context("preserving renamed creation time", error)
                     })?;
@@ -3043,7 +3066,9 @@ impl PermissionStage {
                 proof.revalidate(parent, &journal.state, &mut progress)?;
             } else {
                 journal
-                    .finish_creation(RenameKind::Publish, &root)
+                    .finish_creation(RenameKind::Publish, &root, |file| {
+                        file.sync_all().map_err(io)
+                    })
                     .map_err(|error| {
                         publication_context("preserving renamed creation time", error)
                     })?;
@@ -4183,7 +4208,9 @@ fn undo_bound_copy(
         if let Some(original) = &original {
             original.revalidate(parent, &mut progress)?;
         }
-        journal.finish_creation(RenameKind::Withdraw, &root)?;
+        journal.finish_creation(RenameKind::Withdraw, &root, |file| {
+            file.sync_all().map_err(io)
+        })?;
         drop(tree);
         tree = HeldTree::open(
             &journal.authority,

@@ -423,6 +423,7 @@ impl Journal {
         &mut self,
         kind: RenameKind,
         root: &File,
+        flush: impl FnOnce(&File) -> Result<(), PlatformError>,
     ) -> Result<EntryVersion, PlatformError> {
         if self.failed {
             return Err(io(
@@ -462,7 +463,7 @@ impl Journal {
             metadata::restore_rename_metadata(root, &actual, &expected)?;
         }
         boundary(self.sequence, Step::CreationRestored)?;
-        root.sync_all().map_err(io)?;
+        flush(root)?;
         boundary(self.sequence, Step::CreationFlushed)?;
         let after = super::super::version(root)?;
         self.state.validate_creation_epoch(kind, &after)?;

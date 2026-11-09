@@ -112,3 +112,96 @@ impl Volumes {
         }
     }
 }
+
+/// Durability for a pinned read-only file with aliases, where opening a
+/// writable stream would require changing attributes visible to every alias.
+pub(crate) struct VolumeFlush {
+    device: File,
+    guid: String,
+    serial: u32,
+}
+
+impl VolumeFlush {
+    pub(crate) fn open(root: &File, parent: &File) -> std::io::Result<Self> {
+        use std::os::windows::fs::OpenOptionsExt;
+        use windows_sys::Win32::Foundation::GENERIC_WRITE;
+
+        let guid = volume_guid(root)?;
+        let serial = ntfs_serial(root)?;
+        if !guid.eq_ignore_ascii_case(&volume_guid(parent)?) || serial != ntfs_serial(parent)? {
+            return Err(std::io::Error::other(
+                "original and its parent use different volumes",
+            ));
+        }
+        let device = File::options()
+            .access_mode(GENERIC_WRITE)
+            .share_mode(FILE_SHARE_READ | FILE_SHARE_WRITE)
+            .open(&guid)?;
+        if ntfs_serial(&device)? != serial {
+            return Err(std::io::Error::other("original volume changed during open"));
+        }
+        Ok(Self {
+            device,
+            guid,
+            serial,
+        })
+    }
+
+    pub(crate) fn sync(&self, root: &File) -> std::io::Result<()> {
+        if !self.guid.eq_ignore_ascii_case(&volume_guid(root)?) || self.serial != ntfs_serial(root)?
+        {
+            return Err(std::io::Error::other(
+                "original volume changed before flush",
+            ));
+        }
+        self.device.sync_all()
+    }
+}
+
+fn volume_guid(file: &File) -> std::io::Result<String> {
+    use std::path::{Component, Prefix};
+
+    let path = super::location_with_flags(file, FILE_NAME_OPENED | VOLUME_NAME_GUID)?;
+    if let Some(Component::Prefix(prefix)) = path.components().next()
+        && let Prefix::Verbatim(name) = prefix.kind()
+        && let Some(guid) = name.to_str().and_then(|name| name.strip_prefix("Volume{"))
+        && let Some(guid) = guid.strip_suffix('}')
+        && guid.len() == 36
+        && guid.bytes().enumerate().all(|(index, byte)| {
+            if matches!(index, 8 | 13 | 18 | 23) {
+                byte == b'-'
+            } else {
+                byte.is_ascii_hexdigit()
+            }
+        })
+    {
+        return Ok(format!(r"\\?\Volume{{{guid}}}"));
+    }
+    Err(std::io::Error::other("original has no local volume GUID"))
+}
+
+fn ntfs_serial(file: &File) -> std::io::Result<u32> {
+    use std::{os::windows::io::AsRawHandle, ptr};
+
+    let mut serial = 0;
+    let mut filesystem = [0u16; 32];
+    let result = unsafe {
+        GetVolumeInformationByHandleW(
+            file.as_raw_handle().cast(),
+            ptr::null_mut(),
+            0,
+            &mut serial,
+            ptr::null_mut(),
+            ptr::null_mut(),
+            filesystem.as_mut_ptr(),
+            filesystem.len() as u32,
+        )
+    };
+    if result == 0 {
+        return Err(std::io::Error::last_os_error());
+    }
+    if filesystem[..5] != [78, 84, 70, 83, 0] {
+        return Err(std::io::Error::other("original volume is not NTFS"));
+    }
+    Ok(serial)
+}
