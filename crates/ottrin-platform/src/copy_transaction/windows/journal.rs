@@ -2012,15 +2012,19 @@ impl Journal {
         if completed.is_some() {
             return Ok(());
         }
-        // A flushable readonly-root capability needs a separately journaled
-        // strategy; never clear attributes on an original as an implicit repair.
-        if !base.directory
-            && base.attributes & windows_sys::Win32::Storage::FileSystem::FILE_ATTRIBUTE_READONLY
-                != 0
-        {
+        let readonly = !base.directory
+            && base.attributes & windows_sys::Win32::Storage::FileSystem::FILE_ATTRIBUTE_READONLY != 0;
+        if readonly && !self.state.original_readonly_transition(&base) {
             return Err(PlatformError::UnsupportedSafeCopy(
-                "readonly original-root retention needs its own access strategy".into(),
+                "readonly original must be an ordinary file with one hard-link name".into(),
             ));
+        }
+        // A paired rename-metadata acknowledgement already flushed the exact
+        // observed version. Avoid a second attribute transition on replay.
+        if name == to
+            && self.state.rename_creation.as_ref().is_some_and(|entry| entry.applied.is_some())
+        {
+            return self.persist(direction.ack(observed_version));
         }
         let mut bound = base.clone();
         bound.changed = i64::MIN;
@@ -2083,7 +2087,7 @@ impl Journal {
                 ));
             }
         };
-        let root = self.authority.open_candidate(&self.parent_dir, &name)?;
+        let mut root = self.authority.open_candidate(&self.parent_dir, &name)?;
         let tree = tree::PinnedTree::open(
             &self.authority,
             &root,
@@ -2102,7 +2106,45 @@ impl Journal {
             .binding(&self.parent_dir, &name, base.identity)?;
         drop(tree);
         progress(0)?;
-        root.sync_all().map_err(io)?;
+        if readonly {
+            use windows_sys::Win32::Storage::FileSystem::{FILE_ATTRIBUTE_NORMAL, FILE_ATTRIBUTE_READONLY};
+
+            // The paired move intent authorizes this one-bit transition on
+            // the pinned original, at either side of the recorded rename.
+            namespace::validate_single_link(&root)?;
+            let observed = &expected.entries[0].version;
+            let mut writable = observed.clone();
+            writable.attributes = metadata::without_readonly(observed.attributes);
+            self.failed = true;
+            metadata::restore_rename_metadata(&root, observed, &writable)?;
+            boundary(self.sequence, Step::ReadonlyWritable)?;
+            drop(root);
+            root = self.authority.open_candidate(&self.parent_dir, &name)?;
+            let tree = tree::PinnedTree::open(
+                &self.authority,
+                &root,
+                evidence.entries.len(),
+                |_| Ok(()),
+            )?;
+            expected.entries[0].version =
+                self.state.original_version_at(kind, &name, &base, tree.root(), true)?;
+            if tree.root().attributes != writable.attributes {
+                return Err(io("Original attributes changed during readonly reopening"));
+            }
+            tree.validate_existing(&expected, |_| Ok(()))?;
+            self.authority.binding(&self.parent_dir, &name, base.identity)?;
+            let mut restored = tree.root().clone();
+            restored.attributes = (restored.attributes & !FILE_ATTRIBUTE_NORMAL)
+                | FILE_ATTRIBUTE_READONLY;
+            metadata::restore_rename_metadata(&root, tree.root(), &restored)?;
+            boundary(self.sequence, Step::ReadonlyRestored)?;
+            drop(tree);
+            root.sync_all().map_err(io)?;
+            boundary(self.sequence, Step::ReadonlyFlushed)?;
+            self.failed = false;
+        } else {
+            root.sync_all().map_err(io)?;
+        }
         if name != to {
             self.authority.file_operation(|| {
                 crate::move_transaction::rename_windows_handle_no_replace(
@@ -4458,6 +4500,15 @@ mod tests {
     }
 
     fn original_fixture(root: &Path, directory: bool, readonly: bool) -> OsString {
+        original_fixture_with_alias(root, directory, readonly, false)
+    }
+
+    fn original_fixture_with_alias(
+        root: &Path,
+        directory: bool,
+        readonly: bool,
+        alias: bool,
+    ) -> OsString {
         fixture(root);
         let target = root.join("destination/copy");
         if directory {
@@ -4478,6 +4529,9 @@ mod tests {
             let mut permissions = std::fs::metadata(&target).unwrap().permissions();
             permissions.set_readonly(true);
             std::fs::set_permissions(&target, permissions).unwrap();
+        }
+        if alias {
+            std::fs::hard_link(&target, root.join("destination/alias")).unwrap();
         }
         let src = source(&root.join("source"));
         let parent = owner(&root.join("destination"));
@@ -6491,20 +6545,63 @@ mod tests {
     }
 
     #[test]
+    fn windows_native_original_move_readonly_recovers_attribute_transition() {
+        for step in [
+            Step::ReadonlyWritable,
+            Step::ReadonlyRestored,
+            Step::ReadonlyFlushed,
+            Step::OriginalRenamed,
+            Step::OriginalFlushed,
+        ] {
+            for direction in [OriginalMove::Retain, OriginalMove::Restore] {
+                let root = tempfile::tempdir().unwrap();
+                let name = original_fixture(root.path(), false, true);
+                let mut journal = original_journal(root.path(), &name);
+                journal.prepare_original(100, |_| Ok(())).unwrap();
+                let target = root.path().join("destination/copy");
+                let private = root.path().join("destination").join(journal.header.original_name());
+                if direction == OriginalMove::Restore {
+                    journal.move_original(None, OriginalMove::Retain, |_| Ok(())).unwrap();
+                }
+                FAULT.with(|fault| fault.set(Some((journal.sequence + 1, step, false))));
+                let result = journal.move_original(None, direction, |_| Ok(()));
+                FAULT.with(|fault| fault.set(None));
+                assert!(result.is_err(), "{direction:?} {step:?}");
+                drop(journal);
+
+                let mut journal = original_journal(root.path(), &name);
+                HeldOriginal::open(
+                    &journal.authority,
+                    &journal.parent_dir,
+                    &journal.state,
+                    &mut |_| Ok(()),
+                ).unwrap().unwrap();
+                journal.move_original(None, direction, |_| Ok(())).unwrap();
+                let original = if direction == OriginalMove::Retain { &private } else { &target };
+                assert_eq!(std::fs::read(original).unwrap(), b"old destination");
+                assert!(std::fs::metadata(original).unwrap().permissions().readonly());
+                let mut permissions = std::fs::metadata(original).unwrap().permissions();
+                permissions.set_readonly(false);
+                std::fs::set_permissions(original, permissions).unwrap();
+            }
+        }
+    }
+
+    #[test]
     fn windows_native_original_move_refuses_occupants_handoff_changes_and_cancellation() {
         for case in [
             "retain-occupied",
             "restore-occupied",
             "handoff",
             "cancel",
-            "readonly",
+            "readonly-alias",
             "budget",
             "candidate",
         ] {
             let root = tempfile::tempdir().unwrap();
             let restore = case == "restore-occupied";
-            let name = if case == "readonly" {
-                let name = original_fixture(root.path(), false, true);
+            let name = if case == "readonly-alias" {
+                let name = original_fixture_with_alias(root.path(), false, true, true);
                 let mut journal = original_journal(root.path(), &name);
                 journal.prepare_original(100, |_| Ok(())).unwrap();
                 drop(journal);
@@ -6569,7 +6666,7 @@ mod tests {
                         .contains("insufficient Copy journal space for original move")
                 );
             }
-            if case == "readonly" {
+            if case == "readonly-alias" {
                 let mut permissions = std::fs::metadata(&target).unwrap().permissions();
                 #[allow(clippy::permissions_set_readonly_false)]
                 permissions.set_readonly(false);

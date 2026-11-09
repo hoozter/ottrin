@@ -1,6 +1,8 @@
 //! Durable preservation of admitted metadata after a recorded native rename.
 use super::*;
-use windows_sys::Win32::Storage::FileSystem::{FILE_ATTRIBUTE_ARCHIVE, FILE_ATTRIBUTE_NORMAL};
+use windows_sys::Win32::Storage::FileSystem::{
+    FILE_ATTRIBUTE_ARCHIVE, FILE_ATTRIBUTE_NORMAL, FILE_ATTRIBUTE_READONLY,
+};
 
 pub(super) fn pending_undo_epochs(
     parent: &File,
@@ -65,7 +67,11 @@ impl RenameKind {
                 | (Self::RestoreOriginal, Record::OriginalRestored { .. })
         )
     }
-    fn original_archive_added(self, expected: &EntryVersion, actual: &EntryVersion) -> bool {
+    pub(super) fn original_archive_added(
+        self,
+        expected: &EntryVersion,
+        actual: &EntryVersion,
+    ) -> bool {
         matches!(self, Self::RetainOriginal | Self::RestoreOriginal)
             && !expected.directory
             && expected.link.is_none()
@@ -123,8 +129,9 @@ impl State {
         }
         Ok(())
     }
-    /// Only a pending move at its recorded destination may use the observed
-    /// rename epoch. Every other location must match the frozen root version.
+    /// A paired move intent permits the recorded rename epoch and the narrow
+    /// attribute transition needed to reopen a single-link read-only original.
+    /// The caller still verifies the complete frozen tree and security evidence.
     pub(super) fn original_version_at(
         &self,
         kind: RenameKind,
@@ -134,12 +141,47 @@ impl State {
         pending: bool,
     ) -> Result<EntryVersion, PlatformError> {
         self.validate_creation_location(kind, name)?;
-        if pending && name == kind.destination(self.header.as_ref().unwrap()) {
-            self.validate_creation_epoch(kind, observed)?;
-            Ok(observed.clone())
-        } else {
-            Ok(expected.clone())
+        if !pending {
+            return Ok(expected.clone());
         }
+        let at_destination = name == kind.destination(self.header.as_ref().unwrap());
+        let mut normalized = observed.clone();
+        if self.original_readonly_transition(expected)
+            && self
+                .rename_creation
+                .as_ref()
+                .is_none_or(|intent| intent.applied.is_none())
+        {
+            let mut cleared = expected.clone();
+            cleared.attributes = metadata::without_readonly(expected.attributes);
+            if normalized.attributes == cleared.attributes {
+                normalized.attributes = expected.attributes;
+            } else if at_destination && kind.original_archive_added(&cleared, observed) {
+                normalized.attributes = expected.attributes | FILE_ATTRIBUTE_ARCHIVE;
+            }
+        }
+        if at_destination {
+            self.validate_creation_epoch(kind, &normalized)?;
+        } else {
+            let mut original = expected.clone();
+            if self.original_readonly_transition(expected) {
+                original.changed = observed.changed;
+            }
+            if normalized != original {
+                return Err(io("Original metadata changed before the recorded rename"));
+            }
+        }
+        Ok(observed.clone())
+    }
+
+    pub(super) fn original_readonly_transition(&self, version: &EntryVersion) -> bool {
+        !version.directory
+            && version.link.is_none()
+            && version.attributes & FILE_ATTRIBUTE_READONLY != 0
+            && self
+                .original
+                .as_ref()
+                .is_some_and(|plan| plan.evidence.entries[0].links == 1)
     }
 
     pub(super) fn admitted_rename_matches(
@@ -230,8 +272,15 @@ impl State {
                     before.changed = actual.changed;
                     before.attributes = actual.attributes;
                 }
-                let mut completed = before.clone();
                 let intended = self.rename_expected(kind)?;
+                if matches!(
+                    kind,
+                    RenameKind::RetainOriginal | RenameKind::RestoreOriginal
+                ) && self.original_readonly_transition(&intended)
+                {
+                    before.changed = actual.changed;
+                }
+                let mut completed = before.clone();
                 completed.created = intended.created;
                 if self.readonly_pending != Some(0) {
                     completed.attributes = intended.attributes;

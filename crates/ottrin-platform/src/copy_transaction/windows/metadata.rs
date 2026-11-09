@@ -64,6 +64,15 @@ pub(super) fn restore_rename_metadata(
     Ok(())
 }
 
+pub(super) fn without_readonly(attributes: u32) -> u32 {
+    let attributes = attributes & !FILE_ATTRIBUTE_READONLY;
+    if attributes == 0 {
+        FILE_ATTRIBUTE_NORMAL
+    } else {
+        attributes
+    }
+}
+
 pub(super) fn basic(file: &File) -> Result<FILE_BASIC_INFO, PlatformError> {
     let mut info = FILE_BASIC_INFO::default();
     if unsafe {
@@ -236,15 +245,6 @@ impl StagedEntry {
         Ok(())
     }
 
-    fn writable_attributes(&self) -> u32 {
-        let attributes = self.source.attributes & !FILE_ATTRIBUTE_READONLY;
-        if attributes == 0 {
-            FILE_ATTRIBUTE_NORMAL
-        } else {
-            attributes
-        }
-    }
-
     /// Called only under a paired readonly-reopen intent, through an identity-bound
     /// candidate handle. All timestamps and all other attributes remain unchanged.
     pub(super) fn set_reopening_attributes(
@@ -255,7 +255,7 @@ impl StagedEntry {
         self.validate_reopening_metadata(candidate, true)?;
         let info = FILE_BASIC_INFO {
             FileAttributes: if writable {
-                self.writable_attributes()
+                without_readonly(self.source.attributes)
             } else {
                 self.source.attributes & ORDINARY_ATTRIBUTES
             },
@@ -318,7 +318,7 @@ impl StagedEntry {
                 && !(readonly_reopen_pending
                     && !self.source.directory
                     && self.source.attributes & FILE_ATTRIBUTE_READONLY != 0
-                    && observed.FileAttributes == self.writable_attributes()))
+                    && observed.FileAttributes == without_readonly(self.source.attributes)))
             || (!self.source.directory
                 && candidate.metadata().map_err(io)?.len() != self.source.length)
             || compression(candidate)? != self.compression

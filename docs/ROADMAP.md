@@ -707,10 +707,16 @@ Current source, test, package and owner/external scopes stay separate.
      verification now share the rule for when the observed original can
      differ from its frozen metadata. All five original-move tests passed
      again on build 26100 after that consolidation. This is source-level
-     platform coverage. Implement a journaled single-link
-     transition that restores and flushes attributes before rename, binds
-     the allowed ChangeTime transition to the original's identity and
-     evidence. Keep read-only alias behavior open separately.
+     platform coverage. The paired original-move intent now authorizes
+     the single-link read-only transition after verification of identity,
+     streams, security and link count. The writer restores and flushes the
+     flag before rename. Six native original-move tests passed under
+     SYSTEM on build 26100, including ten injected interruptions across
+     retention and restoration and refusal of an already-aliased read-only
+     original. This covers direct journal operations. Public Resume and
+     Undo admission, real exits during the attribute transition, and the
+     installed alternate-administrator helper remain separate gates.
+     Keep read-only alias behavior open separately.
      Preserve edited or unknown payloads and refuse divergent journals.
      [Hosted Windows verification](https://github.com/hoozter/ottrin/actions/runs/42451117154/job/128640353389).
    - Installed alternate-administrator UAC checks cover newly authenticated
