@@ -1178,6 +1178,15 @@ Current source, test, package and owner/external scopes stay separate.
    identical to the one that passed on `a9c718a2`. Full hosted
    verification remains open.
    [Hosted attempt](https://github.com/hoozter/ottrin/actions/runs/42673226623/attempts/2).
+   The full local UI suite passed 554 tests with one ignored. Source
+   `b1bc72fe` is now staged in all four Linux formats. Package content,
+   helper checks and extracted-fixture cleanup passed. At 150% X11
+   scaling in both themes, the mounted AppImage's Search header icon
+   changed to the entered Secondary text color, restored exactly and
+   preserved the saved theme after Cancel. The same AppImage passed
+   atomic replacement, FileManager1 dispatch and the Save caller
+   workflow on private desktops. The candidate remains staged.
+   [Packaged Smart Panel result](../.hermes/evidence/smart-panel-secondary-text-current/THEME_UI_ACCEPTANCE.json).
    Broader platform and theme-property coverage and whole-interface
    alignment/grouping remain open. The theme-library miniature now
    paints square selected-row fills, rounds only outer title/status corners and
