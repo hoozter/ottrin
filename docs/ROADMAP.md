@@ -288,9 +288,15 @@ and the held MSI were preserved. See
    The exact fix revision passed Windows source tests for late successful
    results at the transport and Activity layers. See the
    [hosted Windows verification](https://github.com/hoozter/ottrin/actions/runs/42532646750/job/128890027357).
+   A follow-up closed a transport gap when Stop reaches a closed helper
+   pipe after the terminal response was written. The app now drains that
+   response rather than dropping a committed receipt. All ten focused
+   named-pipe tests passed on native Windows build 26100, including the
+   new case that closes the helper end before sending Stop. See the
+   [native transport receipt](../.hermes/evidence/windows-admin-copy-package-current/LATE_STOP_NATIVE.json).
    The Dark Stopped badge and repeated technical errors need a presentation
-   pass. The installed late-result race and the expanded platform
-   regression remain open.
+   pass. Rebuild the private installer with the transport fix and verify
+   the installed race. The expanded original-caller regression remains open.
    The temporary worktrees,
    unpacked payloads, duplicate ZIP, superseded private installer and
    disposable guests were removed. The rebuilt private installer remains

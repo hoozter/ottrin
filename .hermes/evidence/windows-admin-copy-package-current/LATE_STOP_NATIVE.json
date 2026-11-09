@@ -1,0 +1,19 @@
+{
+  "status": "pass",
+  "base_revision": "92e0770b217a963d53b543b525c3dc1180635f3e",
+  "source_diff_sha256": "f5f3b9b6b72ea9167356f76316f2cc1c6d0db84c70675bc9da017942f24396dc",
+  "compiler_binary_sha256": "af5435367b21365fd9a2a8c3d88c4526e5303596789379d49c69c793562d5433",
+  "native_uploaded_strip_debug_sha256": "4e043b4fb67099643c17a85fb5663447aa3de159590641fcd37323313c62aaf2",
+  "upload_archive_sha256": "c4d786b3ff1204c7c764e584fa797b45efcca864d8d3821f35990a5a02aca579",
+  "native_result": "Windows build 26100\r\n\nrunning 10 tests\ntest windows_privileged_transport::copy_stream::tests::windows_copy_stream_callback_panic_joins_reader ... ok\ntest windows_privileged_transport::copy_stream::tests::windows_copy_stream_completed_operation_wins_late_stop ... ok\ntest windows_privileged_transport::copy_stream::tests::windows_copy_stream_disconnect_interrupts_blocked_io ... ok\ntest windows_privileged_transport::copy_stream::tests::windows_copy_stream_drains_terminal_after_late_stop_on_closed_peer ... ok\ntest windows_privileged_transport::copy_stream::tests::windows_copy_stream_fragmented_frame_survives_read_timeouts ... ok\ntest windows_privileged_transport::copy_stream::tests::windows_copy_stream_malformed_control_cannot_report_success ... ok\ntest windows_privileged_transport::copy_stream::tests::windows_copy_stream_presend_stop_sends_no_request ... ok\ntest windows_privileged_transport::copy_stream::tests::windows_copy_stream_progress_preserves_completed_receipt ... ok\ntest windows_privileged_transport::copy_stream::tests::windows_copy_stream_reader_stop_without_pending_io ... ok\ntest windows_privileged_transport::copy_stream::tests::windows_copy_stream_stop_interrupts_blocked_io_and_preserves_receipt ... ok\n\ntest result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 588 filtered out; finished in 1.42s\n\n",
+  "scope": "Real Windows named pipes and transport regression test executable. Installed UI race has separate scope.",
+  "cleanup": {
+    "domain": "ottrin-init-helper-pipe-qa",
+    "uuid": "664df7ad-c20e-4a43-9052-9dff94114c6c",
+    "volume": "ottrin-init-helper-pipe-qa.qcow2",
+    "status": "pass",
+    "domain_removed": true,
+    "overlay_removed": true,
+    "protected_definitions_states_and_backing_unchanged": true
+  }
+}

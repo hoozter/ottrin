@@ -225,6 +225,50 @@ fn windows_copy_stream_completed_operation_wins_late_stop() {
 }
 
 #[test]
+fn windows_copy_stream_drains_terminal_after_late_stop_on_closed_peer() {
+    // The installed app listens on the server end. The helper closes its
+    // client end after sending Finished, potentially before Stop is written.
+    let (mut helper, mut caller) = pair();
+    let (finish, wait_for_stop) = mpsc::channel();
+    let (closed, wait_for_close) = mpsc::channel();
+    let worker = thread::spawn(move || {
+        write_json(&mut helper, &Event::Progress { bytes: 23 }).unwrap();
+        wait_for_stop.recv_timeout(Duration::from_secs(5)).unwrap();
+        write_json(
+            &mut helper,
+            &Event::Finished {
+                response: PrivilegedResponse {
+                    status: PrivilegedStatus::Success,
+                    message: None,
+                    payload: Some(receipt()),
+                },
+            },
+        )
+        .unwrap();
+        drop(helper);
+        closed.send(()).unwrap();
+    });
+    let response = receive(&mut caller, &mut |bytes| {
+        if bytes == 23 {
+            finish.send(()).unwrap();
+            wait_for_close.recv_timeout(Duration::from_secs(5)).unwrap();
+            return Err(PlatformError::Io("Owned Stop after helper close".into()));
+        }
+        Ok(())
+    });
+    worker.join().unwrap();
+    let response = response.unwrap();
+    assert_eq!(response.status, PrivilegedStatus::Success);
+    assert_eq!(response.payload, Some(receipt()));
+    assert!(
+        response
+            .message
+            .unwrap()
+            .contains("Owned Stop after helper close")
+    );
+}
+
+#[test]
 fn windows_copy_stream_disconnect_interrupts_blocked_io() {
     let (client, mut case) = start(true);
     let deadline = Instant::now() + Duration::from_secs(2);

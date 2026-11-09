@@ -7,6 +7,7 @@ use std::sync::{
     mpsc,
 };
 use std::thread::{self, JoinHandle};
+use windows_sys::Win32::Foundation::{ERROR_BROKEN_PIPE, ERROR_NO_DATA, ERROR_PIPE_NOT_CONNECTED};
 
 #[cfg(test)]
 mod tests;
@@ -252,7 +253,18 @@ pub(super) fn receive(
         {
             stopped = Some(error.to_string());
             if let Err(error) = stream.write_all(&[STOP]) {
-                break Err(response_failure(error));
+                let disconnected = error.raw_os_error().is_some_and(|code| {
+                    matches!(
+                        code as u32,
+                        ERROR_BROKEN_PIPE | ERROR_NO_DATA | ERROR_PIPE_NOT_CONNECTED
+                    )
+                });
+                if !disconnected {
+                    break Err(response_failure(error));
+                }
+                // The helper may have written a terminal response and closed
+                // its end before Stop was sent. The response reader still
+                // owns any queued frame and will report a true disconnect.
             }
         }
     };
