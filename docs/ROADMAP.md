@@ -1469,6 +1469,17 @@ Current source, test, package and owner/external scopes stay separate.
    The guest and overlay were retired and borrowed binaries restored.
    [Windows native result](../.hermes/evidence/theme-preview-popup-current/native-close/GUEST_RESULT.json).
 
+   A separate installed trace of the same NSIS closed the editor by
+   physical Cancel in both palettes. Win32 hit testing, focus and the
+   foreground handle all identified the owned editor, and Light had
+   editor mouse capture while the button was down. The tracing run
+   observed the press at 616 ms in Dark and 271 ms in Light, despite
+   requesting a 60 ms hold. It therefore cannot clear the earlier
+   uninstrumented failure. Next compare short and paced presses on the
+   same artifact and preserve their actual timing. The trace guest and
+   overlay were removed and all borrowed executables restored by hash.
+   [Native pointer trace](../.hermes/evidence/theme-preview-popup-current/native-cancel-trace/GUEST_RESULT.json).
+
    Verify every supported role/control against the actual interface and logical
    hierarchy; field-map/test/capture counts do not close this audit.
 3. Close remaining supported themed-picker, Linux FileChooser/FileManager1 and
