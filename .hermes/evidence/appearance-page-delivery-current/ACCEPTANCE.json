@@ -1,0 +1,86 @@
+{
+  "status": "pass mounted Dark and Light Appearance page",
+  "artifact_sha256": "71bfe68b40c1442110e5b3b38ba967ebc5277ddb8e5907587f7d42500c45176e",
+  "source_revision": "60234de2917f4848262637203146737a012f49ca",
+  "cases": [
+    {
+      "mode": "Dark",
+      "scale": 1,
+      "teardown": {
+        "status": "closed",
+        "profile": "/var/tmp/.ottrin-picker-qa-hmw9rvro",
+        "owned_processes_reaped": [
+          {
+            "pid": 1893783,
+            "exit": 0
+          },
+          {
+            "pid": 1893786,
+            "exit": 0
+          },
+          {
+            "pid": 1893787,
+            "exit": 15
+          },
+          {
+            "pid": 1893853,
+            "exit": -15
+          }
+        ],
+        "owned_children": {
+          "stopped": [
+            1893857,
+            1894155
+          ],
+          "unreadable_foreign_processes_preserved": 4
+        },
+        "owned_mounts_unmounted": [],
+        "profile_removed": true
+      },
+      "captures": {
+        "top.png": "5b01b2b21f1b93422741a1524ba87725868e5594ec2b2e24976a12021cb96363",
+        "bottom.png": "995a8aba9f1efc27035f3c56034aa7b4e0a6173153166bc3d8ffeef68150c16f"
+      }
+    },
+    {
+      "mode": "Light",
+      "scale": 1.5,
+      "teardown": {
+        "status": "closed",
+        "profile": "/var/tmp/.ottrin-picker-qa-q9a24njw",
+        "owned_processes_reaped": [
+          {
+            "pid": 1897412,
+            "exit": 0
+          },
+          {
+            "pid": 1897423,
+            "exit": 0
+          },
+          {
+            "pid": 1897424,
+            "exit": 15
+          },
+          {
+            "pid": 1897516,
+            "exit": -15
+          }
+        ],
+        "owned_children": {
+          "stopped": [
+            1897520,
+            1897612
+          ],
+          "unreadable_foreign_processes_preserved": 4
+        },
+        "owned_mounts_unmounted": [],
+        "profile_removed": true
+      },
+      "captures": {
+        "top.png": "f6f0f571a28f6799d5c4130cb9ff5c08f71b6cdd7b3a13a7eb85e374aeab0009",
+        "bottom.png": "18c8a8e67b96dcbcbae7dca8118d9ecd258b3c3d16bb5b0be3049ce2d1bca711"
+      }
+    }
+  ],
+  "scope": "Actual mounted AppImage Settings, four aligned sections, even card spacing, scroll and editor open/close. Dark X11 scale 1 and Light X11 scale 1.5. Both owned profiles removed."
+}

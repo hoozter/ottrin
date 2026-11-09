@@ -1,0 +1,72 @@
+{
+  "status": "pass atomic replacement preserved the existing mounted window and the next launch used the new AppImage",
+  "previous_image_sha256": "8ae503256ab42fe0d2a4b5fcc82d85ee721b0e69ab28d81a06acbe56fe846121",
+  "new_image_sha256": "71bfe68b40c1442110e5b3b38ba967ebc5277ddb8e5907587f7d42500c45176e",
+  "old_window_operated_after_replacement": true,
+  "next_launch_new_binary": true,
+  "scope": "Private same-filesystem AppImage path replacement only. Multi-package promotion, concurrent settings writes, and managed service continuity are separate.",
+  "atomic-appimage_teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-_9a1jn38",
+    "owned_processes_reaped": [
+      {
+        "pid": 1897892,
+        "exit": 0
+      },
+      {
+        "pid": 1897895,
+        "exit": 0
+      },
+      {
+        "pid": 1897896,
+        "exit": 15
+      },
+      {
+        "pid": 1897947,
+        "exit": -15
+      }
+    ],
+    "owned_children": {
+      "stopped": [
+        1897951,
+        1898018
+      ],
+      "unreadable_foreign_processes_preserved": 4
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  },
+  "atomic-appimage-next_teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-njwg49u4",
+    "owned_processes_reaped": [
+      {
+        "pid": 1898040,
+        "exit": 0
+      },
+      {
+        "pid": 1898043,
+        "exit": 0
+      },
+      {
+        "pid": 1898044,
+        "exit": 15
+      },
+      {
+        "pid": 1898095,
+        "exit": -15
+      }
+    ],
+    "owned_children": {
+      "stopped": [
+        1898099,
+        1898166
+      ],
+      "unreadable_foreign_processes_preserved": 4
+    },
+    "owned_mounts_unmounted": [
+      "1081 34 0:76 / /var/tmp/.ottrin-picker-qa-njwg49u4/runtime/doc rw,nosuid,nodev,relatime shared:561 - fuse.portal portal rw,user_id=1000,group_id=1000"
+    ],
+    "profile_removed": true
+  }
+}

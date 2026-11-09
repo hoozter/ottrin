@@ -1,0 +1,36 @@
+{
+  "status": "pass",
+  "source_revision": "60234de2917f4848262637203146737a012f49ca",
+  "artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "9871d729a19f952077ccd3a1f4ec1e7e45a1dc60f96d00d9dbe108990e26f5e2",
+    "Ottrin-0.1.0-x86_64.AppImage": "71bfe68b40c1442110e5b3b38ba967ebc5277ddb8e5907587f7d42500c45176e",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "442fbe744ff1ebd7e757f204b07060d62b4e7f6e82a714fc04c9f19b46bbf0d4",
+    "ottrin_0.1.0_amd64.deb": "d90bdd79f9c6469555594308429868fb4485cc77e92812338336554489b37004"
+  },
+  "verifier_sha256": "1b48ed4aab2d381bab0ac0d7d52131e6caeefcea0740154b62803ed1ca7d1477",
+  "checks": [
+    "production portable/AppImage runtime closure and playback checks",
+    "production native payload, dependencies, policy, hooks and code identity blocks",
+    "exact bundled-font notice in all four formats",
+    "seven matching portable/AppImage runtime payloads including the HTML helper",
+    "exact current documentation and clean source notes",
+    "actual AppImage and RPM index daemon namespace/ownership refusal checks"
+  ],
+  "scope": "package contents and scoped native namespace checks; GUI, resource and actual distribution installation remain separate",
+  "extraction": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-desktop-extract",
+  "runtime_sha256": {
+    "application": "241c7a202864f8c81caa7e6080d982a8e765acb732b67144ab6e5a5c32a312c5",
+    "index_daemon": "79f2abe711197c577154cd712fb733dc1c54db5fdee6c1aa5b4baffbc3724ec3",
+    "privileged_helper": "f123b93368d7919067bdcfe6f295c079fc1d000c38fdb2f3f493c465bd0f932f",
+    "html_renderer": "f6a4ebe343c58ad3f06398c81574aa44d2b1afcfd7486e9e180c9368efefcbed"
+  },
+  "runtime_matches_previous": {
+    "application": false,
+    "index_daemon": true,
+    "privileged_helper": true,
+    "html_renderer": true
+  },
+  "verification_head": "60234de2917f4848262637203146737a012f49ca",
+  "previous_source_revision": "46802ab4360f25770ff525b297b716954006e76a",
+  "content_extraction_removed": true
+}

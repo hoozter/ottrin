@@ -26,6 +26,20 @@ See [CI evidence mapping](../.hermes/evidence/vivaldi-picker-delivery-current/CI
 [promotion receipt](../.hermes/evidence/vivaldi-picker-delivery-current/PROMOTION.json)
 and `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`.
 
+The Appearance update is staged in all four local Linux formats from
+`60234de2`. The first AppImage build stopped when the external homepage
+returned HTTP 504 during AppStream validation. The packager now validates
+the metadata offline before assembly. All four packages pass the production
+content checks and ten packaged helper protocol checks. The mounted AppImage
+passes Dark/Light layout and editor open/close, and private replacement
+preserves the already-open window. The bundled daemon, helper and HTML
+renderer match the current Linux delivery byte for byte. Promotion preflight
+passed with the managed index Ready. The stage remains the promotion input
+while Windows verification in [the application-source run](https://github.com/hoozter/ottrin/actions/runs/42569274820)
+is still running. The three finished jobs passed. See the
+[mounted acceptance](../.hermes/evidence/appearance-page-delivery-current/ACCEPTANCE.json)
+and [promotion preflight](../.hermes/evidence/appearance-page-delivery-current/PROMOTION_PREFLIGHT.json).
+
 The preceding Linux cohort used `0eec7cb4`. Its four
 [hosted jobs](https://github.com/hoozter/ottrin/actions/runs/42461840752)
 passed with identical runtime inputs. That promotion preserved the running

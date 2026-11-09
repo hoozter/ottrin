@@ -1,0 +1,10 @@
+{
+  "source_revision": "6bcd78671f5ff7e60bcd85cba0fb59f6c6d08ed8",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
+  "status": "failed; owned staging retired",
+  "error": "AssertionError(1)",
+  "child_exit": 1,
+  "temporary_tool_wrappers_removed": true,
+  "staging_retained_for_pending_acceptance": false,
+  "cause": "AppStream online validation received HTTP 504 from the GitHub homepage; offline metadata validation passed."
+}

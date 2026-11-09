@@ -1,0 +1,10 @@
+{
+  "source_revision": "60234de2917f4848262637203146737a012f49ca",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
+  "ci_source_revision": "6bcd78671f5ff7e60bcd85cba0fb59f6c6d08ed8",
+  "diff_from_ci": [
+    ".github/workflows/release.yml",
+    "docs/DEVELOPMENT.md",
+    "packaging/linux/package-appimage.sh"
+  ]
+}
