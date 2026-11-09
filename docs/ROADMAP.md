@@ -1235,9 +1235,13 @@ Current source, test, package and owner/external scopes stay separate.
    multiple-folder and drive actions, and removal. The fixture verified
    that preferences and test files survived and the default folder app
    registration stayed intact. The fresh guest, both owned volumes and
-   duplicate export files were removed. Upgrades from MSIX 31 with
-   startup enabled and disabled remain separate gates.
+   duplicate export files were removed. Both upgrades from MSIX 31
+   passed. Real sign-in preserved the user's automatic indexing choice
+   in each case, and the index database and preferences survived.
+   Both upgrade guests, their volumes and duplicate exports were removed.
    [Fresh MSIX 32 acceptance](../.hermes/evidence/windows-menu-divider-delivery-current/runtime32-fresh/ACCEPTANCE.json).
+   [Upgrade with automatic indexing](../.hermes/evidence/windows-menu-divider-delivery-current/runtime32-upgrade/ACCEPTANCE.json).
+   [Upgrade with automatic indexing disabled](../.hermes/evidence/windows-menu-divider-delivery-current/runtime32-disabled/ACCEPTANCE.json).
    The exact portable Windows actor completed both variants and
    preserved preferences after physical Cancel. The native capture
    review did not verify the requested colors in both variants or all

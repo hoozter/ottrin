@@ -1,0 +1,73 @@
+{
+  "status": "pass native MSIX deployment, actual login and removal",
+  "case": "runtime32-disabled",
+  "input": {
+    "runtime_script_sha256": "54ab34f2a4f8af46e73370f1990b5e637f90c0aafdd32dff6eb8f9deb878dc7d",
+    "native_controls_sha256": "c6fa404bd07713763f261a99a6194c3fe52930fbe123ffdb99355b77e20a7b11",
+    "sha256": "3a1a054485612fb0024059ddc3d1e3aa63614a38bd47558cff6832979850a186",
+    "source_revision": "4d3f11a379df2d58424093a0bb13fbf42b2aa8b4",
+    "version": "0.1.0.32",
+    "startup_enabled": false,
+    "previous": {
+      "sha256": "308a9e9c320e9048087a2b962089d939e6281f334d27618a73b26fadd4c1cd09",
+      "version": "0.1.0.31",
+      "source_revision": "a9c718a2f21f9c1c45e798f2fc83a3f59b96bbae"
+    }
+  },
+  "ordinary_user": true,
+  "actual_login": {
+    "phase": "login-service-status.stdout",
+    "observed_before_any_ottrin_cli": {
+      "daemon_count": 0,
+      "observation_seconds": 180.04305599999998,
+      "startup_enabled": false
+    },
+    "index_state": "stopped as configured",
+    "cli_exits": {
+      "login-service-status.stdout": 0
+    },
+    "scope": "Observe Windows-started package daemon before any Ottrin CLI, after actual reboot/login",
+    "preferences_preserved": true,
+    "status": "pass",
+    "store": {
+      "path": "C:\\Users\\OTMSIXe8d5db8546d7\\AppData\\Local\\Packages\\Ottrin.Development_vs01n017nxmbr\\LocalCache\\Local\\ottrin\\search.db",
+      "bytes": 28672,
+      "identity": "FA402E6A402E2E37:0004000000023DC20000000000000000"
+    },
+    "boot_ticks": 639298566185000000,
+    "administrator": false
+  },
+  "explorer_contexts": [
+    "Background",
+    "Multiple",
+    "Drive"
+  ],
+  "package_process_task_and_com_removal": true,
+  "preferences_and_fixture_preserved": true,
+  "update": {
+    "old_pids": [],
+    "startup_enabled": false,
+    "previous_daemon_count": 0,
+    "old_processes_removed": true,
+    "family": "Ottrin.Development_vs01n017nxmbr",
+    "after": "Ottrin.Development_0.1.0.32_x64__vs01n017nxmbr",
+    "before": "Ottrin.Development_0.1.0.31_x64__vs01n017nxmbr"
+  },
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-runtime.qcow2",
+      "ottrin-msix-runtime-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "verified_export_sha256": "0922a06ea28a953cfe742026f643846eb8a85cec05d47b7552f4b631d3284ce5",
+  "disposable_outputs_retired": [
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-menu-divider-delivery-current/runtime32-disabled/RESULTS.zip",
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-menu-divider-delivery-current/runtime32-disabled/desktop-ready.png",
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-menu-divider-delivery-current/runtime32-disabled/privacy-accepted-0.png",
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-menu-divider-delivery-current/runtime32-disabled/privacy-accepted-1.png"
+  ]
+}
