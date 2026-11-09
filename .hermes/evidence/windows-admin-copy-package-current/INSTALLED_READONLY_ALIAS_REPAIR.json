@@ -1,0 +1,117 @@
+{
+  "status": "pass private installed Windows read-only hard-link recovery",
+  "base_source_revision": "381ef19397088c3ff9f0d1c30ecb1863c31757e5",
+  "private_source_revision": "155796285ef6f00a0868bb797a400d5553efe4bf",
+  "installer_sha256": "7257c854c72986d24052c22f43514536a686ebf8965c18e73c25e28725c8c3b6",
+  "payload_files_verified_each_launch": 59,
+  "real_alternate_administrator_uac_prompts": [
+    "Replace",
+    "load history",
+    "Undo",
+    "reload Undone history",
+    "clear retained data",
+    "confirm cleared history"
+  ],
+  "phases": {
+    "copy": {
+      "mode": "copy",
+      "ordinary_target_hash": "3fc5d485b7cbea0501dd61db76c43ff6dadea69e25a93ff970da52a3ec597073",
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+      "payload_files": 59,
+      "client_exited": true,
+      "phase": "complete",
+      "client_exit": 0,
+      "client_pid": 2476,
+      "status": "pass"
+    },
+    "history-undo": {
+      "client_pid": 6100,
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+      "payload_files": 59,
+      "client_exited": true,
+      "phase": "complete",
+      "client_exit": 0,
+      "mode": "history-undo",
+      "status": "pass"
+    },
+    "undone": {
+      "client_pid": 7220,
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+      "payload_files": 59,
+      "client_exited": true,
+      "phase": "complete",
+      "client_exit": 0,
+      "mode": "undone",
+      "status": "pass"
+    },
+    "cleared": {
+      "client_pid": 1240,
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+      "payload_files": 59,
+      "client_exited": true,
+      "phase": "complete",
+      "client_exit": 0,
+      "mode": "cleared",
+      "status": "pass"
+    }
+  },
+  "checks": [
+    "Caller-owned exact replacement bytes",
+    "Original and alias exact file ID, security descriptor, attributes, unnamed bytes and named stream",
+    "Source and unrelated destination marker preserved",
+    "Four fresh normal app processes exited with status zero",
+    "Retained transaction data cleared and absent from final history"
+  ],
+  "captures": {
+    "repaired-readonly-alias-copy-completed.png": "63af0b5b8ea2d887005825226b2d42d3ffc531ba6a0b6bdb6ccf33de243197e4",
+    "repaired-readonly-alias-history-undo-undone.png": "662eecf8b43776fcdd538a2cd98f4e9aa575bf70625c04d894a39f0f7a294975",
+    "repaired-readonly-alias-cleared-cleared.png": "21481afb1b98197d45e4c3c43a73b8ff14ac2fa207486324caec36cb6ce99139"
+  },
+  "guest_teardown": {
+    "domain": "ottrin-init-helper-pipe-qa",
+    "uuid": "9e48c833-1731-45f3-a62e-adb502f390f9",
+    "volume": "ottrin-init-helper-pipe-qa.qcow2",
+    "status": "pass",
+    "domain_removed": true,
+    "overlay_removed": true,
+    "protected_definitions_states_and_backing_unchanged": true
+  },
+  "storage": {
+    "fixture_exit": 0,
+    "free_before": 23176261632,
+    "free_at_fixture_start": 27059392512,
+    "lowest_observed_free": 25739239424,
+    "free_after": 23209054208,
+    "restored_by_hash": [
+      {
+        "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-e2d6933b1ac22a07.exe",
+        "sha256": "17c5edb3db97a06169cad8041246aba8a356ebe145ea32e0266713ddf220f321"
+      },
+      {
+        "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-5d9606400e36b794.exe",
+        "sha256": "73e5752d7d8677e7e88c0187a08309e3c642bdbc58ebe5a3a1c1c921772fab7e"
+      },
+      {
+        "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_app-b14e5f4b4a3e18bf.exe",
+        "sha256": "c94272197bcfe863c99ecce770156e8fd9a49492b97ab4d00b8da88bf57bc9b1"
+      },
+      {
+        "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_indexd-2d6761405629f9c1.exe",
+        "sha256": "457fc7bfebcd6bce36fd1dc308eb32c98ba2c00e29a4ae10ba777a039f0df2fd"
+      },
+      {
+        "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-d1588445e089e3c2.exe",
+        "sha256": "8dc0b2629c8399a41f638acbc91f3eaa44cf6187657c612c99338b6d254c5c75"
+      },
+      {
+        "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/native_office_boundary_contract-b59b07b52984880e.exe",
+        "sha256": "21980516606e164e28872bf5b30436ec373e56620a495118124f97be2ad5d220"
+      }
+    ],
+    "compression_stage_removed": true
+  },
+  "superseded_private_installer_removed": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-readonly-alias-qa",
+  "private_build_worktree_and_staging_removed": true,
+  "private_executables_fingerprints_and_dep_info_removed": true,
+  "scope": "Private NSIS installed recovery only. Stable Windows candidate and release capability require their own verification and promotion."
+}

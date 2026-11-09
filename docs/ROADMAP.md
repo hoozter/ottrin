@@ -870,8 +870,8 @@ Current source, test, package and owner/external scopes stay separate.
      hash was preserved, the destination name was absent, and Ottrin
      reported retained transaction evidence. Restart, Undo and cleanup
      were not reached. Identify the changing version field and observation
-     boundary before changing the integrity check. The installer remains
-     for the repeat. The guest and overlay were removed, the temporary
+     boundary before changing the integrity check. The original installer
+     was retained through the repeat. The guest and overlay were removed, the temporary
      compression stage was removed, and all four borrowed test binaries
      were restored by hash. The fixture met the 24 GiB allocation floor.
      [Installed failure](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_READONLY_ALIAS_FAILURE.json).
@@ -903,6 +903,22 @@ Current source, test, package and owner/external scopes stay separate.
      Windows-target strict Clippy and formatting passed. Rebuild the
      private installer and repeat the installed UAC and restart path.
      [Native repair](../.hermes/evidence/windows-admin-copy-package-current/READONLY_ALIAS_REPAIR_NATIVE.json).
+     The rebuilt private NSIS from `15579628` on `381ef193` matched
+     all 59 ZIP payload files. Upstream returned HTTP 504, so the
+     build reused verified provider bytes from the preceding installer
+     with unchanged pins. On native Windows a standard user completed
+     Replace, reopened administrator history, undid Replace, reopened
+     the Undone history, cleared retained data and confirmed cleared
+     history in a fourth process. All six real UAC prompts used a
+     separate disposable administrator. Exact original metadata,
+     hard-link identity and streams, replacement bytes and caller
+     ownership passed. The old installer, guest, overlay, temporary
+     compression and private compiler executables were removed.
+     The accepted private installer remains in
+     `.hermes/packaging-tmp/.windows-readonly-alias-repair-qa/`.
+     Stable Windows delivery, crash recovery, cancellation and power
+     loss retain separate acceptance gates.
+     [Installed repair](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_READONLY_ALIAS_REPAIR.json).
      [Private installer receipt](../.hermes/evidence/windows-admin-copy-package-current/READONLY_ALIAS_HOST_PAYLOAD.json).
      Crash recovery, cancellation, power loss and production latency
      remain separate gates.
