@@ -1273,6 +1273,17 @@ Current source, test, package and owner/external scopes stay separate.
    Fresh and upgraded development MSIX acceptance passed and the Windows
    candidate was promoted. Broader recovery and MSI remain open.
 
+   Save now rechecks the file displayed in Replace. A different file
+   at the same path, or changed size or modification time, requires a new
+   confirmation. The prompt explains the change. The stable AppImage
+   reproduced the same-path race using an equal-size, equal-mtime
+   replacement. The source-built chooser required the second click,
+   returned the exact non-UTF-8 path and preserved both files. The chooser
+   started no index and wrote no main configuration. All 550 active Linux
+   UI tests, strict Linux/Windows-target lint and formatting passed.
+   [Native Save acceptance](../.hermes/evidence/picker-overwrite-identity-current/ACCEPTANCE.json).
+   This follow-up still needs packaging and native Windows acceptance.
+
    Linux folder setup `b9543fe9` keeps interrupted launcher replacements
    repairable while refusing edits outside the recorded versions. Eight
    folder tests and strict platform Clippy pass. A private unprivileged CLI

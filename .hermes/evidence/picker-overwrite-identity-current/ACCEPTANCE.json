@@ -1,0 +1,104 @@
+{
+  "binary_sha256": "7472f5176bb3e14908394df52d9dcc02beb85fef38574bff5c266c3879fe959f",
+  "scope": "Actual source-built Linux Save chooser with a same-name, same-size, same-mtime replacement between confirmation and click",
+  "status": "pass",
+  "normal_exit": 0,
+  "response": {
+    "accepted": true,
+    "paths": [
+      {
+        "encoding": "unix-bytes",
+        "units_hex": "2f7661722f746d702f2e6f747472696e2d7069636b65722d71612d3461366e393972382f666978747572652f6f726967696e616c802e747874"
+      }
+    ],
+    "current_filter": null,
+    "choices": {}
+  },
+  "caller_hint_accepted_without_row_selection": true,
+  "both_file_contents_preserved": true,
+  "second_confirmation_required": true,
+  "no_lossy_replacement_file_created": true,
+  "no_index_started": true,
+  "no_main_config_written": true,
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-4a6n99r8",
+    "owned_processes_reaped": [
+      {
+        "pid": 1973522,
+        "exit": 0
+      },
+      {
+        "pid": 1973525,
+        "exit": 0
+      },
+      {
+        "pid": 1973526,
+        "exit": 15
+      },
+      {
+        "pid": 1973577,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 4
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  },
+  "source_base": "eb1b9d71dded0cafbae6a2029599f8aa95186609",
+  "source_diff_sha256": "5c6ba8125eb61f03e8bef4a5e8981797b01d932d7b53fef1f14d98392e0107c0",
+  "renewed_prompt": "This file changed. Replace it?",
+  "control": {
+    "stable_appimage_sha256": "71bfe68b40c1442110e5b3b38ba967ebc5277ddb8e5907587f7d42500c45176e",
+    "accepted_after_first_confirmation": true,
+    "response": {
+      "accepted": true,
+      "paths": [
+        {
+          "encoding": "unix-bytes",
+          "units_hex": "2f7661722f746d702f2e6f747472696e2d7069636b65722d71612d776464666c7034712f666978747572652f6f726967696e616c802e747874"
+        }
+      ],
+      "current_filter": null,
+      "choices": {}
+    },
+    "teardown": {
+      "status": "failed",
+      "profile": "/var/tmp/.ottrin-picker-qa-wddflp4q",
+      "owned_processes_reaped": [
+        {
+          "pid": 1965090,
+          "exit": 0
+        },
+        {
+          "pid": 1965228,
+          "exit": 0
+        },
+        {
+          "pid": 1965240,
+          "exit": 15
+        },
+        {
+          "pid": 1965405,
+          "exit": 0
+        }
+      ],
+      "owned_children": {
+        "stopped": [],
+        "unreadable_foreign_processes_preserved": 4
+      },
+      "owned_mounts_unmounted": [],
+      "error": "A different file must require another confirmation",
+      "profile_removed": true
+    }
+  },
+  "suite": {
+    "linux_ui_passed": 550,
+    "linux_ui_ignored": 1,
+    "strict_linux_and_windows_target_clippy": "pass",
+    "formatting": "pass"
+  }
+}

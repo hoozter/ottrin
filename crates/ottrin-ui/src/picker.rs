@@ -111,7 +111,7 @@ enum Work {
         generation: u64,
         paths: Vec<PathBuf>,
         mode: PickerMode,
-        overwrite_confirmed: bool,
+        confirmed_overwrite: Option<OverwriteTarget>,
         filter: Option<Filter>,
     },
 }
@@ -131,8 +131,61 @@ enum ResultMessage {
 }
 enum Selection {
     Ready(Vec<PathBuf>),
-    Overwrite(PathBuf),
+    Overwrite(OverwritePrompt),
     Navigate(PathBuf),
+}
+
+struct OverwritePrompt {
+    target: OverwriteTarget,
+    changed: bool,
+}
+
+#[derive(Debug, PartialEq, Eq)]
+struct OverwriteTarget {
+    path: PathBuf,
+    identity: same_file::Handle,
+    size: u64,
+    modified: Option<std::time::SystemTime>,
+}
+
+impl OverwriteTarget {
+    fn open(path: &Path) -> Result<Self, String> {
+        #[cfg(target_os = "linux")]
+        let identity = {
+            use std::os::unix::fs::OpenOptionsExt;
+            std::fs::OpenOptions::new()
+                .read(true)
+                .custom_flags(libc::O_PATH)
+                .open(path)
+                .and_then(same_file::Handle::from_file)
+        };
+        #[cfg(target_os = "windows")]
+        let identity = {
+            use std::os::windows::fs::OpenOptionsExt;
+            use windows_sys::Win32::Storage::FileSystem::FILE_READ_ATTRIBUTES;
+            std::fs::OpenOptions::new()
+                .access_mode(FILE_READ_ATTRIBUTES)
+                .open(path)
+                .and_then(same_file::Handle::from_file)
+        };
+        #[cfg(not(any(target_os = "linux", target_os = "windows")))]
+        let identity = same_file::Handle::from_path(path);
+        let identity =
+            identity.map_err(|error| format!("Cannot check {}: {error}", path_label(path)))?;
+        let metadata = identity
+            .as_file()
+            .metadata()
+            .map_err(|error| error.to_string())?;
+        if !metadata.is_file() {
+            return Err("Choose a regular file.".into());
+        }
+        Ok(Self {
+            path: path.to_path_buf(),
+            identity,
+            size: metadata.len(),
+            modified: metadata.modified().ok(),
+        })
+    }
 }
 
 struct Worker {
@@ -188,14 +241,14 @@ impl Worker {
                         generation,
                         paths,
                         mode,
-                        overwrite_confirmed,
+                        confirmed_overwrite,
                         filter,
                     } => ResultMessage::Selection {
                         generation,
                         result: validate_selection(
                             paths,
                             mode,
-                            overwrite_confirmed,
+                            confirmed_overwrite,
                             filter.as_ref(),
                         ),
                     },
@@ -234,7 +287,7 @@ fn is_directory(entry: &FileEntry) -> bool {
 fn validate_selection(
     paths: Vec<PathBuf>,
     mode: PickerMode,
-    overwrite_confirmed: bool,
+    confirmed_overwrite: Option<OverwriteTarget>,
     filter: Option<&Filter>,
 ) -> Result<Selection, String> {
     if paths.is_empty() {
@@ -253,8 +306,14 @@ fn validate_selection(
                 PickerMode::Open if filter.is_some_and(|filter| !filter.matches(path)) => {
                     return Err("The file does not match the selected file type.".into());
                 }
-                PickerMode::Save if !overwrite_confirmed => {
-                    return Ok(Selection::Overwrite(path.clone()));
+                PickerMode::Save => {
+                    let current = OverwriteTarget::open(path)?;
+                    if confirmed_overwrite.as_ref() != Some(&current) {
+                        return Ok(Selection::Overwrite(OverwritePrompt {
+                            target: current,
+                            changed: confirmed_overwrite.is_some(),
+                        }));
+                    }
                 }
                 _ => (),
             },
@@ -316,7 +375,7 @@ pub(crate) struct PickerDialog {
     validating: bool,
     listing_valid: bool,
     error: Option<String>,
-    overwrite: Option<PathBuf>,
+    overwrite: Option<OverwritePrompt>,
     choices: BTreeMap<String, String>,
     worker: Worker,
     result: Option<PickerResponse>,
@@ -776,19 +835,20 @@ impl PickerDialog {
             }
             return;
         }
-        // The confirmation authorizes only the path shown in the prompt.
-        let confirmed = confirmed
-            && self
-                .overwrite
-                .take()
-                .is_some_and(|path| paths.as_slice() == [path]);
+        // The worker compares the pinned object and observed metadata at
+        // confirmation time. The caller still owns the eventual write.
+        let confirmed_overwrite = self
+            .overwrite
+            .take()
+            .map(|prompt| prompt.target)
+            .filter(|target| confirmed && paths.len() == 1 && paths[0] == target.path);
         self.validating = true;
         self.error = None;
         if let Err(error) = self.worker.send(Work::Validate {
             generation: self.generation,
             paths,
             mode: self.request.mode,
-            overwrite_confirmed: confirmed,
+            confirmed_overwrite,
             filter: self
                 .request
                 .current_filter
@@ -1479,11 +1539,17 @@ impl PickerDialog {
                 }
             });
         });
-        if let Some(path) = self.overwrite.clone() {
+        if let Some(prompt) = &self.overwrite {
+            let path = prompt.target.path.clone();
+            let changed = prompt.changed;
             egui::Modal::new(egui::Id::new("picker-overwrite"))
                 .frame(egui::Frame::window(ui.style()))
                 .show(&ctx, |ui| {
-                    ui.heading("Replace this file?");
+                    ui.heading(if changed {
+                        "This file changed. Replace it?"
+                    } else {
+                        "Replace this file?"
+                    });
                     ui.label(path_label(&path));
                     ui.label("The application will replace this file when it saves. Ottrin has not changed it.");
                     ui.horizontal(|ui| {
@@ -1948,7 +2014,10 @@ mod tests {
             assert!(Instant::now() < until);
             std::thread::sleep(Duration::from_millis(1));
         }
-        assert_eq!(dialog.overwrite.as_ref(), Some(&path));
+        assert_eq!(
+            dialog.overwrite.as_ref().map(|prompt| &prompt.target.path),
+            Some(&path)
+        );
         assert!(dialog.take_result().is_none());
         assert_eq!(std::fs::read(&path).unwrap(), b"original");
         let other = root.path().join("another.txt");
@@ -1961,9 +2030,38 @@ mod tests {
             assert!(Instant::now() < until);
             std::thread::sleep(Duration::from_millis(1));
         }
-        assert_eq!(dialog.overwrite.as_ref(), Some(&other));
+        assert_eq!(
+            dialog.overwrite.as_ref().map(|prompt| &prompt.target.path),
+            Some(&other)
+        );
         assert!(dialog.take_result().is_none());
         assert_eq!(std::fs::read(&other).unwrap(), b"another original");
+        let renamed = root.path().join("renamed.txt");
+        std::fs::rename(&other, &renamed).unwrap();
+        // The replacement has the same path, size and modified time.
+        std::fs::write(&other, b"new replacement!").unwrap();
+        let original_time = std::fs::metadata(&renamed).unwrap().modified().unwrap();
+        std::fs::File::options()
+            .write(true)
+            .open(&other)
+            .unwrap()
+            .set_modified(original_time)
+            .unwrap();
+        dialog.accept(true);
+        let until = Instant::now() + Duration::from_secs(3);
+        while dialog.validating {
+            dialog.poll();
+            assert!(Instant::now() < until);
+            std::thread::sleep(Duration::from_millis(1));
+        }
+        assert!(dialog.take_result().is_none());
+        assert_eq!(
+            dialog.overwrite.as_ref().map(|prompt| &prompt.target.path),
+            Some(&other)
+        );
+        assert!(dialog.overwrite.as_ref().unwrap().changed);
+        assert_eq!(std::fs::read(&renamed).unwrap(), b"another original");
+        assert_eq!(std::fs::read(&other).unwrap(), b"new replacement!");
         dialog.accept(true);
         let until = Instant::now() + Duration::from_secs(3);
         while dialog.validating {
@@ -1972,7 +2070,7 @@ mod tests {
             std::thread::sleep(Duration::from_millis(1));
         }
         assert_eq!(dialog.take_result().unwrap().paths, vec![other.clone()]);
-        assert_eq!(std::fs::read(other).unwrap(), b"another original");
+        assert_eq!(std::fs::read(other).unwrap(), b"new replacement!");
         assert_eq!(std::fs::read(path).unwrap(), b"original");
     }
     #[test]
@@ -1992,7 +2090,10 @@ mod tests {
             1.0,
         );
         wait_listing(&mut app.dialog);
-        app.dialog.overwrite = Some(existing.clone());
+        app.dialog.overwrite = Some(OverwritePrompt {
+            target: OverwriteTarget::open(&existing).unwrap(),
+            changed: false,
+        });
         let size = Vec2::new(940.0, 640.0);
         frame(&mut app, &ctx, size, 0.0, vec![]);
         let key = |key, pressed, modifiers| egui::Event::Key {
@@ -2004,7 +2105,13 @@ mod tests {
         };
         let location = |pressed| key(egui::Key::L, pressed, egui::Modifiers::CTRL);
         frame(&mut app, &ctx, size, 0.1, vec![location(true)]);
-        assert_eq!(app.dialog.overwrite.as_ref(), Some(&existing));
+        assert_eq!(
+            app.dialog
+                .overwrite
+                .as_ref()
+                .map(|prompt| &prompt.target.path),
+            Some(&existing)
+        );
         assert!(!app.dialog.editing_location);
 
         frame(
@@ -2038,7 +2145,12 @@ mod tests {
             let mut dialog =
                 PickerDialog::new(request, &ctx, PickerPreferences::default()).unwrap();
             wait_listing(&mut dialog);
-            dialog.overwrite = Some(root.path().join("existing.txt"));
+            let existing = root.path().join("existing.txt");
+            std::fs::write(&existing, b"original").unwrap();
+            dialog.overwrite = Some(OverwritePrompt {
+                target: OverwriteTarget::open(&existing).unwrap(),
+                changed: false,
+            });
 
             let mut colors = Colors::preset(ThemePreset::Ottrin, dark);
             colors.app_radius = 23;
@@ -2885,7 +2997,7 @@ mod tests {
         let Work::Validate {
             paths,
             mode,
-            overwrite_confirmed,
+            confirmed_overwrite,
             ..
         } = requests.recv().unwrap()
         else {
@@ -2893,7 +3005,7 @@ mod tests {
         };
         assert_eq!(paths, vec![path.clone()]);
         assert!(
-            matches!(validate_selection(paths, mode, overwrite_confirmed, None), Ok(Selection::Overwrite(p)) if p == path)
+            matches!(validate_selection(paths, mode, confirmed_overwrite, None), Ok(Selection::Overwrite(prompt)) if prompt.target.path == path)
         );
         assert_eq!(std::fs::read(&path).unwrap(), b"original");
         assert!(!browsing.path().join("report.txt").exists());
@@ -3098,8 +3210,8 @@ mod tests {
                 std::thread::sleep(Duration::from_millis(1));
             }
             assert_eq!(
-                dialog.overwrite,
-                Some(original.clone()),
+                dialog.overwrite.as_ref().map(|prompt| &prompt.target.path),
+                Some(&original),
                 "Refreshing must not replace native filename units with display glyphs"
             );
             dialog.navigate(other.clone());
@@ -3160,8 +3272,8 @@ mod tests {
             std::thread::sleep(Duration::from_millis(1));
         }
         assert_eq!(
-            dialog.overwrite,
-            Some(path.clone()),
+            dialog.overwrite.as_ref().map(|prompt| &prompt.target.path),
+            Some(&path),
             "Existing selected native path must not turn into a different lossy filename"
         );
         dialog.accept(true);
