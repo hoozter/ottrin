@@ -1824,8 +1824,16 @@ Current source, test, package and owner/external scopes stay separate.
    modified selection in a directory with mixed entries. The delivered Linux
    AppImage passed mounted Open and Folder requests through the picker command
    and the desktop FileChooser portal. Both returned the exact requested paths
-   without editing files or starting indexing. Native Windows and broader
-   caller acceptance retain their separate scopes.
+   without editing files or starting indexing. The delivered Windows
+   portable `a9c718a2` also passed native ordinary-user folder Select All
+   and Enter in Dark and Light. Each returned exactly the three requested
+   UTF-16 folder paths from a mixed directory and preserved settings and
+   fixture bytes without starting the index. The guest, volumes, private
+   desktop and duplicate export were removed. All 20 borrowed compiler
+   outputs were restored by hash after the host wrapper was interrupted.
+   This closes the portable Windows multi-folder workflow. Broader caller
+   acceptance retains its separate scope.
+   [Native folder-picker receipt](../.hermes/evidence/windows-native-picker-folders-current/ACCEPTANCE.json).
 
    Source `1464c6c2` binds Save overwrite confirmation to the displayed
    destination. The regression changes the destination before confirming
