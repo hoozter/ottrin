@@ -976,8 +976,18 @@ Current source, test, package and owner/external scopes stay separate.
      data or caller recovery journal appeared. The owned guest and
      overlay were removed.
      [Installed elevation cancellation](../.hermes/evidence/windows-alias-cancel-current/ACCEPTANCE.json).
-     Post-approval Stop, crash recovery, power loss and production
-     latency for this protected Replace case remain separate gates.
+     The private NSIS also passed Stop during staging of a 512 MiB
+     replacement after real UAC approval. Ottrin showed Stopped and
+     closed normally. The caller saw one journal for the stopped
+     transaction. A SYSTEM observer verified the matching staging
+     directory and candidate, and checked the preserved source,
+     destination marker, original file and hard-link metadata and
+     named stream. The SYSTEM enumeration did not observe the caller
+     journal, so that part of the result uses the caller's evidence.
+     Both disposable guests were removed.
+     [Installed Stop](../.hermes/evidence/windows-alias-stop-retry-current/ACCEPTANCE.json).
+     Crash recovery, power loss and production latency for this
+     protected Replace case remain separate gates.
      [Native read-only alias probe](../.hermes/evidence/windows-admin-copy-package-current/READONLY_ALIAS_VOLUME_PROBE.json).
 
    Missing member IDs never license deletion or a completed original-batch claim.
