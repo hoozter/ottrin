@@ -994,8 +994,15 @@ Current source, test, package and owner/external scopes stay separate.
      retained their identity, security, attributes, bytes and named
      stream at every phase, and the source and marker stayed intact.
      [Installed helper crash recovery](../.hermes/evidence/windows-alias-helper-crash-current/ACCEPTANCE.json).
-     Application process crash, guest power loss and production
-     latency for this protected Replace case remain separate gates.
+     The same package passed application process termination during
+     staging. The helper exited 57 ms after the bound caller process
+     was killed in this run. The standard user retained the matching
+     recovery journal, ended the attempt in a fresh process and saw
+     Ended in another. The original and hard-link metadata and named
+     stream, source and unrelated marker passed each disk check.
+     [Installed application crash recovery](../.hermes/evidence/windows-alias-app-crash-current/ACCEPTANCE.json).
+     Guest power loss and production latency for this protected
+     Replace case remain separate gates.
      [Native read-only alias probe](../.hermes/evidence/windows-admin-copy-package-current/READONLY_ALIAS_VOLUME_PROBE.json).
 
    Missing member IDs never license deletion or a completed original-batch claim.
