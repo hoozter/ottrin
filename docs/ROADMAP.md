@@ -1215,9 +1215,16 @@ Current source, test, package and owner/external scopes stay separate.
    The Windows ZIP and NSIS from the same source are staged. All 59
    files match across the two payloads and both artifact hashes were
    verified. The detached build worktree and temporary installer
-   extraction were removed. Native MSIX assembly and Windows
-   runtime verification remain open.
+   extraction were removed.
    [Windows package content receipt](../.hermes/evidence/windows-menu-divider-delivery-current/HOST_PAYLOAD.json).
+   Native MakeAppx assembled development MSIX 32 and independently
+   verified all 59 payload files. The bundled daemon passed watcher
+   and restart checks on a 1,000-file fixture and averaged 0.21% of
+   one core during its quiet sample. The guest, both volumes, source
+   archive and clone were removed, and all 18 borrowed compiler
+   executables were restored by hash. Native UI, deployment and
+   lifecycle acceptance remain open.
+   [MSIX 32 assembly receipt](../.hermes/evidence/windows-menu-divider-delivery-current/ASSEMBLY_ACCEPTANCE.json).
    Broader platform and theme-property coverage and whole-interface
    alignment/grouping remain open. The theme-library miniature now
    paints square selected-row fills, rounds only outer title/status corners and
