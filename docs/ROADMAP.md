@@ -403,9 +403,14 @@ and [first-run timeout](../.hermes/evidence/windows-picker-keyboard-current/nati
    Services. The command boundary rejects MSIX Copy and recovery
    before helper launch. Strict Windows-target Clippy and the focused
    Linux helper protocol and preflight cancellation tests passed.
-   Native acceptance of the new source and refreshed user packages
-   are still pending. Continue the single-user MSIX investigation
-   separately.
+   The exact `49748824` desktop candidate rebuilt all six Windows
+   binaries. The staged portable ZIP and NSIS installer match across
+   all 59 payload files, and both checksums passed. The build worktree
+   and temporary extraction were removed. Native verification and
+   promotion remain pending. Continue the single-user MSIX
+   investigation separately.
+   [Desktop Copy package contents](../.hermes/evidence/windows-admin-copy-desktop-current/HOST_PAYLOAD.json).
+   [Hosted checks](https://github.com/hoozter/ottrin/actions/runs/42742694725).
    [MSIX helper startup sample](../.hermes/evidence/windows-admin-copy-delivery-current/MSIX_HELPER_STARTUP_FINDING.json).
    [Loader image and symbol](../.hermes/evidence/windows-admin-copy-delivery-current/WINDOWS_LOADER_IMAGE.json).
    [Native DLL initialization failure](../.hermes/evidence/windows-admin-copy-delivery-current/MSIX_HELPER_DLL_INIT_FAILURE.json).
