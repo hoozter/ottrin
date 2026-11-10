@@ -2309,6 +2309,13 @@ Current source, test, package and owner/external scopes stay separate.
    without mutating the running service. Hosted Windows verification
    remains pending.
    [Mounted picker preference check](../.hermes/evidence/linux-picker-preferences-delivery/mounted-overlap/ACCEPTANCE.json).
+   The matching Windows ZIP and NSIS from `f62ec5e4` are also staged.
+   The archives match across 59 payload files and pass the deferred
+   OpenGL loader check. Native overlapping picker acceptance, MSIX
+   assembly and promotion remain pending. The superseded private
+   `4c88e968` menu test packages were removed after the ownership and
+   consumer checks. Their historical receipts remain available.
+   [Staged Windows package contents](../.hermes/evidence/windows-picker-preferences-delivery/HOST_PAYLOAD.json).
 
    Linux folder setup `b9543fe9` keeps interrupted launcher replacements
    repairable while refusing edits outside the recorded versions. Eight
