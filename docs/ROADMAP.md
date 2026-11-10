@@ -1211,6 +1211,9 @@ Current source, test, package and owner/external scopes stay separate.
    above includes the fix. Native Windows verification remains open. Include the
    historical-feedback correction now delivered on Linux and Windows; finish the
    remaining complete interface/property audit.
+   The theme editor More menu uses the shared aligned menu rows with
+   distinct icons for Import, Export and Reset. The Linux UI suite passed
+   554 tests with one ignored. Package and rendered menu checks remain open.
    Live navigation/menu/view/breadcrumb, tab/window-control and Miller presenters
    have bounded acceptance; List/Grid now has source and actual mounted Linux package checks described
    above, with original package acceptance at Linux source43. The stable
