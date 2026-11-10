@@ -1226,11 +1226,18 @@ Current source, test, package and owner/external scopes stay separate.
    desktop captures were removed. Native MakeAppx assembled development
    MSIX 34 from the same source, and native unpacking plus a host comparison
    verified all 59 payload files. The assembly guest and its volumes were
-   removed. Promotion still requires the hosted matrix and native upgrade,
-   sign-in and removal checks. The stable Windows packages remain on
-   `4d3f11a3` with development MSIX 32.
+   removed. The exact MSIX 32-to-34 upgrade passed as an ordinary user
+   with automatic indexing enabled. At real sign-in, Windows started
+   the daemon before any Ottrin command. The daemon reported Ready,
+   and the index database identity and preferences were preserved.
+   Explorer background, multiple-folder and drive actions passed.
+   Removal cleared the package, processes, index tasks and COM
+   registration. The runtime guest, volumes and disposable captures
+   were removed. The stable Windows packages remain on `4d3f11a3`
+   with development MSIX 32 pending the hosted matrix and promotion.
    [Native Windows More menu verification](../.hermes/evidence/theme-editor-more-menu-current/WINDOWS_MORE_ACCEPTANCE.json).
    [Native MSIX 34 assembly](../.hermes/evidence/theme-editor-more-menu-current/ASSEMBLY_ACCEPTANCE.json).
+   [Native MSIX 32-to-34 upgrade](../.hermes/evidence/theme-editor-more-menu-current/runtime34-upgrade/ACCEPTANCE.json).
    Live navigation/menu/view/breadcrumb, tab/window-control and Miller presenters
    have bounded acceptance; List/Grid now has source and actual mounted Linux package checks described
    above, with original package acceptance at Linux source43. The stable
