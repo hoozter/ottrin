@@ -3,11 +3,31 @@ from contextlib import ExitStack
 import hashlib,importlib.util,json,os,signal,subprocess,sys,time
 import argparse,re
 import tarfile,tempfile
-parser=argparse.ArgumentParser();parser.add_argument('--case',required=True);inputs=parser.add_mutually_exclusive_group();inputs.add_argument('--binary',type=Path);inputs.add_argument('--portable-archive',type=Path);args=parser.parse_args();assert re.fullmatch('[a-z0-9-]+',args.case)
-root=Path.cwd();e=root/'.hermes/evidence/release-audit-current'/args.case;e.mkdir(exist_ok=False)
-binary=(args.binary or args.portable_archive).resolve() if (args.binary or args.portable_archive) else root/'dist/packages/Ottrin-0.1.0-x86_64.AppImage';accepted=json.loads((root/'dist/packages/LINUX_PACKAGES_ACCEPTANCE.json').read_text());digest=hashlib.file_digest(binary.open('rb'),'sha256').hexdigest();assert args.binary or digest==accepted['artifacts'][binary.name]
+parser = argparse.ArgumentParser()
+parser.add_argument('--case', required=True)
+inputs = parser.add_mutually_exclusive_group()
+inputs.add_argument('--binary', type=Path)
+inputs.add_argument('--appimage', type=Path)
+inputs.add_argument('--portable-archive', type=Path)
+parser.add_argument('--package-manifest', type=Path)
+args = parser.parse_args()
+if not re.fullmatch('[a-z0-9-]+', args.case):
+ parser.error('invalid case name')
+if args.binary and args.package_manifest:
+ parser.error('--package-manifest requires a packaged artifact')
+root = Path.cwd()
+binary = (args.binary or args.appimage or args.portable_archive
+          or root/'dist/packages/Ottrin-0.1.0-x86_64.AppImage').resolve()
+manifest = args.package_manifest or root/'dist/packages/LINUX_PACKAGES_ACCEPTANCE.json'
+accepted = json.loads(manifest.read_text()) if not args.binary else None
+with binary.open('rb') as package:
+ digest = hashlib.file_digest(package, 'sha256').hexdigest()
+if accepted and digest != accepted['artifacts'][binary.name]:
+ raise SystemExit(f'Artifact checksum does not match {manifest}: {binary}')
+e = root/'.hermes/evidence/release-audit-current'/args.case
+e.mkdir(exist_ok=False)
 spec=importlib.util.spec_from_file_location('desktop',root/'scripts/linux-desktop-qa/session.py');desktop=importlib.util.module_from_spec(spec);spec.loader.exec_module(desktop)
-report={'status':'running','artifact_sha256':digest,'runtime_source':accepted['source_revision'],'scope':'Existing complete packaged daily-driver smoke in private X11/AT-SPI/software desktop; actual filesystem/UI results required','driver_sha256':hashlib.sha256((root/'scripts/linux-desktop-qa.py').read_bytes()).hexdigest()}
+report={'status':'running','artifact_sha256':digest,'runtime_source':accepted['source_revision'] if accepted else subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),'scope':'Existing complete packaged daily-driver smoke in private X11/AT-SPI/software desktop; actual filesystem/UI results required','driver_sha256':hashlib.sha256((root/'scripts/linux-desktop-qa.py').read_bytes()).hexdigest()}
 def save():(e/'CONTROL.json').write_text(json.dumps(report,indent=2)+'\n')
 if args.binary:report.update(scope='Source GUI daily-driver smoke; no package acceptance',source_patch_sha256=hashlib.sha256(subprocess.check_output(['git','diff','--','crates'])).hexdigest())
 save()
