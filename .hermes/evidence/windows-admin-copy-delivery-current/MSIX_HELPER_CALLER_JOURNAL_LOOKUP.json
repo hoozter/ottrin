@@ -1,0 +1,35 @@
+{
+  "status": "resolved caller journal path through live process token; path still absent after MSIX Undo",
+  "package_sha256": "ff98d685a6113ba1177c938fb7ce51f95e21c23a15e9b457dc9f91d258e354da",
+  "source_revision": "c4c2f4beb0a859cadae68423bfaad2e56996a4e6",
+  "helper_sha256": "ff95a2405883a1c3b6e480a0a68ceb2066a8183db15ff787f707f132e10c8f74",
+  "folder_lookup": {
+    "api": "SHGetKnownFolderPath",
+    "folder": "FOLDERID_LocalAppData",
+    "flags": "KF_FLAG_DONT_VERIFY",
+    "token": "live packaged caller process",
+    "journal_path": "C:\\Users\\OttrinQaCaller\\AppData\\Local\\Ottrin\\State\\copies"
+  },
+  "copy": {
+    "publication_matches_source": true,
+    "normal_exit": true
+  },
+  "undo": {
+    "ui_reported_copy_undone": true,
+    "publication_absent": true,
+    "source_preserved": true,
+    "journal_path_assertion_failed": true
+  },
+  "scope": "This repeated the prior operation and ruled out a difference between the actor environment path and the explicit token known-folder locator. It did not locate the physical journal or verify retained-data cleanup or normal Undo exit.",
+  "cleanup": {
+    "domain": "ottrin-init-helper-pipe-qa",
+    "uuid": "2034c7ab-3a42-4d39-bf6b-3d6d2d5adc58",
+    "volume": "ottrin-init-helper-pipe-qa.qcow2",
+    "status": "pass",
+    "domain_removed": true,
+    "overlay_removed": true,
+    "protected_definitions_states_and_backing_unchanged": true,
+    "compiler_executables_restored_by_hash": 25,
+    "temporary_archive_and_restore_manifest_removed": true
+  }
+}

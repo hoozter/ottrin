@@ -381,9 +381,14 @@ and [first-run timeout](../.hermes/evidence/windows-picker-keyboard-current/nati
    With that change, Copy passed with matching bytes and a normal exit.
    A fresh process loaded authenticated history and reported Copy undone.
    The publication was absent and the source hash matched. The actor
-   then stopped on its EXE-specific journal path assertion, so the MSIX
-   journal location, normal Undo exit and retained-data cleanup remain
-   to be verified. This registration test is diagnostic. Ordinary
+   then stopped on its journal path assertion. A second run resolved
+   Local AppData from the live packaged caller token with
+   `SHGetKnownFolderPath`. It returned the same path as the actor's
+   environment and the journal was still absent there after Undo.
+   The next comparison needs an independent disk observation of the
+   caller and administrator package storage before and after cleanup.
+   The journal location, normal Undo exit and retained-data cleanup
+   remain unverified. This registration test is diagnostic. Ordinary
    single-user MSIX deployment still lacks a verified administrator
    Copy path.
    [MSIX helper startup sample](../.hermes/evidence/windows-admin-copy-delivery-current/MSIX_HELPER_STARTUP_FINDING.json).
@@ -391,6 +396,7 @@ and [first-run timeout](../.hermes/evidence/windows-picker-keyboard-current/nati
    [Native DLL initialization failure](../.hermes/evidence/windows-admin-copy-delivery-current/MSIX_HELPER_DLL_INIT_FAILURE.json).
    [Loader trace result](../.hermes/evidence/windows-admin-copy-delivery-current/MSIX_HELPER_LOADER_TRACE.json).
    [Alternate administrator registration comparison](../.hermes/evidence/windows-admin-copy-delivery-current/MSIX_HELPER_ADMIN_REGISTRATION_COMPARISON.json).
+   [Packaged caller journal path comparison](../.hermes/evidence/windows-admin-copy-delivery-current/MSIX_HELPER_CALLER_JOURNAL_LOOKUP.json).
    [MSIX 33 assembly](../.hermes/evidence/windows-admin-copy-delivery-current/ASSEMBLY_ACCEPTANCE.json).
    [Fresh deployment](../.hermes/evidence/windows-admin-copy-delivery-current/runtime33-fresh/ACCEPTANCE.json),
    [enabled upgrade](../.hermes/evidence/windows-admin-copy-delivery-current/runtime33-upgrade/ACCEPTANCE.json)
