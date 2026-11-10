@@ -2331,6 +2331,13 @@ Current source, test, package and owner/external scopes stay separate.
    [MSIX 38 upgrade and sign-in](../.hermes/evidence/windows-picker-preferences-delivery/runtime38-upgrade/ACCEPTANCE.json).
    [Windows package delivery](../.hermes/evidence/windows-picker-preferences-delivery/WINDOWS_DELIVERY.json).
 
+   The standalone Save picker now has a rendered Dark and Light
+   regression for the title bar, toolbar, Places surface, input
+   surface, Cancel button and outer window. The test assigns distinct
+   colors and three different radii to verify that each painted role
+   uses its own setting. This covers rendered UI shapes. Installed
+   window theme checks and broader theme-property coverage remain open.
+
    Linux folder setup `b9543fe9` keeps interrupted launcher replacements
    repairable while refusing edits outside the recorded versions. Eight
    folder tests and strict platform Clippy pass. A private unprivileged CLI

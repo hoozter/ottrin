@@ -2141,6 +2141,66 @@ mod tests {
     }
 
     #[test]
+    fn picker_paints_distinct_window_surface_and_button_theme_roles() {
+        let ctx = Context::default();
+        let root = tempfile::tempdir().unwrap();
+        let request = PickerRequest {
+            mode: PickerMode::Save,
+            title: "Themed picker".into(),
+            initial_directory: Some(root.path().to_path_buf()),
+            ..Default::default()
+        };
+        let mut app = host(&ctx, request, true, 1.0);
+        let size = Vec2::new(900.0, 650.0);
+        for (index, dark) in [true, false].into_iter().enumerate() {
+            let mut theme =
+                crate::OttrinApp::custom_from_colors(Colors::preset(ThemePreset::Ottrin, dark));
+            let tone = if dark { 38 } else { 210 };
+            theme.titlebar = [tone, 47, 74, 255];
+            theme.toolbar = [tone, 88, 96, 255];
+            theme.bookmarks_bar = [tone, 74, 82, 255];
+            theme.panel_raised = [tone, 120, 141, 255];
+            theme.button_bg = [tone, 82, 128, 255];
+            theme.window_border = [tone, 47, 116, 255];
+            theme.app_radius = 22.0;
+            theme.border_radius = 3.0;
+            theme.button_radius = 13.0;
+            theme.window_border_width = 2.5;
+            let saved = &mut app.config.custom_themes[0];
+            if dark {
+                saved.dark = theme;
+                app.config.theme = ThemeMode::Dark;
+            } else {
+                saved.light = theme;
+                app.config.theme = ThemeMode::Light;
+            }
+            let output = frame(&mut app, &ctx, size, index as f64, vec![]);
+            let colors = Colors::for_config(&app.config, None);
+            let has_surface = |fill, radius| {
+                output.shapes.iter().any(|shape| {
+                    matches!(&shape.shape, egui::Shape::Rect(rect)
+                    if rect.fill == fill && rect.corner_radius == egui::CornerRadius::same(radius))
+                })
+            };
+            assert!(has_surface(colors.titlebar_bg, 0));
+            assert!(has_surface(colors.toolbar_bg, 3));
+            assert!(has_surface(colors.bookmarks_bg, 3));
+            assert!(has_surface(colors.panel_raised, 3));
+            let cancel = text_center(&output, "Cancel").expect("visible Cancel label");
+            assert!(output.shapes.iter().any(
+                |shape| matches!(&shape.shape, egui::Shape::Rect(rect)
+                if rect.rect.contains(cancel) && rect.fill == colors.button_bg
+                    && rect.corner_radius == egui::CornerRadius::same(13))
+            ));
+            assert!(output.shapes.iter().any(
+                |shape| matches!(&shape.shape, egui::Shape::Rect(rect)
+                if rect.stroke == egui::Stroke::new(2.5, colors.window_border)
+                    && rect.corner_radius == egui::CornerRadius::same(22))
+            ));
+        }
+    }
+
+    #[test]
     fn replace_confirmation_uses_window_corners_and_border() {
         for dark in [false, true] {
             let ctx = Context::default();
