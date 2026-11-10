@@ -2213,12 +2213,19 @@ Current source, test, package and owner/external scopes stay separate.
    9.42 seconds before the first observed window. A default repeat took
    1.26 seconds and two subsequent forced OpenGL starts took 1.17 and
    0.49 seconds. Default can select OpenGL automatically in this VM, and
-   the later starts benefited from warmed caches. Next, compare a first
-   launch from the installed NSIS against fresh portable extraction and
-   time executable entry, renderer setup and first UI update separately.
+   the later starts benefited from warmed caches. In another fresh VM,
+   the exact delivered NSIS installed picker mapped in 1.46 seconds on
+   first launch and 1.79 seconds on repeat. Process creation returned in
+   83 ms on the first launch. The installer had already run the same
+   executable for index setup. The fixture stopped the index before the
+   picker test and verified all four cancellations and uninstall. That
+   verifies the installed user path. The fresh portable startup delay
+   remains open. Time executable entry, renderer setup and first UI
+   update separately on the first launch after portable extraction.
    Broader theme and caller acceptance also remain open.
    [Delivered Windows picker resource check](../.hermes/evidence/windows-picker-current-runtime-audit/ACCEPTANCE.json).
    [Windows picker startup comparison](../.hermes/evidence/windows-picker-startup-comparison/ACCEPTANCE.json).
+   [Installed Windows picker startup](../.hermes/evidence/windows-picker-installed-startup/ACCEPTANCE.json).
 
    Linux folder setup `b9543fe9` keeps interrupted launcher replacements
    repairable while refusing edits outside the recorded versions. Eight
