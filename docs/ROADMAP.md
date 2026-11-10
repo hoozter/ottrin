@@ -46,6 +46,15 @@ the 38-to-39 upgrade, sign-in index startup, Explorer background,
 multiple-folder and drive actions, and removal. All three stable
 checksums passed after promotion. [Windows delivery receipt](../.hermes/evidence/windows-picker-density-candidate/WINDOWS_DELIVERY.json).
 
+The exact delivered Linux AppImage and portable launcher then each
+passed 27 private desktop checks. The run covered navigation, List
+and Grid, search actions, tabs, Tandem View, Inspector formats, and
+actual Copy, Rename, Trash and permanent deletion of disposable files.
+File bytes and process health passed verification. Both profiles and the
+portable extraction were removed. DEB/RPM installation, cross-volume
+workflows and personal acceptance have separate gates.
+[Linux desktop receipt](../.hermes/evidence/release-audit-current/LINUX_B545BD2E_DESKTOP_WORKFLOWS.json).
+
 Windows portable and NSIS builds enable administrator Copy. The installed
 Copy and Undo lifecycle was verified on `49748824`. The current `b545bd2e`
 package receipt carries that earlier acceptance separately from its own
