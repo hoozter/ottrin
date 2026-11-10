@@ -33,6 +33,15 @@ replacement while a window from the old image stayed open. All four
 staged formats passed content inspection. The stable package receipt
 records publication after the [exact-source hosted checks](https://github.com/hoozter/ottrin/actions/runs/42790815680).
 
+The staged Windows `b545bd2e` ZIP and NSIS installer passed the same
+26-to-37-pixel List-density change and exact file selection in an
+ordinary-user Windows guest. The picker remembered the last folder and
+preserved independent view preferences across overlapping windows.
+The installed Theme Editor passed preview-menu dismissal and pointer
+Cancel in Dark and Light, preserving the saved theme. Uninstall and
+owned VM teardown passed. Development MSIX 39 assembly and upgrade
+are separate gates before promotion of the Windows set.
+
 Windows portable and NSIS builds enable administrator Copy. The installed
 Copy and Undo lifecycle was verified on `49748824`. The current `f62ec5e4`
 package receipt carries that earlier acceptance separately from its own
