@@ -9,7 +9,7 @@ not complete a broader native, platform or user-acceptance requirement.
 | Platform | Launchable locally | Next delivery |
 | --- | --- | --- |
 | Linux | `19b156e2` AppImage, portable archive, DEB and RPM in `dist/packages/`. [Exact package receipt](../dist/packages/LINUX_PACKAGES_ACCEPTANCE.json). | Promoted after mounted Dark and Light More menu checks and all four [hosted jobs](https://github.com/hoozter/ottrin/actions/runs/42727014406). |
-| Windows | `19b156e2` portable ZIP, NSIS and development MSIX 34 in `dist/windows-candidate/`. [Exact package receipt](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json). | Promoted after native portable More menu checks, exact NSIS payload comparison, and MSIX 32-to-34 upgrade, sign-in and removal. |
+| Windows | `49748824` portable ZIP, NSIS and development MSIX 35 in `dist/windows-candidate/`. [Exact package receipt](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json). | Promoted after installed administrator Copy and Undo, MSIX 34-to-35 upgrade and Services checks, and all four [hosted jobs](https://github.com/hoozter/ottrin/actions/runs/42742694725). |
 
 The [ordered work](#current-ordered-work) tracks the remaining software
 and package acceptance. The [owner and external waiting list](#ownerexternal-waiting-list)
@@ -417,12 +417,23 @@ and [first-run timeout](../.hermes/evidence/windows-picker-keyboard-current/nati
    source. Independent unpacking verified all 59 files. Its daemon
    passed watcher mutations and restart and averaged 0.21% of one
    core during the 30-second idle sample. The assembly guest, disks,
-   source clone and archive were removed. Promotion still requires
-   the hosted matrix and native MSIX upgrade and capability checks.
-   Continue the single-user MSIX investigation separately.
+   source clone and archive were removed. The first upgrade attempt
+   stopped on the fixture's stale baseline version assertion. The
+   second rendered the new Services notice but stopped when the
+   external PowerShell actor tried to launch the helper directly.
+   The corrected fixture verified the normal packaged app's helper
+   readiness and Administrator Copy notice, plus the exact 34-to-35
+   upgrade, preferences and index identity, real sign-in, Explorer
+   actions and removal. All four hosted jobs passed. Promotion verified
+   the three Windows hashes at their stable paths, preserved the
+   Linux packages and held MSI, and removed the Windows stage and
+   superseded packages. Continue the single-user MSIX investigation
+   separately.
    [Desktop Copy package contents](../.hermes/evidence/windows-admin-copy-desktop-current/HOST_PAYLOAD.json).
    [Installed desktop Copy lifecycle](../.hermes/evidence/windows-admin-copy-desktop-current/INSTALLED_ACCEPTANCE.json).
    [Native MSIX 35 assembly](../.hermes/evidence/windows-admin-copy-desktop-current/ASSEMBLY_ACCEPTANCE.json).
+   [Native MSIX 34-to-35 upgrade](../.hermes/evidence/windows-admin-copy-desktop-current/runtime35-upgrade/ACCEPTANCE.json).
+   [Windows promotion](../.hermes/evidence/windows-admin-copy-desktop-current/WINDOWS_DELIVERY.json).
    [Hosted checks](https://github.com/hoozter/ottrin/actions/runs/42742694725).
    [MSIX helper startup sample](../.hermes/evidence/windows-admin-copy-delivery-current/MSIX_HELPER_STARTUP_FINDING.json).
    [Loader image and symbol](../.hermes/evidence/windows-admin-copy-delivery-current/WINDOWS_LOADER_IMAGE.json).

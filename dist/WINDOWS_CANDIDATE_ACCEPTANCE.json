@@ -1,39 +1,39 @@
 {
-  "status": "pass scoped Windows More menu, matching NSIS payload and MSIX upgrade",
-  "source_commit": "19b156e249256b8b70e6ce4cdf6b06f531ace1d4",
+  "status": "pass installed Windows desktop administrator Copy and MSIX package boundary",
+  "source_commit": "497488244b7c29b1b06a00c791d3fc9720383253",
   "working_tree_at_build": "clean",
   "candidate": "/home/campbell/Projects/Ottrin/dist/windows-candidate",
   "artifacts": {
-    "Ottrin-0.1.0-windows-x64-setup.exe": "f8f84e9fb595edc928088fcdacb74d41e806d32bf44535436149bf8ec26afa5d",
-    "Ottrin-0.1.0-windows-x64-portable.zip": "2ec4860ff9aeda8b4940b84c6769faf923194ae6f3ec116de067c3b47f810496",
-    "Ottrin-0.1.0-windows-x64-development.msix": "ea596a157b52018203b76cfc3aa149a2f140a92280874620bd34f9c14bde62c2"
+    "Ottrin-0.1.0-windows-x64-setup.exe": "354c72ea79d9d668d0e9bea0d652e77951583909d059ca07a274a6f7288179d0",
+    "Ottrin-0.1.0-windows-x64-portable.zip": "b972f61c182f8f9857bac9eb6014907f529bca7e59c6545ba7a0b0deabaa90f4",
+    "Ottrin-0.1.0-windows-x64-development.msix": "3cf46b6b2ce31a430e66afa47db819314285f00545f207a51c50adf86f3de2e6"
   },
   "payload_files": 59,
-  "evidence_directory": ".hermes/evidence/theme-editor-more-menu-current",
+  "evidence_directory": ".hermes/evidence/windows-admin-copy-desktop-current",
   "hosted_source": {
-    "run": 42727014406,
-    "tested_source_revision": "19b156e249256b8b70e6ce4cdf6b06f531ace1d4",
+    "run": 42742694725,
+    "tested_source_revision": "497488244b7c29b1b06a00c791d3fc9720383253",
     "all_four_jobs_success": true
   },
-  "host_content": "WINDOWS_HOST_PAYLOAD.json",
+  "host_content": "HOST_PAYLOAD.json",
   "current_native_fields": ".hermes/evidence/windows-menu-divider-delivery-current/native-theme-retry/ACCEPTANCE.json",
-  "daemon_runtime": ".hermes/evidence/theme-editor-more-menu-current/WINDOWS_DAEMON_RUNTIME.json",
+  "daemon_runtime": ".hermes/evidence/windows-admin-copy-desktop-current/WINDOWS_DAEMON_RUNTIME.json",
   "native_msix": {
-    "current_assembly": ".hermes/evidence/theme-editor-more-menu-current/ASSEMBLY_ACCEPTANCE.json",
-    "current_enabled_update": ".hermes/evidence/theme-editor-more-menu-current/runtime34-upgrade/ACCEPTANCE.json"
+    "current_assembly": ".hermes/evidence/windows-admin-copy-desktop-current/ASSEMBLY_ACCEPTANCE.json",
+    "current_enabled_update": ".hermes/evidence/windows-admin-copy-desktop-current/runtime35-upgrade/ACCEPTANCE.json"
   },
   "native_msi_rollback": {
     "status": "held: ordinary-user registration rollback/retry failed on exact8ede diagnostic; no current accepted MSI",
     "release_accepted": false,
     "diagnostic_input": ".hermes/evidence/windows-msi-package-control-current/input/DIAGNOSTIC_INPUT.json"
   },
-  "source_scope": ".hermes/evidence/theme-editor-more-menu-current/WINDOWS_DELIVERY.json",
+  "source_scope": ".hermes/evidence/windows-admin-copy-desktop-current/WINDOWS_DELIVERY.json",
   "public_release_published": false,
   "limits": [
     "Software Windows guest; physical GPU, Store, signing and human acceptance remain separate.",
     "Earlier theme, Save, NSIS lifecycle and default-folder receipts retain their original package scopes.",
     "MSIX exposes Explorer folder actions and preserves the default folder app.",
-    "Administrator Copy remains disabled in these artifacts. Ordinary MSI rollback remains held."
+    "Administrator Copy is available in desktop builds. Single-user MSIX administrator Copy and ordinary MSI rollback remain held."
   ],
   "previous_native_upgrade": ".hermes/evidence/theme-editor-pointer-fix-current/nsis31-lifecycle-headroom/ACCEPTANCE.json",
   "native_default_capability": ".hermes/evidence/windows-picker-keyboard-current/native-default/ACCEPTANCE.json",
@@ -43,9 +43,8 @@
   "previous_native_save_identity": ".hermes/evidence/windows-save-identity-delivery-current/INSTALLED_SAVE_IDENTITY.json",
   "native_more_menu": ".hermes/evidence/theme-editor-more-menu-current/WINDOWS_MORE_ACCEPTANCE.json",
   "previous_native_msix": {
-    "current_assembly": ".hermes/evidence/windows-menu-divider-delivery-current/ASSEMBLY_ACCEPTANCE.json",
-    "current_runtime_login_removal": ".hermes/evidence/windows-menu-divider-delivery-current/runtime32-fresh/ACCEPTANCE.json",
-    "current_enabled_update": ".hermes/evidence/windows-menu-divider-delivery-current/runtime32-upgrade/ACCEPTANCE.json",
-    "current_disabled_update": ".hermes/evidence/windows-menu-divider-delivery-current/runtime32-disabled/ACCEPTANCE.json"
-  }
+    "current_assembly": ".hermes/evidence/theme-editor-more-menu-current/ASSEMBLY_ACCEPTANCE.json",
+    "current_enabled_update": ".hermes/evidence/theme-editor-more-menu-current/runtime34-upgrade/ACCEPTANCE.json"
+  },
+  "native_administrator_copy": ".hermes/evidence/windows-admin-copy-desktop-current/INSTALLED_ACCEPTANCE.json"
 }
