@@ -359,6 +359,12 @@ and [first-run timeout](../.hermes/evidence/windows-picker-keyboard-current/nati
    filesystem request. The diagnostic guest and overlay were removed and
    the borrowed test executables restored by hash.
    [MSIX helper launch observation](../.hermes/evidence/windows-admin-copy-delivery-current/msix-copy-undo/HELPER_LAUNCH_OBSERVATION.json).
+   Eight live samples from the packaged helper landed at the same
+   `ntdll.dll` instruction. The only helper address in the sampled
+   stack range was its startup entry point. This points toward Windows
+   process startup, with the exact wait still unverified. The source
+   hash and absent destination matched the earlier result.
+   [MSIX helper startup sample](../.hermes/evidence/windows-admin-copy-delivery-current/MSIX_HELPER_STARTUP_FINDING.json).
    [MSIX 33 assembly](../.hermes/evidence/windows-admin-copy-delivery-current/ASSEMBLY_ACCEPTANCE.json).
    [Fresh deployment](../.hermes/evidence/windows-admin-copy-delivery-current/runtime33-fresh/ACCEPTANCE.json),
    [enabled upgrade](../.hermes/evidence/windows-admin-copy-delivery-current/runtime33-upgrade/ACCEPTANCE.json)

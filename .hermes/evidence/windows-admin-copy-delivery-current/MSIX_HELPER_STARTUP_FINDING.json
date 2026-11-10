@@ -1,0 +1,33 @@
+{
+  "status": "reproduced packaged helper connection failure with one sampled native thread",
+  "source_revision": "c4c2f4beb0a859cadae68423bfaad2e56996a4e6",
+  "msix_sha256": "ff98d685a6113ba1177c938fb7ce51f95e21c23a15e9b457dc9f91d258e354da",
+  "helper_sha256": "ff95a2405883a1c3b6e480a0a68ceb2066a8183db15ff787f707f132e10c8f74",
+  "sample_count": 8,
+  "thread_ids": [
+    6736
+  ],
+  "instruction": {
+    "module": "ntdll.dll",
+    "rva": "0x163214"
+  },
+  "possible_helper_return_symbols": [
+    "mainCRTStartup"
+  ],
+  "interpretation": "Consistent with a wait during Windows process startup. Raw stack candidates do not prove the exact loader call or exclude other causes.",
+  "disk": {
+    "source_sha256": "3fc5d485b7cbea0501dd61db76c43ff6dadea69e25a93ff970da52a3ec597073",
+    "source_present": true,
+    "target_present": false
+  },
+  "cleanup": {
+    "domain": "ottrin-init-helper-pipe-qa",
+    "uuid": "22152462-f7c0-45a8-80ed-a79ca4d1be8a",
+    "volume": "ottrin-init-helper-pipe-qa.qcow2",
+    "status": "pass",
+    "domain_removed": true,
+    "overlay_removed": true,
+    "protected_definitions_states_and_backing_unchanged": true
+  },
+  "borrowed_executables_restored": 25
+}
