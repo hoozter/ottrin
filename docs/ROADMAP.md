@@ -8,7 +8,7 @@ not complete a broader native, platform or user-acceptance requirement.
 
 | Platform | Launchable locally | Next delivery |
 | --- | --- | --- |
-| Linux | `19b156e2` AppImage, portable archive, DEB and RPM in `dist/packages/`. [Exact package receipt](../dist/packages/LINUX_PACKAGES_ACCEPTANCE.json). | Promoted after mounted Dark and Light More menu checks and all four [hosted jobs](https://github.com/hoozter/ottrin/actions/runs/42727014406). |
+| Linux | `eadf713e` AppImage, portable archive, DEB and RPM in `dist/packages/`. [Exact package receipt](../dist/packages/LINUX_PACKAGES_ACCEPTANCE.json). | Promoted after mounted Dark and Light picker checks, an old-to-new index transition and all four [hosted jobs](https://github.com/hoozter/ottrin/actions/runs/42750682313). |
 | Windows | `49748824` portable ZIP, NSIS and development MSIX 35 in `dist/windows-candidate/`. [Exact package receipt](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json). | Promoted after installed administrator Copy and Undo, MSIX 34-to-35 upgrade and Services checks, and all four [hosted jobs](https://github.com/hoozter/ottrin/actions/runs/42742694725). |
 
 The [ordered work](#current-ordered-work) tracks the remaining software
@@ -2157,8 +2157,12 @@ Current source, test, package and owner/external scopes stay separate.
    kept the old window usable and opened the new binary on the next
    launch. The staged index reopened the previous database with the
    same inode, passed watcher mutations and restart, and averaged
-   0.067% of one core over 60 idle seconds. Linux promotion awaits
-   the hosted matrix. The Windows ZIP and NSIS contain the same 59
+   0.067% of one core over 60 idle seconds. All four hosted jobs
+   passed and the Linux packages were promoted. The managed index
+   returned to Ready with its database identity, preferences and
+   sign-in setting preserved. Promotion removed the consumed stage,
+   superseded packages and previous managed mount. The Windows ZIP
+   and NSIS contain the same 59
    payload files. The exact portable picker passed a physical click
    on Edit location in Dark and Light and returned the exact typed
    UTF-16 folder. No index started. The chooser preserved preferences
@@ -2167,10 +2171,11 @@ Current source, test, package and owner/external scopes stay separate.
    development MSIX 36 and all 59 payload files matched. The
    assembly guest, disks, source clone and archive were removed.
    Windows promotion awaits native MSIX upgrade, sign-in and
-   removal verification and the hosted matrix.
+   removal verification.
    [Mounted Dark picker](../.hermes/evidence/picker-edit-location-current/linux-dark/ACCEPTANCE.json).
    [Mounted Light picker](../.hermes/evidence/picker-edit-location-current/linux-light/ACCEPTANCE.json).
    [Mounted daemon transition](../.hermes/evidence/picker-edit-location-current/LINUX_DAEMON_RUNTIME.json).
+   [Linux picker delivery](../.hermes/evidence/picker-edit-location-current/PROMOTION.json).
    [Native Windows picker](../.hermes/evidence/picker-edit-location-current/WINDOWS_PICKER_ACCEPTANCE.json).
    [Native MSIX 36 assembly](../.hermes/evidence/picker-edit-location-current/ASSEMBLY_ACCEPTANCE.json).
 
