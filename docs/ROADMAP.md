@@ -126,6 +126,11 @@ The collapsed strip follows its production blend of Smart Panel and
 raised surface colors. The other sampled surfaces retained their own
 colors. Restore and Cancel passed.
 [Shared surface color receipt](../.hermes/evidence/linux-theme-component-delivery/RENDERED_SHARED_SURFACE_COLORS.json).
+The real Cancel button's fill and text, and the editor's window edge,
+also passed independent hex edits in Dark and Light. Each sampled
+role retained its color when either of the other two controls changed.
+Restore and Cancel passed.
+[Button and window color receipt](../.hermes/evidence/linux-theme-component-delivery/RENDERED_BUTTON_AND_WINDOW_COLORS.json).
 
 The staged Windows `d7726c9b` installer passed UI Automation
 activation and selection readback for Theme component in both
