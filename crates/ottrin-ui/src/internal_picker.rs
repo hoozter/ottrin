@@ -178,7 +178,7 @@ impl OttrinApp {
     }
 }
 fn remember(dialog: &PickerDialog) {
-    if let Err(error) = dialog.preferences().save() {
+    if let Err(error) = dialog.remember_preferences() {
         eprintln!("ottrin: Could not remember picker preferences: {error}");
     }
 }

@@ -29,8 +29,10 @@ impl PickerPreferences {
             .transpose()
     }
     pub(crate) fn load() -> Result<Self, String> {
-        let path = preferences_path()?;
-        let file = match std::fs::File::open(&path) {
+        Self::load_from(&preferences_path()?)
+    }
+    fn load_from(path: &Path) -> Result<Self, String> {
+        let file = match std::fs::File::open(path) {
             Ok(file) => file,
             Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
                 return Ok(Self::default());
@@ -49,9 +51,38 @@ impl PickerPreferences {
         preferences.directory()?;
         Ok(preferences)
     }
-    pub(crate) fn save(&self) -> Result<(), String> {
+    pub(crate) fn save_changes(&self, initial: &Self) -> Result<(), String> {
+        self.save_changes_to(&preferences_path()?, initial)
+    }
+    fn save_changes_to(&self, path: &Path, initial: &Self) -> Result<(), String> {
         self.directory()?;
-        write_preferences(&preferences_path()?, self)
+        let parent = path
+            .parent()
+            .ok_or("Picker preferences have no parent folder")?;
+        std::fs::create_dir_all(parent).map_err(|error| error.to_string())?;
+        // Keep a separate lock inode because the preferences file is replaced
+        // atomically. Concurrent internal and standalone dialogs share it.
+        let lock = std::fs::OpenOptions::new()
+            .read(true)
+            .write(true)
+            .create(true)
+            .truncate(false)
+            .open(path.with_extension("lock"))
+            .map_err(|error| format!("Could not open picker preferences lock: {error}"))?;
+        lock.lock()
+            .map_err(|error| format!("Could not lock picker preferences: {error}"))?;
+        let mut latest = Self::load_from(path)?;
+        if self.grid != initial.grid {
+            latest.grid = self.grid;
+        }
+        if self.hidden != initial.hidden {
+            latest.hidden = self.hidden;
+        }
+        if self.preview != initial.preview {
+            latest.preview = self.preview;
+        }
+        latest.last_directory.clone_from(&self.last_directory);
+        write_preferences(path, &latest)
     }
 }
 fn preferences_path() -> Result<PathBuf, String> {
@@ -64,7 +95,6 @@ fn write_preferences(path: &Path, preferences: &PickerPreferences) -> Result<(),
     let parent = path
         .parent()
         .ok_or("Picker preferences have no parent folder")?;
-    std::fs::create_dir_all(parent).map_err(|error| error.to_string())?;
     let temporary = parent.join(format!(
         ".picker-{}-{}.tmp",
         std::process::id(),
@@ -106,6 +136,36 @@ fn write_preferences(path: &Path, preferences: &PickerPreferences) -> Result<(),
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn overlapping_dialogs_preserve_independent_changes() {
+        let directory = tempfile::tempdir().unwrap();
+        let path = directory.path().join(FILE_NAME);
+        let initial = PickerPreferences::load_from(&path).unwrap();
+        let grid = PickerPreferences {
+            grid: true,
+            ..initial.clone()
+        };
+        let preview = PickerPreferences {
+            preview: true,
+            ..initial.clone()
+        };
+        let simultaneous = std::sync::Barrier::new(2);
+        std::thread::scope(|scope| {
+            scope.spawn(|| {
+                simultaneous.wait();
+                grid.save_changes_to(&path, &initial).unwrap();
+            });
+            simultaneous.wait();
+            preview.save_changes_to(&path, &initial).unwrap();
+        });
+        // Closing an older dialog without changing its options must not
+        // restore its stale values over the newer choices.
+        initial.save_changes_to(&path, &initial).unwrap();
+        let saved = PickerPreferences::load_from(&path).unwrap();
+        assert!(saved.grid && saved.preview && !saved.hidden);
+    }
+
     #[test]
     fn picker_preferences_round_trip_without_changing_main_configuration() {
         let main = crate::config::config_path().unwrap();
@@ -118,7 +178,7 @@ mod tests {
             preview: true,
             last_directory: Some(NativePath::encode(directory.path())),
         };
-        prefs.save().unwrap();
+        prefs.save_changes(&PickerPreferences::default()).unwrap();
         let restored = PickerPreferences::load().unwrap();
         assert!(restored.grid && restored.hidden && restored.preview);
         assert_eq!(
@@ -134,7 +194,7 @@ mod tests {
                 .read_dir()
                 .unwrap()
                 .count(),
-            2
+            3
         );
     }
     #[cfg(unix)]
@@ -146,7 +206,7 @@ mod tests {
             last_directory: Some(NativePath::encode(&path)),
             ..Default::default()
         };
-        prefs.save().unwrap();
+        prefs.save_changes(&PickerPreferences::default()).unwrap();
         assert_eq!(
             PickerPreferences::load().unwrap().directory().unwrap(),
             Some(path)

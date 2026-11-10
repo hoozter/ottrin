@@ -379,6 +379,7 @@ pub(crate) struct PickerDialog {
     choices: BTreeMap<String, String>,
     worker: Worker,
     result: Option<PickerResponse>,
+    initial_preferences: PickerPreferences,
 }
 impl PickerDialog {
     pub fn new(
@@ -435,6 +436,7 @@ impl PickerDialog {
             choices,
             worker: Worker::start(ctx.clone()),
             result: None,
+            initial_preferences: preferences.clone(),
         };
         if dialog.request.current_filter.is_none() && !dialog.filters.is_empty() {
             dialog.request.current_filter = Some(0);
@@ -460,6 +462,9 @@ impl PickerDialog {
                 &self.directory,
             )),
         }
+    }
+    pub(crate) fn remember_preferences(&self) -> Result<(), String> {
+        self.preferences().save_changes(&self.initial_preferences)
     }
     pub fn take_result(&mut self) -> Option<PickerResponse> {
         self.result.take()
@@ -1678,7 +1683,7 @@ impl PickerApp {
         if let Some(result) = self.dialog.take_result() {
             let mut outcome = self.outcome.lock().expect("picker outcome");
             if outcome.is_none() {
-                if let Err(error) = self.dialog.preferences().save() {
+                if let Err(error) = self.dialog.remember_preferences() {
                     eprintln!("ottrin: Could not remember picker preferences: {error}");
                 }
                 *outcome = Some(result);

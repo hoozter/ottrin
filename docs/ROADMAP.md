@@ -2294,7 +2294,11 @@ Current source, test, package and owner/external scopes stay separate.
    selection and theme construction. Previously it read the same
    settings file again after renderer setup, so a concurrent settings
    save could mix revisions within the same picker launch. This source
-   change is pending package refresh.
+   change is pending package refresh. Concurrent picker windows now
+   merge only the view options changed in each dialog. Saving is
+   serialized across internal and standalone pickers, so closing an
+   older dialog no longer restores stale grid, hidden-file or preview
+   options. The last closed dialog still supplies the remembered folder.
 
    Linux folder setup `b9543fe9` keeps interrupted launcher replacements
    repairable while refusing edits outside the recorded versions. Eight
