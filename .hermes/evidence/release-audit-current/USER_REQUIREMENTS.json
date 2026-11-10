@@ -189,7 +189,7 @@
     {
       "id": "U13",
       "requirement": "Must-have themed open/save picker and reversible supported default-folder integration; no unnecessary always-on picker process.",
-      "current_scope": "Current eadf713e Linux mounted AppImage and Windows native portable picker pass pointer-driven location editing in both palettes. The delivered Linux AppImage also passes repeat and concurrent open/cancel without a private index socket. Prior Linux portal/Firefox/GTK/Flatpak/Vivaldi/FileManager1 and Windows Save/default-folder receipts retain exact scopes. MSIX 36 passes Explorer folder actions. The delivered Windows portable picker passed first, repeat and concurrent cancellation without starting the index. Software OpenGL VM first window mapping took up to 15.25 seconds, repeat 1.04 seconds. Windows startup performance and broader caller and theme acceptance remain open. A second fresh VM reproduced the first-window delay at 15.31 seconds with default renderer settings, including 5.84 seconds before process creation returned. A default repeat took 1.26 seconds. Exact NSIS first picker after setup mapped in 1.46 seconds, including 83 ms for process creation, and the default repeat took 1.79 seconds. Setup already ran the binary for index setup. Fresh portable startup remains open. Native GNU diagnostic reproduced slow fresh portable startup at 14.58 seconds, with about 11.81 seconds before app entry and 452 ms from entry through the first UI pass. The default renderer was WGPU. The pre-entry cause remains open. Native kernel tracing measured a 6.07-second gap between mapping the bundled OpenGL DLL and its Mesa dependency before application entry. The picker subsequently selected WGPU. Renderer separation and retest remain open. GNU diagnostic source 68b145fd verified WGPU without loading bundled Mesa and compatibility OpenGL with Mesa loaded after app entry. The first WGPU window still took 11.31 seconds in a fresh VM. Cold startup and refreshed package acceptance remain open. The exact staged 68b145fd ZIP and NSIS passed native default and explicit OpenGL picker launches, cancellation, and NSIS uninstall. The host timeout interrupted the kernel trace export. MSIX acceptance and package promotion remain open. The 68b145fd Windows cohort is now delivered with exact NSIS/ZIP renderer checks and native MSIX 36-to-37 sign-in, Explorer actions and uninstall. Portable cold startup remains open. Delivered Linux f62ec5e4 and staged Windows f62ec5e4 each passed three overlapping picker launches and preserved independent grid and hidden-file options. Windows tested both portable and installed processes. Windows MSIX 38 acceptance and promotion remain open.",
+      "current_scope": "Current eadf713e Linux mounted AppImage and Windows native portable picker pass pointer-driven location editing in both palettes. The delivered Linux AppImage also passes repeat and concurrent open/cancel without a private index socket. Prior Linux portal/Firefox/GTK/Flatpak/Vivaldi/FileManager1 and Windows Save/default-folder receipts retain exact scopes. MSIX 36 passes Explorer folder actions. The delivered Windows portable picker passed first, repeat and concurrent cancellation without starting the index. Software OpenGL VM first window mapping took up to 15.25 seconds, repeat 1.04 seconds. Windows startup performance and broader caller and theme acceptance remain open. A second fresh VM reproduced the first-window delay at 15.31 seconds with default renderer settings, including 5.84 seconds before process creation returned. A default repeat took 1.26 seconds. Exact NSIS first picker after setup mapped in 1.46 seconds, including 83 ms for process creation, and the default repeat took 1.79 seconds. Setup already ran the binary for index setup. Fresh portable startup remains open. Native GNU diagnostic reproduced slow fresh portable startup at 14.58 seconds, with about 11.81 seconds before app entry and 452 ms from entry through the first UI pass. The default renderer was WGPU. The pre-entry cause remains open. Native kernel tracing measured a 6.07-second gap between mapping the bundled OpenGL DLL and its Mesa dependency before application entry. The picker subsequently selected WGPU. Renderer separation and retest remain open. GNU diagnostic source 68b145fd verified WGPU without loading bundled Mesa and compatibility OpenGL with Mesa loaded after app entry. The first WGPU window still took 11.31 seconds in a fresh VM. Cold startup and refreshed package acceptance remain open. The exact staged 68b145fd ZIP and NSIS passed native default and explicit OpenGL picker launches, cancellation, and NSIS uninstall. The host timeout interrupted the kernel trace export. MSIX acceptance and package promotion remain open. The 68b145fd Windows cohort is now delivered with exact NSIS/ZIP renderer checks and native MSIX 36-to-37 sign-in, Explorer actions and uninstall. Portable cold startup remains open. Delivered Linux f62ec5e4 and delivered Windows f62ec5e4 each passed three overlapping picker launches and preserved independent grid and hidden-file options. Windows tested both portable and installed processes. The 37-to-38 MSIX upgrade, sign-in, Explorer actions and removal passed.",
       "evidence": [
         ".hermes/evidence/current-firefox-picker/ACCEPTANCE.json",
         ".hermes/evidence/theme-selection-delivery-current/DESKTOP_INTEGRATION_ACCEPTANCE.json",
@@ -216,13 +216,14 @@
         ".hermes/evidence/windows-deferred-mesa-delivery/PACKAGED_RENDERERS.json",
         ".hermes/evidence/windows-deferred-mesa-delivery/WINDOWS_DELIVERY.json",
         ".hermes/evidence/linux-picker-preferences-delivery/PROMOTION.json",
-        ".hermes/evidence/windows-picker-preferences-delivery/ACCEPTANCE.json"
+        ".hermes/evidence/windows-picker-preferences-delivery/ACCEPTANCE.json",
+        ".hermes/evidence/windows-picker-preferences-delivery/WINDOWS_DELIVERY.json"
       ]
     },
     {
       "id": "U14",
       "requirement": "Keep one stable usable package path, current GitHub checkpoints, honest status/roadmap/waiting list and no failure-email flood.",
-      "current_scope": "Both stable local cohorts use eadf713e. All four exact-source hosted jobs and seven local checksums passed. Both promotions updated their authorities and recorded the package and native-test scopes. Public release and notification-email delivery remain separate. The 68b145fd Windows cohort is now delivered with exact NSIS/ZIP renderer checks and native MSIX 36-to-37 sign-in, Explorer actions and uninstall. Portable cold startup remains open.",
+      "current_scope": "Both stable local cohorts use eadf713e. All four exact-source hosted jobs and seven local checksums passed. Both promotions updated their authorities and recorded the package and native-test scopes. Public release and notification-email delivery remain separate. The 68b145fd Windows cohort is now delivered with exact NSIS/ZIP renderer checks and native MSIX 36-to-37 sign-in, Explorer actions and uninstall. Portable cold startup remains open. Linux and Windows stable paths now use f62ec5e4. All four exact-source hosted jobs passed.",
       "evidence": [
         ".hermes/evidence/recovery-transport-delivery-current/PROGRESS.json",
         ".hermes/evidence/recovery-transport-delivery-current/NATIVE_CLEANUP_CURRENT.json",
@@ -244,13 +245,14 @@
         ".hermes/evidence/smart-panel-secondary-text-current/PROMOTION.json",
         ".hermes/evidence/picker-edit-location-current/PROMOTION.json",
         ".hermes/evidence/picker-edit-location-current/WINDOWS_DELIVERY.json",
-        ".hermes/evidence/windows-deferred-mesa-delivery/WINDOWS_DELIVERY.json"
+        ".hermes/evidence/windows-deferred-mesa-delivery/WINDOWS_DELIVERY.json",
+        ".hermes/evidence/windows-picker-preferences-delivery/WINDOWS_DELIVERY.json"
       ]
     },
     {
       "id": "U15",
       "requirement": "Remove owned obsolete build/QA output and test processes while preserving user data, protected VMs, useful caches and current deliverables.",
-      "current_scope": "Both eadf713e promotions removed their owned stages and superseded packages. The Windows picker, MSIX assembly and upgrade removed their disposable guests and disks and restored borrowed test executables. The current Linux resource test retired its profile. Earlier retained diagnostics retain their individual ownership and purpose. MSIX 37 assembly and upgrade removed both owned guests and volumes, retired the temporary sources, restored borrowed executables and the staged ZIP by hash, and retired the consumed package stage and superseded Windows packages after promotion.",
+      "current_scope": "Both eadf713e promotions removed their owned stages and superseded packages. The Windows picker, MSIX assembly and upgrade removed their disposable guests and disks and restored borrowed test executables. The current Linux resource test retired its profile. Earlier retained diagnostics retain their individual ownership and purpose. MSIX 37 assembly and upgrade removed both owned guests and volumes, retired the temporary sources, restored borrowed executables and the staged ZIP by hash, and retired the consumed package stage and superseded Windows packages after promotion. MSIX 38 test guests, source clone, and staging were removed. Borrowed compiler outputs and diagnostic packages were restored by hash. Superseded Windows packages were removed after promotion.",
       "evidence": [
         ".hermes/evidence/release-audit-current/CLEANUP.json",
         ".hermes/evidence/release-audit-current/cohort/EXTRACTION_CLEANUP.json",
@@ -278,7 +280,8 @@
         ".hermes/evidence/picker-edit-location-current/WINDOWS_PICKER_ACCEPTANCE.json",
         ".hermes/evidence/picker-edit-location-current/runtime36-upgrade/ACCEPTANCE.json",
         ".hermes/evidence/picker-current-runtime-audit/ACCEPTANCE.json",
-        ".hermes/evidence/windows-deferred-mesa-delivery/WINDOWS_DELIVERY.json"
+        ".hermes/evidence/windows-deferred-mesa-delivery/WINDOWS_DELIVERY.json",
+        ".hermes/evidence/windows-picker-preferences-delivery/WINDOWS_DELIVERY.json"
       ]
     }
   ],

@@ -9,14 +9,14 @@ not complete a broader native, platform or user-acceptance requirement.
 | Platform | Launchable locally | Next delivery |
 | --- | --- | --- |
 | Linux | `f62ec5e4` AppImage, portable archive, DEB and RPM in `dist/packages/`. [Exact package receipt](../dist/packages/LINUX_PACKAGES_ACCEPTANCE.json). | Promoted after mounted overlapping picker checks, private AppImage replacement and all four [hosted jobs](https://github.com/hoozter/ottrin/actions/runs/42778247908). |
-| Windows | `68b145fd` portable ZIP, NSIS and development MSIX 37 in `dist/windows-candidate/`. [Exact package receipt](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json). | Promoted after native WGPU and OpenGL picker checks in the ZIP and installed EXE, MSIX 36-to-37 upgrade and sign-in, and all four [hosted jobs](https://github.com/hoozter/ottrin/actions/runs/42771072382). |
+| Windows | `f62ec5e4` portable ZIP, NSIS and development MSIX 38 in `dist/windows-candidate/`. [Exact package receipt](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json). | Promoted after native overlapping portable and installed picker checks, MSIX 37-to-38 upgrade and sign-in, and all four [hosted jobs](https://github.com/hoozter/ottrin/actions/runs/42778247908). |
 
 The [ordered work](#current-ordered-work) tracks the remaining software
 and package acceptance. The [owner and external waiting list](#ownerexternal-waiting-list)
 records what depends on input, signing, devices or personal acceptance.
 
 Windows portable and NSIS builds enable administrator Copy. The installed
-Copy and Undo lifecycle was verified on `49748824`. The current `68b145fd`
+Copy and Undo lifecycle was verified on `49748824`. The current `f62ec5e4`
 package receipt carries that earlier acceptance separately from its own
 picker and upgrade checks. The development MSIX leaves administrator Copy
 unavailable in normal single-user deployment and preserves the existing
@@ -600,7 +600,7 @@ and [first-run timeout](../.hermes/evidence/windows-picker-keyboard-current/nati
    read-only MSIX comparison confirmed transacted opens fail under package
    identity. Verify supported folder actions, picker behavior, and remaining theme
    controls in the installed candidate. The current MSIX exposes Explorer
-   commands and reports the default-folder limitation. Current MSIX 37
+   commands and reports the default-folder limitation. Current MSIX 38
    verified Explorer background, multiple-folder and drive actions, and
    preserved the default registration. The current portable ZIP passed
    keyboard picker navigation and the reported Dark and Light theme edits.
@@ -2311,18 +2311,25 @@ Current source, test, package and owner/external scopes stay separate.
    The Linux staging and superseded packages were removed.
    [Mounted picker preference check](../.hermes/evidence/linux-picker-preferences-delivery/mounted-overlap/ACCEPTANCE.json).
    [Linux package delivery](../.hermes/evidence/linux-picker-preferences-delivery/PROMOTION.json).
-   The matching Windows ZIP and NSIS from `f62ec5e4` are also staged.
+   The matching Windows ZIP and NSIS from `f62ec5e4` are also delivered.
    The archives match across 59 payload files and pass the deferred
    OpenGL loader check. The staged ZIP and installed EXE passed the
    native three-window overlap check. Changing Grid in a portable
    picker and Show hidden files in an installed picker preserved both
    settings after the untouched portable picker closed last. All
-   three cancelled normally and uninstall passed. MSIX assembly and
-   promotion remain pending. The superseded private
+   three cancelled normally and uninstall passed. Native MakeAppx
+   assembled MSIX 38 with all 59 payload files. The 37-to-38 upgrade
+   preserved the index database identity and preferences, started the
+   index at real sign-in, and passed Explorer background, multi-folder,
+   and drive actions and uninstall. All four hosted checks passed.
+   Promotion removed the consumed stage and superseded Windows packages
+   and preserved the Linux set and held MSI. The superseded private
    `4c88e968` menu test packages were removed after the ownership and
    consumer checks. Their historical receipts remain available.
    [Staged Windows package contents](../.hermes/evidence/windows-picker-preferences-delivery/HOST_PAYLOAD.json).
    [Native Windows picker preference check](../.hermes/evidence/windows-picker-preferences-delivery/ACCEPTANCE.json).
+   [MSIX 38 upgrade and sign-in](../.hermes/evidence/windows-picker-preferences-delivery/runtime38-upgrade/ACCEPTANCE.json).
+   [Windows package delivery](../.hermes/evidence/windows-picker-preferences-delivery/WINDOWS_DELIVERY.json).
 
    Linux folder setup `b9543fe9` keeps interrupted launcher replacements
    repairable while refusing edits outside the recorded versions. Eight

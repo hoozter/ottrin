@@ -1,33 +1,33 @@
 {
-  "status": "pass scoped Windows renderer and MSIX upgrade",
-  "source_commit": "68b145fd51946c81de29289d8d40c9efdf03e28c",
+  "status": "pass scoped Windows picker preferences and MSIX upgrade",
+  "source_commit": "f62ec5e4319514e699112a3442da630747cd2839",
   "working_tree_at_build": "clean",
   "candidate": "/home/campbell/Projects/Ottrin/dist/windows-candidate",
   "artifacts": {
-    "Ottrin-0.1.0-windows-x64-setup.exe": "2ceb021f0715a47887bc74ecbcb6ef0558f167493328eec6c9527ca877c7dad1",
-    "Ottrin-0.1.0-windows-x64-portable.zip": "558e14c9481a4314f4aaa550ffc4bcda52eb224bf5f823f1bd8f50c97391f615",
-    "Ottrin-0.1.0-windows-x64-development.msix": "f1dff1df86c2692ac51f82bf81bc115597ce5abe2e14057f767553034b86328d"
+    "Ottrin-0.1.0-windows-x64-setup.exe": "efa743593a6954cea67189cfd727f46ca013125a3565a75813b0849050a6d40a",
+    "Ottrin-0.1.0-windows-x64-portable.zip": "51b7c70379be7b807f9beec38b5584f482067342aae6ff1a183f9d6dff5076dd",
+    "Ottrin-0.1.0-windows-x64-development.msix": "ee067668907850638e5d2b621093b568c4dd0f004f0b24dfc3c74491fde6e635"
   },
   "payload_files": 59,
-  "evidence_directory": ".hermes/evidence/windows-deferred-mesa-delivery",
+  "evidence_directory": ".hermes/evidence/windows-picker-preferences-delivery",
   "hosted_source": {
-    "run": 42771072382,
-    "tested_source_revision": "68b145fd51946c81de29289d8d40c9efdf03e28c",
+    "run": 42778247908,
+    "tested_source_revision": "f62ec5e4319514e699112a3442da630747cd2839",
     "all_four_jobs_success": true
   },
   "host_content": "HOST_PAYLOAD.json",
   "current_native_fields": ".hermes/evidence/windows-menu-divider-delivery-current/native-theme-retry/ACCEPTANCE.json",
-  "daemon_runtime": ".hermes/evidence/windows-deferred-mesa-delivery/WINDOWS_DAEMON_RUNTIME.json",
+  "daemon_runtime": ".hermes/evidence/windows-picker-preferences-delivery/WINDOWS_DAEMON_RUNTIME.json",
   "native_msix": {
-    "current_assembly": ".hermes/evidence/windows-deferred-mesa-delivery/ASSEMBLY_ACCEPTANCE.json",
-    "current_enabled_update": ".hermes/evidence/windows-deferred-mesa-delivery/runtime37-upgrade/ACCEPTANCE.json"
+    "current_assembly": ".hermes/evidence/windows-picker-preferences-delivery/ASSEMBLY_ACCEPTANCE.json",
+    "current_enabled_update": ".hermes/evidence/windows-picker-preferences-delivery/runtime38-upgrade/ACCEPTANCE.json"
   },
   "native_msi_rollback": {
     "status": "held: ordinary-user registration rollback/retry failed on exact8ede diagnostic; no current accepted MSI",
     "release_accepted": false,
     "diagnostic_input": ".hermes/evidence/windows-msi-package-control-current/input/DIAGNOSTIC_INPUT.json"
   },
-  "source_scope": ".hermes/evidence/windows-deferred-mesa-delivery/WINDOWS_DELIVERY.json",
+  "source_scope": ".hermes/evidence/windows-picker-preferences-delivery/WINDOWS_DELIVERY.json",
   "public_release_published": false,
   "limits": [
     "Software Windows guest; physical GPU, Store, signing and human acceptance remain separate.",
@@ -43,10 +43,11 @@
   "previous_native_save_identity": ".hermes/evidence/windows-save-identity-delivery-current/INSTALLED_SAVE_IDENTITY.json",
   "native_more_menu": ".hermes/evidence/theme-editor-more-menu-current/WINDOWS_MORE_ACCEPTANCE.json",
   "previous_native_msix": {
-    "current_assembly": ".hermes/evidence/picker-edit-location-current/ASSEMBLY_ACCEPTANCE.json",
-    "current_enabled_update": ".hermes/evidence/picker-edit-location-current/runtime36-upgrade/ACCEPTANCE.json"
+    "current_assembly": ".hermes/evidence/windows-deferred-mesa-delivery/ASSEMBLY_ACCEPTANCE.json",
+    "current_enabled_update": ".hermes/evidence/windows-deferred-mesa-delivery/runtime37-upgrade/ACCEPTANCE.json"
   },
   "native_administrator_copy": ".hermes/evidence/windows-admin-copy-desktop-current/INSTALLED_ACCEPTANCE.json",
   "native_picker_location": ".hermes/evidence/picker-edit-location-current/WINDOWS_PICKER_ACCEPTANCE.json",
-  "native_picker_renderers": ".hermes/evidence/windows-deferred-mesa-delivery/PACKAGED_RENDERERS.json"
+  "native_picker_renderers": ".hermes/evidence/windows-deferred-mesa-delivery/PACKAGED_RENDERERS.json",
+  "native_picker_preferences": ".hermes/evidence/windows-picker-preferences-delivery/ACCEPTANCE.json"
 }
