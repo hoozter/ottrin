@@ -1,37 +1,37 @@
 {
-  "status": "pass installed Windows desktop administrator Copy and MSIX package boundary",
-  "source_commit": "497488244b7c29b1b06a00c791d3fc9720383253",
+  "status": "pass scoped Windows picker location and MSIX upgrade",
+  "source_commit": "eadf713e853ababd803fe37e6f2ea2462c60a619",
   "working_tree_at_build": "clean",
   "candidate": "/home/campbell/Projects/Ottrin/dist/windows-candidate",
   "artifacts": {
-    "Ottrin-0.1.0-windows-x64-setup.exe": "354c72ea79d9d668d0e9bea0d652e77951583909d059ca07a274a6f7288179d0",
-    "Ottrin-0.1.0-windows-x64-portable.zip": "b972f61c182f8f9857bac9eb6014907f529bca7e59c6545ba7a0b0deabaa90f4",
-    "Ottrin-0.1.0-windows-x64-development.msix": "3cf46b6b2ce31a430e66afa47db819314285f00545f207a51c50adf86f3de2e6"
+    "Ottrin-0.1.0-windows-x64-setup.exe": "18df1b7ab72ae82393ea9e951df60f0d7f7d1770b7a8588a387f9aa88f3030dc",
+    "Ottrin-0.1.0-windows-x64-portable.zip": "57198b5b6537e281ba71214a3bb530380b3443654885efe5f667ef702fcd3cef",
+    "Ottrin-0.1.0-windows-x64-development.msix": "429d8cc5ff3c38a0a14763c28d8e2e9b69599a1969aa2c57cf4d47eeccf82c3b"
   },
   "payload_files": 59,
-  "evidence_directory": ".hermes/evidence/windows-admin-copy-desktop-current",
+  "evidence_directory": ".hermes/evidence/picker-edit-location-current",
   "hosted_source": {
-    "run": 42742694725,
-    "tested_source_revision": "497488244b7c29b1b06a00c791d3fc9720383253",
+    "run": 42750682313,
+    "tested_source_revision": "eadf713e853ababd803fe37e6f2ea2462c60a619",
     "all_four_jobs_success": true
   },
   "host_content": "HOST_PAYLOAD.json",
   "current_native_fields": ".hermes/evidence/windows-menu-divider-delivery-current/native-theme-retry/ACCEPTANCE.json",
-  "daemon_runtime": ".hermes/evidence/windows-admin-copy-desktop-current/WINDOWS_DAEMON_RUNTIME.json",
+  "daemon_runtime": ".hermes/evidence/picker-edit-location-current/WINDOWS_DAEMON_RUNTIME.json",
   "native_msix": {
-    "current_assembly": ".hermes/evidence/windows-admin-copy-desktop-current/ASSEMBLY_ACCEPTANCE.json",
-    "current_enabled_update": ".hermes/evidence/windows-admin-copy-desktop-current/runtime35-upgrade/ACCEPTANCE.json"
+    "current_assembly": ".hermes/evidence/picker-edit-location-current/ASSEMBLY_ACCEPTANCE.json",
+    "current_enabled_update": ".hermes/evidence/picker-edit-location-current/runtime36-upgrade/ACCEPTANCE.json"
   },
   "native_msi_rollback": {
     "status": "held: ordinary-user registration rollback/retry failed on exact8ede diagnostic; no current accepted MSI",
     "release_accepted": false,
     "diagnostic_input": ".hermes/evidence/windows-msi-package-control-current/input/DIAGNOSTIC_INPUT.json"
   },
-  "source_scope": ".hermes/evidence/windows-admin-copy-desktop-current/WINDOWS_DELIVERY.json",
+  "source_scope": ".hermes/evidence/picker-edit-location-current/WINDOWS_DELIVERY.json",
   "public_release_published": false,
   "limits": [
     "Software Windows guest; physical GPU, Store, signing and human acceptance remain separate.",
-    "Earlier theme, Save, NSIS lifecycle and default-folder receipts retain their original package scopes.",
+    "Earlier theme, Save, administrator Copy, NSIS lifecycle and default-folder receipts retain their original package scopes.",
     "MSIX exposes Explorer folder actions and preserves the default folder app.",
     "Administrator Copy is available in desktop builds. Single-user MSIX administrator Copy and ordinary MSI rollback remain held."
   ],
@@ -43,8 +43,9 @@
   "previous_native_save_identity": ".hermes/evidence/windows-save-identity-delivery-current/INSTALLED_SAVE_IDENTITY.json",
   "native_more_menu": ".hermes/evidence/theme-editor-more-menu-current/WINDOWS_MORE_ACCEPTANCE.json",
   "previous_native_msix": {
-    "current_assembly": ".hermes/evidence/theme-editor-more-menu-current/ASSEMBLY_ACCEPTANCE.json",
-    "current_enabled_update": ".hermes/evidence/theme-editor-more-menu-current/runtime34-upgrade/ACCEPTANCE.json"
+    "current_assembly": ".hermes/evidence/windows-admin-copy-desktop-current/ASSEMBLY_ACCEPTANCE.json",
+    "current_enabled_update": ".hermes/evidence/windows-admin-copy-desktop-current/runtime35-upgrade/ACCEPTANCE.json"
   },
-  "native_administrator_copy": ".hermes/evidence/windows-admin-copy-desktop-current/INSTALLED_ACCEPTANCE.json"
+  "native_administrator_copy": ".hermes/evidence/windows-admin-copy-desktop-current/INSTALLED_ACCEPTANCE.json",
+  "native_picker_location": ".hermes/evidence/picker-edit-location-current/WINDOWS_PICKER_ACCEPTANCE.json"
 }

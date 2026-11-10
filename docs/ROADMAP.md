@@ -9,7 +9,7 @@ not complete a broader native, platform or user-acceptance requirement.
 | Platform | Launchable locally | Next delivery |
 | --- | --- | --- |
 | Linux | `eadf713e` AppImage, portable archive, DEB and RPM in `dist/packages/`. [Exact package receipt](../dist/packages/LINUX_PACKAGES_ACCEPTANCE.json). | Promoted after mounted Dark and Light picker checks, an old-to-new index transition and all four [hosted jobs](https://github.com/hoozter/ottrin/actions/runs/42750682313). |
-| Windows | `49748824` portable ZIP, NSIS and development MSIX 35 in `dist/windows-candidate/`. [Exact package receipt](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json). | Promoted after installed administrator Copy and Undo, MSIX 34-to-35 upgrade and Services checks, and all four [hosted jobs](https://github.com/hoozter/ottrin/actions/runs/42742694725). |
+| Windows | `eadf713e` portable ZIP, NSIS and development MSIX 36 in `dist/windows-candidate/`. [Exact package receipt](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json). | Promoted after native Dark and Light picker checks, matching NSIS payload, MSIX 35-to-36 upgrade and sign-in, and all four [hosted jobs](https://github.com/hoozter/ottrin/actions/runs/42750682313). |
 
 The [ordered work](#current-ordered-work) tracks the remaining software
 and package acceptance. The [owner and external waiting list](#ownerexternal-waiting-list)
@@ -2170,14 +2170,20 @@ Current source, test, package and owner/external scopes stay separate.
    portable extraction were removed. Native MakeAppx assembled
    development MSIX 36 and all 59 payload files matched. The
    assembly guest, disks, source clone and archive were removed.
-   Windows promotion awaits native MSIX upgrade, sign-in and
-   removal verification.
+   The exact MSIX 35-to-36 upgrade passed with automatic indexing
+   enabled. Sign-in, Explorer actions, the Services notice and
+   removal passed. Promotion verified all three Windows hashes at
+   their stable paths and removed the Windows stage and superseded
+   packages. The older installed administrator Copy acceptance
+   retains its original scope.
    [Mounted Dark picker](../.hermes/evidence/picker-edit-location-current/linux-dark/ACCEPTANCE.json).
    [Mounted Light picker](../.hermes/evidence/picker-edit-location-current/linux-light/ACCEPTANCE.json).
    [Mounted daemon transition](../.hermes/evidence/picker-edit-location-current/LINUX_DAEMON_RUNTIME.json).
    [Linux picker delivery](../.hermes/evidence/picker-edit-location-current/PROMOTION.json).
    [Native Windows picker](../.hermes/evidence/picker-edit-location-current/WINDOWS_PICKER_ACCEPTANCE.json).
    [Native MSIX 36 assembly](../.hermes/evidence/picker-edit-location-current/ASSEMBLY_ACCEPTANCE.json).
+   [Native MSIX 35-to-36 upgrade](../.hermes/evidence/picker-edit-location-current/runtime36-upgrade/ACCEPTANCE.json).
+   [Windows picker delivery](../.hermes/evidence/picker-edit-location-current/WINDOWS_DELIVERY.json).
 
    Linux folder setup `b9543fe9` keeps interrupted launcher replacements
    repairable while refusing edits outside the recorded versions. Eight

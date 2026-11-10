@@ -1,0 +1,21 @@
+{
+  "status": "pass Windows preview promoted",
+  "source_revision": "eadf713e853ababd803fe37e6f2ea2462c60a619",
+  "artifacts": {
+    "Ottrin-0.1.0-windows-x64-setup.exe": "18df1b7ab72ae82393ea9e951df60f0d7f7d1770b7a8588a387f9aa88f3030dc",
+    "Ottrin-0.1.0-windows-x64-portable.zip": "57198b5b6537e281ba71214a3bb530380b3443654885efe5f667ef702fcd3cef",
+    "Ottrin-0.1.0-windows-x64-development.msix": "429d8cc5ff3c38a0a14763c28d8e2e9b69599a1969aa2c57cf4d47eeccf82c3b"
+  },
+  "payload_files": 59,
+  "hosted_source": {
+    "run": 42750682313,
+    "tested_source_revision": "eadf713e853ababd803fe37e6f2ea2462c60a619",
+    "all_four_jobs_success": true
+  },
+  "previous_source": "497488244b7c29b1b06a00c791d3fc9720383253",
+  "retired_logical_bytes": 308643091,
+  "stage_removed": true,
+  "retired_removed": true,
+  "linux_authority_preserved": true,
+  "held_msi_preserved": true
+}

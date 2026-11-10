@@ -1,0 +1,84 @@
+{
+  "status": "pass native MSIX deployment, actual login and removal",
+  "case": "runtime36-upgrade",
+  "input": {
+    "runtime_script_sha256": "e1a0a3f6c9b8b95cebc16727b99f45a1564d1c4ad791dff4439b2e21979003f6",
+    "native_controls_sha256": "c6fa404bd07713763f261a99a6194c3fe52930fbe123ffdb99355b77e20a7b11",
+    "sha256": "429d8cc5ff3c38a0a14763c28d8e2e9b69599a1969aa2c57cf4d47eeccf82c3b",
+    "source_revision": "eadf713e853ababd803fe37e6f2ea2462c60a619",
+    "version": "0.1.0.36",
+    "startup_enabled": true,
+    "previous": {
+      "sha256": "3cf46b6b2ce31a430e66afa47db819314285f00545f207a51c50adf86f3de2e6",
+      "version": "0.1.0.35",
+      "source_revision": "497488244b7c29b1b06a00c791d3fc9720383253"
+    }
+  },
+  "ordinary_user": true,
+  "administrator_copy_availability": {
+    "app_helper_ready_visible": true,
+    "screenshot": "msix-administrator-copy-availability.png",
+    "helper_sha256": "2d80fb8014bb89ba2af9587fc907bbf8d9c257ee9b2b37a0133c1eba8394a169",
+    "notice_visible": true,
+    "notice": "Administrator Copy is unavailable in the MSIX package. The Windows desktop installer supports it."
+  },
+  "actual_login": {
+    "index_ready": "ready",
+    "phase": "login-index-status.json",
+    "observed_before_any_ottrin_cli": {
+      "pid": 8648,
+      "administrator": false,
+      "session": 1,
+      "package": "Ottrin.Development_0.1.0.36_x64__vs01n017nxmbr"
+    },
+    "cli_exits": {
+      "login-service-status.stdout": 0,
+      "login-index-status.json": 0
+    },
+    "scope": "Observe Windows-started package daemon before any Ottrin CLI, after actual reboot/login",
+    "preferences_preserved": true,
+    "status": "pass",
+    "store": {
+      "path": "C:\\Users\\OTMSIX395fb72cdae8\\AppData\\Local\\Packages\\Ottrin.Development_vs01n017nxmbr\\LocalCache\\Local\\ottrin\\search.db",
+      "bytes": 28672,
+      "identity": "FA402E6A402E2E37:0003000000024BC40000000000000000"
+    },
+    "boot_ticks": 639298852435000000,
+    "administrator": false
+  },
+  "explorer_contexts": [
+    "Background",
+    "Multiple",
+    "Drive"
+  ],
+  "package_process_task_and_com_removal": true,
+  "preferences_and_fixture_preserved": true,
+  "update": {
+    "old_pids": [
+      8644
+    ],
+    "startup_enabled": true,
+    "previous_daemon_count": 1,
+    "old_processes_removed": true,
+    "family": "Ottrin.Development_vs01n017nxmbr",
+    "after": "Ottrin.Development_0.1.0.36_x64__vs01n017nxmbr",
+    "before": "Ottrin.Development_0.1.0.35_x64__vs01n017nxmbr"
+  },
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-runtime.qcow2",
+      "ottrin-msix-runtime-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "verified_export_sha256": "02fd9dc591bc1805047c8c46bf88ea286490a0fe2b036b14624c542b2689aaec",
+  "disposable_outputs_retired": [
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/picker-edit-location-current/runtime36-upgrade/RESULTS.zip",
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/picker-edit-location-current/runtime36-upgrade/desktop-ready.png",
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/picker-edit-location-current/runtime36-upgrade/privacy-accepted-0.png",
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/picker-edit-location-current/runtime36-upgrade/privacy-accepted-1.png"
+  ]
+}
