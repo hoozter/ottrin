@@ -1223,9 +1223,14 @@ Current source, test, package and owner/external scopes stay separate.
    the three icons and aligned labels in Dark and Light at 100%.
    Physical Cancel preserved saved preferences. The installer and ZIP
    match all 59 payload files, and the native guest and duplicate
-   desktop captures were removed. Development MSIX assembly remains
-   separate from these portable checks.
+   desktop captures were removed. Native MakeAppx assembled development
+   MSIX 34 from the same source, and native unpacking plus a host comparison
+   verified all 59 payload files. The assembly guest and its volumes were
+   removed. Promotion still requires the hosted matrix and native upgrade,
+   sign-in and removal checks. The stable Windows packages remain on
+   `4d3f11a3` with development MSIX 32.
    [Native Windows More menu verification](../.hermes/evidence/theme-editor-more-menu-current/WINDOWS_MORE_ACCEPTANCE.json).
+   [Native MSIX 34 assembly](../.hermes/evidence/theme-editor-more-menu-current/ASSEMBLY_ACCEPTANCE.json).
    Live navigation/menu/view/breadcrumb, tab/window-control and Miller presenters
    have bounded acceptance; List/Grid now has source and actual mounted Linux package checks described
    above, with original package acceptance at Linux source43. The stable
