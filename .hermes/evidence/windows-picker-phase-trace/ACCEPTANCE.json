@@ -1,0 +1,271 @@
+{
+  "status": "pass",
+  "input": {
+    "source_revision": "d960534c2c36ec75805dd130c5a4a353adba2800",
+    "portable_source_revision": "eadf713e853ababd803fe37e6f2ea2462c60a619",
+    "files": [
+      {
+        "name": "portable.zip",
+        "sha256": "57198b5b6537e281ba71214a3bb530380b3443654885efe5f667ef702fcd3cef"
+      },
+      {
+        "name": "trace-app.exe",
+        "sha256": "de71bfa25b6ae044fd98daba7d0baa7a85e0f109ab1e6470ddb91730a488e152"
+      }
+    ],
+    "actor_sha256": "fdaebb878efb6164e87a1053da0a3c6b1603e3d223ce83ab67df41d9a39c864c",
+    "scope": "GNU release diagnostic executable in exact delivered portable payload; native process, renderer, UI pass and window mapping timings."
+  },
+  "diagnostic_build": {
+    "source_revision": "d960534c2c36ec75805dd130c5a4a353adba2800",
+    "runtime_equivalent_ci_revision": "0e4966e9d6f00ab90b6cfd5ed699dde011c352b3",
+    "runtime_equivalent_ci_run": "https://github.com/hoozter/ottrin/actions/runs/42761330178",
+    "target": "x86_64-pc-windows-gnu",
+    "profile": "release",
+    "matching_delivered_dll_imports": [
+      "advapi32.dll",
+      "api-ms-win-core-synch-l1-2-0.dll",
+      "api-ms-win-core-winrt-l1-1-0.dll",
+      "bcryptprimitives.dll",
+      "combase.dll",
+      "dwmapi.dll",
+      "gdi32.dll",
+      "imm32.dll",
+      "kernel32.dll",
+      "ktmw32.dll",
+      "mfplat.dll",
+      "mfreadwrite.dll",
+      "mpr.dll",
+      "msvcrt.dll",
+      "ntdll.dll",
+      "ole32.dll",
+      "oleaut32.dll",
+      "opengl32.dll",
+      "propsys.dll",
+      "shell32.dll",
+      "shlwapi.dll",
+      "uiautomationcore.dll",
+      "user32.dll",
+      "userenv.dll",
+      "uxtheme.dll"
+    ],
+    "binary_sha256": "de71bfa25b6ae044fd98daba7d0baa7a85e0f109ab1e6470ddb91730a488e152"
+  },
+  "binary_sha256": "de71bfa25b6ae044fd98daba7d0baa7a85e0f109ab1e6470ddb91730a488e152",
+  "cases": [
+    {
+      "start_ms": 5383.5645,
+      "request_sent_ms": 5412.230500000001,
+      "case": "default-first",
+      "window_mapped_upper_bound_ms": 14576.47,
+      "renderer_arguments": "",
+      "normal_cancel": true,
+      "launch_unix_ms": 1794295353826,
+      "response": {
+        "accepted": false,
+        "paths": [],
+        "current_filter": null,
+        "choices": {}
+      },
+      "trace": [
+        {
+          "phase": "reading_request",
+          "elapsed_ms": 0.054,
+          "entry_unix_ms": 1794295365633
+        },
+        {
+          "phase": "request_ready",
+          "elapsed_ms": 0.398,
+          "entry_unix_ms": 1794295365633
+        },
+        {
+          "phase": "starting_wgpu",
+          "elapsed_ms": 3.426,
+          "entry_unix_ms": 1794295365633
+        },
+        {
+          "phase": "renderer_ready",
+          "elapsed_ms": 446.248,
+          "entry_unix_ms": 1794295365633
+        },
+        {
+          "phase": "picker_ready",
+          "elapsed_ms": 448.348,
+          "entry_unix_ms": 1794295365633
+        },
+        {
+          "phase": "first_ui_pass",
+          "elapsed_ms": 451.844,
+          "entry_unix_ms": 1794295365633
+        }
+      ],
+      "process_launch_to_entry_wall_ms": 11807
+    },
+    {
+      "start_ms": 9.824300000000001,
+      "request_sent_ms": 10.280000000000001,
+      "case": "default-repeat",
+      "window_mapped_upper_bound_ms": 350.73,
+      "renderer_arguments": "",
+      "normal_cancel": true,
+      "launch_unix_ms": 1794295371273,
+      "response": {
+        "accepted": false,
+        "paths": [],
+        "current_filter": null,
+        "choices": {}
+      },
+      "trace": [
+        {
+          "phase": "reading_request",
+          "elapsed_ms": 0.03,
+          "entry_unix_ms": 1794295371355
+        },
+        {
+          "phase": "request_ready",
+          "elapsed_ms": 0.21,
+          "entry_unix_ms": 1794295371355
+        },
+        {
+          "phase": "starting_wgpu",
+          "elapsed_ms": 3.674,
+          "entry_unix_ms": 1794295371355
+        },
+        {
+          "phase": "renderer_ready",
+          "elapsed_ms": 218.479,
+          "entry_unix_ms": 1794295371355
+        },
+        {
+          "phase": "picker_ready",
+          "elapsed_ms": 219.618,
+          "entry_unix_ms": 1794295371355
+        },
+        {
+          "phase": "first_ui_pass",
+          "elapsed_ms": 222.223,
+          "entry_unix_ms": 1794295371355
+        }
+      ],
+      "process_launch_to_entry_wall_ms": 82
+    },
+    {
+      "start_ms": 9.8954,
+      "request_sent_ms": 10.4936,
+      "case": "opengl-first",
+      "window_mapped_upper_bound_ms": 372.64,
+      "renderer_arguments": "--renderer opengl",
+      "normal_cancel": true,
+      "launch_unix_ms": 1794295372811,
+      "response": {
+        "accepted": false,
+        "paths": [],
+        "current_filter": null,
+        "choices": {}
+      },
+      "trace": [
+        {
+          "phase": "reading_request",
+          "elapsed_ms": 0.04,
+          "entry_unix_ms": 1794295372904
+        },
+        {
+          "phase": "request_ready",
+          "elapsed_ms": 0.43,
+          "entry_unix_ms": 1794295372904
+        },
+        {
+          "phase": "starting_opengl",
+          "elapsed_ms": 2.623,
+          "entry_unix_ms": 1794295372904
+        },
+        {
+          "phase": "renderer_ready",
+          "elapsed_ms": 208.794,
+          "entry_unix_ms": 1794295372904
+        },
+        {
+          "phase": "picker_ready",
+          "elapsed_ms": 210.014,
+          "entry_unix_ms": 1794295372904
+        },
+        {
+          "phase": "first_ui_pass",
+          "elapsed_ms": 213.341,
+          "entry_unix_ms": 1794295372904
+        }
+      ],
+      "process_launch_to_entry_wall_ms": 93
+    },
+    {
+      "start_ms": 7.8948,
+      "request_sent_ms": 8.5488,
+      "case": "opengl-repeat",
+      "window_mapped_upper_bound_ms": 361.07,
+      "renderer_arguments": "--renderer opengl",
+      "normal_cancel": true,
+      "launch_unix_ms": 1794295373485,
+      "response": {
+        "accepted": false,
+        "paths": [],
+        "current_filter": null,
+        "choices": {}
+      },
+      "trace": [
+        {
+          "phase": "reading_request",
+          "elapsed_ms": 0.044,
+          "entry_unix_ms": 1794295373568
+        },
+        {
+          "phase": "request_ready",
+          "elapsed_ms": 0.555,
+          "entry_unix_ms": 1794295373568
+        },
+        {
+          "phase": "starting_opengl",
+          "elapsed_ms": 2.373,
+          "entry_unix_ms": 1794295373568
+        },
+        {
+          "phase": "renderer_ready",
+          "elapsed_ms": 219.443,
+          "entry_unix_ms": 1794295373568
+        },
+        {
+          "phase": "picker_ready",
+          "elapsed_ms": 221.496,
+          "entry_unix_ms": 1794295373568
+        },
+        {
+          "phase": "first_ui_pass",
+          "elapsed_ms": 226.557,
+          "entry_unix_ms": 1794295373568
+        }
+      ],
+      "process_launch_to_entry_wall_ms": 83
+    }
+  ],
+  "no_index": true,
+  "preferences_and_fixture_preserved": true,
+  "scope": "GNU release diagnostic executable substituted in the stable portable payload in a disposable ordinary-user software Windows VM. Default selected WGPU. Default ran first after extraction and OpenGL followed, so timings do not isolate renderer differences from OS cache warming.",
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "compiler_outputs_restored": 36,
+  "retired": [
+    ".hermes/evidence/windows-picker-phase-trace/windows-native/RESULTS.zip",
+    ".hermes/evidence/windows-picker-phase-trace/windows-native/desktop-ready.png",
+    ".hermes/evidence/windows-picker-phase-trace/windows-native/privacy-accepted-0.png",
+    ".hermes/evidence/windows-picker-phase-trace/windows-native/privacy-accepted-1.png"
+  ],
+  "export_sha256": "36b9f5f76b9f72d764c0ba11e0d85f6761a4fdac6ec6c16bfc8f245ebee5fdb4",
+  "diagnostic_stage_executable_removed": true
+}

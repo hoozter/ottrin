@@ -1,0 +1,57 @@
+{
+  "status": "hosted MSVC executable exited before window mapping; no timing captured",
+  "runtime_import_difference": "Hosted binary imports VCRUNTIME140.dll. The delivered GNU portable executable does not. The fixture did not record the loader exit code, so this is an import difference, not a confirmed missing-DLL diagnosis.",
+  "build": {
+    "source_revision": "0e4966e9d6f00ab90b6cfd5ed699dde011c352b3",
+    "run": "https://github.com/hoozter/ottrin/actions/runs/42761330178",
+    "job": "https://github.com/hoozter/ottrin/actions/runs/42761330178/job/129647452859",
+    "artifact_id": 13739419326,
+    "artifact_digest": "sha256:b6dd7e515e24a5f8dc1a2143c81263f62dc41b72951078898fda4294b4c96b25",
+    "binary_sha256": "981e910954087c1f92d6aaf05aa7e7a7b95625672d2beda310ba342ebe5cd9f6"
+  },
+  "result": {
+    "scope": "Hosted diagnostic executable in ordinary-user portable picker timing in default and forced OpenGL modes",
+    "phase": "diagnostic portable picker startup phases",
+    "portable_binary_sha256": "8d10842f6d7a25c1dd6d6183fb2863624d226453289886910ce8c11e60e4c13d",
+    "owned_portable_extraction_removed": true,
+    "picker_cases": [],
+    "stack": "at Require, <No file>: line 4\r\nat WaitMapped, <No file>: line 35\r\nat <ScriptBlock>, <No file>: line 92\r\nat <ScriptBlock>, <No file>: line 1",
+    "package": {
+      "source_revision": "0e4966e9d6f00ab90b6cfd5ed699dde011c352b3",
+      "portable_source_revision": "eadf713e853ababd803fe37e6f2ea2462c60a619",
+      "files": [
+        {
+          "name": "portable.zip",
+          "sha256": "57198b5b6537e281ba71214a3bb530380b3443654885efe5f667ef702fcd3cef"
+        },
+        {
+          "name": "trace-app.exe",
+          "sha256": "981e910954087c1f92d6aaf05aa7e7a7b95625672d2beda310ba342ebe5cd9f6"
+        }
+      ],
+      "actor_sha256": "bf09bc49347ef8ba34bb7cdf9961b11b93f2bf2e0ce1fb326e7dbc84415834ec",
+      "scope": "Hosted diagnostic executable in exact delivered portable payload; native process, renderer, UI pass and window mapping timings."
+    },
+    "desktop_ready": true,
+    "identity": {
+      "profile": "C:\\Users\\OTMSI8c95af824af3",
+      "sid": "S-1-5-21-3790294415-2606194316-2422870471-1002",
+      "administrator": false,
+      "session": 1
+    },
+    "error": "Picker exited before mapping: default-first",
+    "status": "failed native folder picker",
+    "binary_sha256": "981e910954087c1f92d6aaf05aa7e7a7b95625672d2beda310ba342ebe5cd9f6"
+  },
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "restored_test_executables": 36
+}

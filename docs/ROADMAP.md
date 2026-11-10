@@ -2230,13 +2230,25 @@ Current source, test, package and owner/external scopes stay separate.
    private software X11 observed all six stages in order, a clean JSON
    cancellation, and silence with tracing disabled. Windows-target
    compilation passed. The trace is the only runtime source change
-   from `eadf713e` to `0e4966e9`. The hosted Windows executable is the
-   pending input for a private test with the verified `eadf713e` ZIP
-   payload. Native Windows timing and refreshed packages remain open.
+   from `eadf713e` to `0e4966e9`. Both private diagnostic attempts
+   used the verified `eadf713e` ZIP payload. All four hosted jobs
+   passed. The hosted MSVC executable
+   exited before mapping in the stock guest. Its runtime imports
+   differ from the shipped GNU executable, and no loader exit code
+   was captured. The GNU release diagnostic matched the shipped DLL
+   import list and completed the native test. Its first default
+   launch mapped in 14.58 seconds. Windows process creation returned
+   at 5.38 seconds. Guest timestamps put application entry at about
+   11.81 seconds, and the first UI pass finished 452 ms after entry.
+   The default path selected WGPU. The repeat mapped in 351 ms, and
+   the subsequent OpenGL runs took 373 and 361 ms. Investigate the
+   pre-entry loading path with the same GNU payload and a stock guest
+   before changing picker rendering. Refreshed packages remain open.
    Broader theme and caller acceptance also remain open.
    [Delivered Windows picker resource check](../.hermes/evidence/windows-picker-current-runtime-audit/ACCEPTANCE.json).
    [Windows picker startup comparison](../.hermes/evidence/windows-picker-startup-comparison/ACCEPTANCE.json).
    [Installed Windows picker startup](../.hermes/evidence/windows-picker-installed-startup/ACCEPTANCE.json).
+   [Native Windows startup phases](../.hermes/evidence/windows-picker-phase-trace/ACCEPTANCE.json).
 
    Linux folder setup `b9543fe9` keeps interrupted launcher replacements
    repairable while refusing edits outside the recorded versions. Eight
