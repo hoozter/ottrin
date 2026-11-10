@@ -372,13 +372,18 @@ and [first-run timeout](../.hermes/evidence/windows-picker-keyboard-current/nati
    `LdrpInitializationFailure`. In all eight observations, the saved
    loader status and the error-report parameter were both
    `0xC0000142` (`STATUS_DLL_INIT_FAILED`). The source hash and
-   absent destination matched the earlier result. Identifying the
-   failed DLL requires loader tracing from process startup in the
-   private guest. Compare the failing package and working NSIS
-   launch using the same helper bytes and alternate administrator.
+   absent destination matched the earlier result. A subsequent
+   guest enabled Show Loader Snaps for the helper and captured the
+   LibLoader ETW provider before UAC approval. Windows System event
+   26 repeated the same initialization error, but the trace
+   contained no helper events. Use a debugger that captures
+   loader output from process startup, or test alternate-administrator
+   package registration as a controlled comparison with the
+   failing package and working NSIS launch.
    [MSIX helper startup sample](../.hermes/evidence/windows-admin-copy-delivery-current/MSIX_HELPER_STARTUP_FINDING.json).
    [Loader image and symbol](../.hermes/evidence/windows-admin-copy-delivery-current/WINDOWS_LOADER_IMAGE.json).
    [Native DLL initialization failure](../.hermes/evidence/windows-admin-copy-delivery-current/MSIX_HELPER_DLL_INIT_FAILURE.json).
+   [Loader trace result](../.hermes/evidence/windows-admin-copy-delivery-current/MSIX_HELPER_LOADER_TRACE.json).
    [MSIX 33 assembly](../.hermes/evidence/windows-admin-copy-delivery-current/ASSEMBLY_ACCEPTANCE.json).
    [Fresh deployment](../.hermes/evidence/windows-admin-copy-delivery-current/runtime33-fresh/ACCEPTANCE.json),
    [enabled upgrade](../.hermes/evidence/windows-admin-copy-delivery-current/runtime33-upgrade/ACCEPTANCE.json)

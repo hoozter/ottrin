@@ -1,0 +1,37 @@
+{
+  "status": "reproduced exact MSIX 33 helper DLL startup failure; selected ETW trace did not identify a module",
+  "package_sha256": "ff98d685a6113ba1177c938fb7ce51f95e21c23a15e9b457dc9f91d258e354da",
+  "source_revision": "c4c2f4beb0a859cadae68423bfaad2e56996a4e6",
+  "trace": {
+    "provider": "Microsoft.Windows.Kernel.LibLoader",
+    "provider_id": "9b2eb404-20a9-f556-449b-02f9d2eebf2e",
+    "helper_image_show_loader_snaps": true,
+    "etl_bytes": 8192,
+    "decoded_records": 1,
+    "helper_records": 0,
+    "temporary_image_flag_removed": true
+  },
+  "system_event": {
+    "LogName": "System",
+    "ProviderName": "Application Popup",
+    "Id": 26,
+    "Message": "Application popup: ottrin-priv-helper.exe - Application Error : The application was unable to start correctly (0xc0000142). Click OK to close the application. "
+  },
+  "disk": {
+    "source_sha256": "3fc5d485b7cbea0501dd61db76c43ff6dadea69e25a93ff970da52a3ec597073",
+    "source_present": true,
+    "target_present": false
+  },
+  "cleanup": {
+    "domain": "ottrin-init-helper-pipe-qa",
+    "uuid": "7bce28ef-a878-4f00-9eec-78bc20d61ee6",
+    "volume": "ottrin-init-helper-pipe-qa.qcow2",
+    "status": "pass",
+    "domain_removed": true,
+    "overlay_removed": true,
+    "protected_definitions_states_and_backing_unchanged": true,
+    "compiler_executables_restored_by_hash": 25,
+    "temporary_archive_and_restore_manifest_removed": true
+  },
+  "scope": "The System event independently reports the initialization failure. This ETW configuration did not supply a failing DLL name."
+}
