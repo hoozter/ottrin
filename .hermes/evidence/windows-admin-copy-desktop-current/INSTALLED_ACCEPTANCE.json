@@ -1,0 +1,54 @@
+{
+  "status": "pass native installed Windows desktop administrator Copy, Undo, cleanup and reopen",
+  "source_revision": "497488244b7c29b1b06a00c791d3fc9720383253",
+  "artifacts": {
+    "Ottrin-0.1.0-windows-x64-setup.exe": "354c72ea79d9d668d0e9bea0d652e77951583909d059ca07a274a6f7288179d0",
+    "Ottrin-0.1.0-windows-x64-portable.zip": "b972f61c182f8f9857bac9eb6014907f529bca7e59c6545ba7a0b0deabaa90f4"
+  },
+  "installed_helper_sha256": "2d80fb8014bb89ba2af9587fc907bbf8d9c257ee9b2b37a0133c1eba8394a169",
+  "fixture_input_sha256": "434064c53b61d31a1593d4e232c6c2f61113d069267c47d4cdfa6449d3d895df",
+  "ordinary_caller_and_alternate_admin": true,
+  "publication_matches_source": true,
+  "source_sha256": "3fc5d485b7cbea0501dd61db76c43ff6dadea69e25a93ff970da52a3ec597073",
+  "phases": [
+    {
+      "mode": "copy",
+      "client_pid": 4564,
+      "client_exit": 0,
+      "status": "pass"
+    },
+    {
+      "mode": "history-undo",
+      "client_pid": 8772,
+      "client_exit": 0,
+      "status": "pass"
+    },
+    {
+      "mode": "undone",
+      "client_pid": 3112,
+      "client_exit": 0,
+      "status": "pass"
+    },
+    {
+      "mode": "cleared",
+      "client_pid": 3120,
+      "client_exit": 0,
+      "status": "pass"
+    }
+  ],
+  "source_unrelated_marker_preserved": true,
+  "publication_absent_after_undo_and_reopen": true,
+  "retained_destination_data_removed": true,
+  "cleanup": {
+    "domain": "ottrin-init-helper-pipe-qa",
+    "uuid": "f9a9606f-8a4c-4102-ae77-347c4bd81f94",
+    "volume": "ottrin-init-helper-pipe-qa.qcow2",
+    "status": "pass",
+    "domain_removed": true,
+    "overlay_removed": true,
+    "protected_definitions_states_and_backing_unchanged": true,
+    "compiler_executables_restored_by_hash": 36,
+    "temporary_archive_and_restore_manifest_removed": true
+  },
+  "scope": "Exact staged NSIS installed in disposable Windows. Portable ZIP matches all 59 payload files. MSIX and the interruption matrix have separate scopes."
+}

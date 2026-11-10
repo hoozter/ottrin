@@ -406,10 +406,17 @@ and [first-run timeout](../.hermes/evidence/windows-picker-keyboard-current/nati
    The exact `49748824` desktop candidate rebuilt all six Windows
    binaries. The staged portable ZIP and NSIS installer match across
    all 59 payload files, and both checksums passed. The build worktree
-   and temporary extraction were removed. Native verification and
-   promotion remain pending. Continue the single-user MSIX
-   investigation separately.
+   and temporary extraction were removed. The exact NSIS installer
+   passed administrator Copy, fresh-process history and Undo,
+   authenticated cleanup and reopening under a standard user with
+   alternate-administrator consent. All four processes exited
+   normally. The original and unrelated destination marker survived,
+   and cleanup removed transaction-owned destination data. The
+   private VM and borrowed-executable staging were removed.
+   Promotion still requires the hosted matrix and current MSIX
+   verification. Continue the single-user MSIX investigation separately.
    [Desktop Copy package contents](../.hermes/evidence/windows-admin-copy-desktop-current/HOST_PAYLOAD.json).
+   [Installed desktop Copy lifecycle](../.hermes/evidence/windows-admin-copy-desktop-current/INSTALLED_ACCEPTANCE.json).
    [Hosted checks](https://github.com/hoozter/ottrin/actions/runs/42742694725).
    [MSIX helper startup sample](../.hermes/evidence/windows-admin-copy-delivery-current/MSIX_HELPER_STARTUP_FINDING.json).
    [Loader image and symbol](../.hermes/evidence/windows-admin-copy-delivery-current/WINDOWS_LOADER_IMAGE.json).
