@@ -1213,7 +1213,12 @@ Current source, test, package and owner/external scopes stay separate.
    remaining complete interface/property audit.
    The theme editor More menu uses the shared aligned menu rows with
    distinct icons for Import, Export and Reset. The Linux UI suite passed
-   554 tests with one ignored. Package and rendered menu checks remain open.
+   554 tests with one ignored. All four Linux formats from `19b156e2`
+   passed package content checks. The exact mounted AppImage rendered
+   all three icons and aligned labels in Dark and Light at 150%.
+   Cancel preserved the saved preferences. Private profiles and
+   extraction were removed. Promotion waits for the hosted matrix.
+   [Mounted More menu verification](../.hermes/evidence/theme-editor-more-menu-current/PACKAGED_MORE_MENU_ACCEPTANCE.json).
    Live navigation/menu/view/breadcrumb, tab/window-control and Miller presenters
    have bounded acceptance; List/Grid now has source and actual mounted Linux package checks described
    above, with original package acceptance at Linux source43. The stable

@@ -1,0 +1,82 @@
+{
+  "status": "pass exact mounted Linux theme editor More menu in both palettes",
+  "source_revision": "19b156e249256b8b70e6ce4cdf6b06f531ace1d4",
+  "appimage_sha256": "7942cacc4b378c8087b0cfe2253a6b14b8758fd4a37aa01577ef3dc5a45fb950",
+  "themes": {
+    "Dark": {
+      "rows": {
+        "Import theme\u2026": {
+          "bounds": [
+            36,
+            928,
+            311,
+            42
+          ],
+          "icon_pixels": 229,
+          "label_start_x": 80
+        },
+        "Export theme\u2026": {
+          "bounds": [
+            36,
+            975,
+            311,
+            42
+          ],
+          "icon_pixels": 94,
+          "label_start_x": 80
+        },
+        "Reset theme to starting values": {
+          "bounds": [
+            36,
+            1021,
+            311,
+            42
+          ],
+          "icon_pixels": 122,
+          "label_start_x": 80
+        }
+      },
+      "capture_sha256": "a489e63ed9f00949dfe23d2a4cc13775bc0baad2e6b332511c8bb0f5837de196",
+      "preferences_preserved": true,
+      "profile_removed": true
+    },
+    "Light": {
+      "rows": {
+        "Import theme\u2026": {
+          "bounds": [
+            36,
+            928,
+            311,
+            42
+          ],
+          "icon_pixels": 202,
+          "label_start_x": 80
+        },
+        "Export theme\u2026": {
+          "bounds": [
+            36,
+            975,
+            311,
+            42
+          ],
+          "icon_pixels": 81,
+          "label_start_x": 80
+        },
+        "Reset theme to starting values": {
+          "bounds": [
+            36,
+            1021,
+            311,
+            42
+          ],
+          "icon_pixels": 107,
+          "label_start_x": 80
+        }
+      },
+      "capture_sha256": "eab9f0ad118b07135eb7e16c2f909aeb4e0a917d77c327337416e70039c58368",
+      "preferences_preserved": true,
+      "profile_removed": true
+    }
+  },
+  "scope": "Mounted AppImage on private X11 at 150%. Verified pixels, row positions and Cancel. Import/export file operations were outside this visual check."
+}
