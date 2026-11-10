@@ -96,6 +96,12 @@ The staged editor's real Cancel button also rounded when Button corners
 changed from 0 to 14 px and returned to its original shape after Restore.
 The fill and bounds stayed the same in both palettes.
 [Rendered button receipt](../.hermes/evidence/linux-theme-component-delivery/RENDERED_BUTTON_CORNERS.json).
+The same mounted editor passed a paired pixel check in both palettes.
+Surface corners rounded the Theme name input while Cancel retained
+its original shape. Button corners rounded Cancel while the input
+retained its original shape. Both named Restore actions returned the
+sampled controls to their starting shapes.
+[Geometry isolation receipt](../.hermes/evidence/linux-theme-component-delivery/RENDERED_GEOMETRY_ISOLATION.json).
 
 Windows portable and NSIS builds enable administrator Copy. The installed
 Copy and Undo lifecycle was verified on `49748824`. The current `b545bd2e`
