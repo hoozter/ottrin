@@ -1,0 +1,237 @@
+{
+  "status": "pass exact staged ZIP and NSIS picker renderer launch and cancellation",
+  "scope": "Ordinary native Windows software guest. Default WGPU and explicit OpenGL on each package. Host observation timed out after reaching installed picker phase. A verified teardown archive recovered the terminal actor result, including uninstall. Kernel trace was not exported.",
+  "artifact_hashes": {
+    "Ottrin-0.1.0-windows-x64-setup.exe": "2ceb021f0715a47887bc74ecbcb6ef0558f167493328eec6c9527ca877c7dad1",
+    "Ottrin-0.1.0-windows-x64-portable.zip": "558e14c9481a4314f4aaa550ffc4bcda52eb224bf5f823f1bd8f50c97391f615"
+  },
+  "input": {
+    "source_revision": "68b145fd51946c81de29289d8d40c9efdf03e28c",
+    "files": [
+      {
+        "name": "portable.zip",
+        "sha256": "558e14c9481a4314f4aaa550ffc4bcda52eb224bf5f823f1bd8f50c97391f615"
+      },
+      {
+        "name": "current-setup.exe",
+        "sha256": "2ceb021f0715a47887bc74ecbcb6ef0558f167493328eec6c9527ca877c7dad1"
+      }
+    ],
+    "actor_sha256": "820ff66eebfa2b1a6c85b041d164199661cc80ca4eacffa1e992bc630ad77a86",
+    "scope": "Exact staged Windows portable and NSIS default/compatibility renderer picker launch and cancellation."
+  },
+  "cases": [
+    {
+      "start_ms": 4907.25,
+      "request_sent_ms": 4936.7823,
+      "case": "portable-default",
+      "process_id": 9600,
+      "window_mapped_upper_bound_ms": 5469.36,
+      "renderer_arguments": "",
+      "normal_cancel": true,
+      "launch_unix_ms": 1794298723199,
+      "response": {
+        "accepted": false,
+        "paths": [],
+        "current_filter": null,
+        "choices": {}
+      },
+      "trace": [
+        {
+          "phase": "reading_request",
+          "elapsed_ms": 0.04,
+          "entry_unix_ms": 1794298728178
+        },
+        {
+          "phase": "request_ready",
+          "elapsed_ms": 0.341,
+          "entry_unix_ms": 1794298728178
+        },
+        {
+          "phase": "starting_wgpu",
+          "elapsed_ms": 2.583,
+          "entry_unix_ms": 1794298728178
+        },
+        {
+          "phase": "renderer_ready",
+          "elapsed_ms": 360.413,
+          "entry_unix_ms": 1794298728178
+        },
+        {
+          "phase": "picker_ready",
+          "elapsed_ms": 361.206,
+          "entry_unix_ms": 1794298728178
+        },
+        {
+          "phase": "first_ui_pass",
+          "elapsed_ms": 363.635,
+          "entry_unix_ms": 1794298728178
+        }
+      ],
+      "process_launch_to_entry_wall_ms": 4979
+    },
+    {
+      "start_ms": 6.9459,
+      "request_sent_ms": 7.646800000000001,
+      "case": "portable-opengl",
+      "process_id": 9880,
+      "window_mapped_upper_bound_ms": 5912.12,
+      "renderer_arguments": "--renderer opengl",
+      "normal_cancel": true,
+      "launch_unix_ms": 1794298731118,
+      "response": {
+        "accepted": false,
+        "paths": [],
+        "current_filter": null,
+        "choices": {}
+      },
+      "trace": [
+        {
+          "phase": "reading_request",
+          "elapsed_ms": 0.04,
+          "entry_unix_ms": 1794298731147
+        },
+        {
+          "phase": "request_ready",
+          "elapsed_ms": 0.237,
+          "entry_unix_ms": 1794298731147
+        },
+        {
+          "phase": "starting_opengl",
+          "elapsed_ms": 2.579,
+          "entry_unix_ms": 1794298731147
+        },
+        {
+          "phase": "renderer_ready",
+          "elapsed_ms": 5800.633,
+          "entry_unix_ms": 1794298731147
+        },
+        {
+          "phase": "picker_ready",
+          "elapsed_ms": 5802.04,
+          "entry_unix_ms": 1794298731147
+        },
+        {
+          "phase": "first_ui_pass",
+          "elapsed_ms": 5805.56,
+          "entry_unix_ms": 1794298731147
+        }
+      ],
+      "process_launch_to_entry_wall_ms": 29
+    },
+    {
+      "start_ms": 5.9912,
+      "request_sent_ms": 6.8556,
+      "case": "installed-default",
+      "process_id": 4576,
+      "window_mapped_upper_bound_ms": 365.87,
+      "renderer_arguments": "",
+      "normal_cancel": true,
+      "launch_unix_ms": 1794298834996,
+      "response": {
+        "accepted": false,
+        "paths": [],
+        "current_filter": null,
+        "choices": {}
+      },
+      "trace": [
+        {
+          "phase": "reading_request",
+          "elapsed_ms": 0.029,
+          "entry_unix_ms": 1794298835022
+        },
+        {
+          "phase": "request_ready",
+          "elapsed_ms": 0.354,
+          "entry_unix_ms": 1794298835022
+        },
+        {
+          "phase": "starting_wgpu",
+          "elapsed_ms": 2.182,
+          "entry_unix_ms": 1794298835022
+        },
+        {
+          "phase": "renderer_ready",
+          "elapsed_ms": 283.717,
+          "entry_unix_ms": 1794298835022
+        },
+        {
+          "phase": "picker_ready",
+          "elapsed_ms": 284.969,
+          "entry_unix_ms": 1794298835022
+        },
+        {
+          "phase": "first_ui_pass",
+          "elapsed_ms": 287.65,
+          "entry_unix_ms": 1794298835022
+        }
+      ],
+      "process_launch_to_entry_wall_ms": 26
+    },
+    {
+      "start_ms": 4.9975000000000005,
+      "request_sent_ms": 5.456300000000001,
+      "case": "installed-opengl",
+      "process_id": 6884,
+      "window_mapped_upper_bound_ms": 5200.01,
+      "renderer_arguments": "--renderer opengl",
+      "normal_cancel": true,
+      "launch_unix_ms": 1794298836407,
+      "response": {
+        "accepted": false,
+        "paths": [],
+        "current_filter": null,
+        "choices": {}
+      },
+      "trace": [
+        {
+          "phase": "reading_request",
+          "elapsed_ms": 0.044,
+          "entry_unix_ms": 1794298836435
+        },
+        {
+          "phase": "request_ready",
+          "elapsed_ms": 0.408,
+          "entry_unix_ms": 1794298836435
+        },
+        {
+          "phase": "starting_opengl",
+          "elapsed_ms": 2.451,
+          "entry_unix_ms": 1794298836435
+        },
+        {
+          "phase": "renderer_ready",
+          "elapsed_ms": 5113.225,
+          "entry_unix_ms": 1794298836435
+        },
+        {
+          "phase": "picker_ready",
+          "elapsed_ms": 5123.751,
+          "entry_unix_ms": 1794298836435
+        },
+        {
+          "phase": "first_ui_pass",
+          "elapsed_ms": 5145.662,
+          "entry_unix_ms": 1794298836435
+        }
+      ],
+      "process_launch_to_entry_wall_ms": 28
+    }
+  ],
+  "binary_sha256": "550fc4423d9ba23155c7c898fa9a30a2c6d639ba6868fc218a545b6d54cff2bf",
+  "uninstall_exit": 0,
+  "source_and_preferences_preserved_during_picker": true,
+  "no_index_started_by_picker": true,
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "restored_test_executables": 36,
+  "verified_export_sha256": "d98bd35332d793dc60da267313dea1e5fdd18016926e0c6eaf95b15dec06ca2c"
+}

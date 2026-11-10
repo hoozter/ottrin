@@ -2260,8 +2260,15 @@ Current source, test, package and owner/external scopes stay separate.
    application entry at 9.00 seconds. The repeat mapped at 1.51 seconds.
    The first compatibility launch still paid a 5.40-second Mesa mapping
    interval when it needed OpenGL. Keep the remaining cold-start delay
-   open and verify the rebuilt portable and installed packages before
-   promotion.
+   open. The staged `68b145fd` Windows ZIP and NSIS match across all
+   59 payload files and pass the OpenGL loader gate. A native user ran
+   WGPU and explicit OpenGL picker launches from the ZIP and from the
+   installed executable. All four cancelled cleanly, and uninstall
+   succeeded. The first portable WGPU window mapped in 5.47 seconds,
+   and the installed WGPU window in 366 ms after setup. The host
+   observation timeout interrupted the kernel trace export, but the
+   teardown archive contained the verified terminal app result.
+   MSIX assembly, upgrade acceptance and promotion remain open.
    Broader theme and caller acceptance also remain open.
    [Delivered Windows picker resource check](../.hermes/evidence/windows-picker-current-runtime-audit/ACCEPTANCE.json).
    [Windows picker startup comparison](../.hermes/evidence/windows-picker-startup-comparison/ACCEPTANCE.json).
@@ -2269,6 +2276,7 @@ Current source, test, package and owner/external scopes stay separate.
    [Native Windows startup phases](../.hermes/evidence/windows-picker-phase-trace/ACCEPTANCE.json).
    [Native Windows loader observation](../.hermes/evidence/windows-picker-loader-observation/ACCEPTANCE.json).
    [Native deferred OpenGL verification](../.hermes/evidence/windows-picker-deferred-opengl/ACCEPTANCE.json).
+   [Staged Windows ZIP and NSIS verification](../.hermes/evidence/windows-deferred-mesa-delivery/PACKAGED_RENDERERS.json).
 
    Linux folder setup `b9543fe9` keeps interrupted launcher replacements
    repairable while refusing edits outside the recorded versions. Eight
