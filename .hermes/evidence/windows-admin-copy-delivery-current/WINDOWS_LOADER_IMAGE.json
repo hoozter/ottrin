@@ -1,0 +1,42 @@
+{
+  "image_size": 2514944,
+  "timestamp": "59A29EB0",
+  "sha256": "b9775b65c47564c2571fb9175e07ec14ce2a771613230afb2c284a0501a369a7",
+  "pdb": {
+    "name": "ntdll.pdb",
+    "guid": "1DF9DB46D55D6B869568C9F6E9287DE4",
+    "age": 1
+  },
+  "sample_rva": "0x163214",
+  "identity_limit": "Same base image and mapped size. The original guest did not hash its mapped DLL.",
+  "disassembly": [
+    "Disassembly of section .text:",
+    "",
+    "0000000180163214 <.text+0x162214>:",
+    "   180163214:\tc3                   \tret",
+    "   180163215:\tcd 2e                \tint    0x2e",
+    "   180163217:\tc3                   \tret",
+    "   180163218:\t0f 1f 84 00 00 00 00 \tnop    DWORD PTR [rax+rax*1+0x0]",
+    "   18016321f:\t00 ",
+    "   180163220:\t4c 8b d1             \tmov    r10,rcx",
+    "   180163223:\tb8 76 01 00 00       \tmov    eax,0x176",
+    "   180163228:\tf6 04 25 08 03 fe 7f \ttest   BYTE PTR ds:0x7ffe0308,0x1",
+    "   18016322f:\t01 ",
+    "   180163230:\t75 03                \tjne    0x180163235",
+    "   180163232:\t0f 05                \tsyscall"
+  ],
+  "cleanup": {
+    "domain": "ottrin-loader-symbol-qa",
+    "uuid": "5be2d540-b6a7-4e5c-83a2-a085e386b3bf",
+    "volume": "ottrin-loader-symbol-qa.qcow2",
+    "status": "pass",
+    "domain_removed": true,
+    "overlay_removed": true,
+    "protected_definitions_states_and_backing_unchanged": true
+  },
+  "public_symbol": [
+    "ZwRaiseHardError",
+    "??:0:0",
+    ""
+  ]
+}

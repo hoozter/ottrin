@@ -364,11 +364,17 @@ and [first-run timeout](../.hermes/evidence/windows-picker-keyboard-current/nati
    stack range was its startup entry point. The helper extracted
    from MSIX 33 and the portable ZIP is byte-identical to the
    installed NSIS helper that passed alternate-administrator Copy.
-   The next diagnostic is to identify the Windows startup wait
-   under package identity and compare it with the working launch.
-   The exact wait remains unverified. The source hash and absent
-   destination matched the earlier result.
+   A disposable clone of the same Windows base returned an
+   `ntdll.dll` with the sampled mapped size. Its matching Microsoft
+   public symbols resolve the repeatedly sampled instruction to
+   `ZwRaiseHardError`. The original guest did not hash its mapped
+   DLL or capture the error status. The next native comparison
+   should record the mapped image identity and the error status at
+   that call during the failing launch, then compare the working
+   NSIS path. The source hash and absent destination matched the
+   earlier result.
    [MSIX helper startup sample](../.hermes/evidence/windows-admin-copy-delivery-current/MSIX_HELPER_STARTUP_FINDING.json).
+   [Loader image and symbol](../.hermes/evidence/windows-admin-copy-delivery-current/WINDOWS_LOADER_IMAGE.json).
    [MSIX 33 assembly](../.hermes/evidence/windows-admin-copy-delivery-current/ASSEMBLY_ACCEPTANCE.json).
    [Fresh deployment](../.hermes/evidence/windows-admin-copy-delivery-current/runtime33-fresh/ACCEPTANCE.json),
    [enabled upgrade](../.hermes/evidence/windows-admin-copy-delivery-current/runtime33-upgrade/ACCEPTANCE.json)
