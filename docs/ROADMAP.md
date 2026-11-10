@@ -1219,6 +1219,13 @@ Current source, test, package and owner/external scopes stay separate.
    Cancel preserved the saved preferences. Private profiles and
    extraction were removed. Promotion waits for the hosted matrix.
    [Mounted More menu verification](../.hermes/evidence/theme-editor-more-menu-current/PACKAGED_MORE_MENU_ACCEPTANCE.json).
+   The exact Windows portable candidate from the same source rendered
+   the three icons and aligned labels in Dark and Light at 100%.
+   Physical Cancel preserved saved preferences. The installer and ZIP
+   match all 59 payload files, and the native guest and duplicate
+   desktop captures were removed. Development MSIX assembly remains
+   separate from these portable checks.
+   [Native Windows More menu verification](../.hermes/evidence/theme-editor-more-menu-current/WINDOWS_MORE_ACCEPTANCE.json).
    Live navigation/menu/view/breadcrumb, tab/window-control and Miller presenters
    have bounded acceptance; List/Grid now has source and actual mounted Linux package checks described
    above, with original package acceptance at Linux source43. The stable

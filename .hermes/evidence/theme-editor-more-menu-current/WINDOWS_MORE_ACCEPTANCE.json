@@ -1,0 +1,59 @@
+{
+  "status": "pass exact Windows portable More menu in both palettes",
+  "source_revision": "19b156e249256b8b70e6ce4cdf6b06f531ace1d4",
+  "portable_sha256": "2ec4860ff9aeda8b4940b84c6769faf923194ae6f3ec116de067c3b47f810496",
+  "verified_export_sha256": "2463842cbd6b022ac740855859094d422cb52ebec66f4e0c3b0ac98f36c3a119",
+  "themes": {
+    "Dark": {
+      "rows": {
+        "Import theme\u2026": {
+          "icon_pixels": 103,
+          "label_start_x": 53
+        },
+        "Export theme\u2026": {
+          "icon_pixels": 42,
+          "label_start_x": 53
+        },
+        "Reset theme to starting values": {
+          "icon_pixels": 55,
+          "label_start_x": 53
+        }
+      },
+      "capture_sha256": "0e82d6ccbb3da4cdc1657f37fbc2d1de6e98daec3a62d06bdf2f065bd0302216"
+    },
+    "Light": {
+      "rows": {
+        "Import theme\u2026": {
+          "icon_pixels": 99,
+          "label_start_x": 53
+        },
+        "Export theme\u2026": {
+          "icon_pixels": 42,
+          "label_start_x": 53
+        },
+        "Reset theme to starting values": {
+          "icon_pixels": 44,
+          "label_start_x": 53
+        }
+      },
+      "capture_sha256": "b3ec1550ef34e4158186e6e7c104074c8ccfc8210c148bf414e2e3c2b0c4bb6e"
+    }
+  },
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "scope": "Native portable Dark and Light at 100%. Checked rendered icons, alignment and Cancel.",
+  "duplicate_desktop_captures_removed": [
+    ".hermes/evidence/theme-editor-more-menu-current/windows-more/desktop-ready.png",
+    ".hermes/evidence/theme-editor-more-menu-current/windows-more/privacy-accepted-0.png",
+    ".hermes/evidence/theme-editor-more-menu-current/windows-more/privacy-accepted-1.png"
+  ],
+  "retained_visual_export": ".hermes/evidence/theme-editor-more-menu-current/windows-more/RESULTS.zip"
+}
