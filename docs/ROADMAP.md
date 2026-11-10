@@ -55,6 +55,16 @@ portable extraction were removed. DEB/RPM installation, cross-volume
 workflows and personal acceptance have separate gates.
 [Linux desktop receipt](../.hermes/evidence/release-audit-current/LINUX_B545BD2E_DESKTOP_WORKFLOWS.json).
 
+The exact delivered Windows ZIP passed same-volume Move Replace and
+Keep Both after reuse of the source name. Both destination files
+matched their expected bytes, and the displaced original and paired
+Move journals stayed unchanged. After clicking VCF text in Quick
+Inspector, Right and Left navigated between files and Space closed
+the window. Both source files remained unchanged. The ordinary test
+account, profile and fixture were removed, and the retained VM is off
+with its definition unchanged.
+[Windows desktop receipt](../.hermes/evidence/windows-b545bd2e-desktop/ACCEPTANCE.json).
+
 Windows portable and NSIS builds enable administrator Copy. The installed
 Copy and Undo lifecycle was verified on `49748824`. The current `b545bd2e`
 package receipt carries that earlier acceptance separately from its own
