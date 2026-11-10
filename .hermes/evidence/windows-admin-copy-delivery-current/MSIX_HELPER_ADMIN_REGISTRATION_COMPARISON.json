@@ -1,0 +1,36 @@
+{
+  "status": "alternate administrator registration allowed exact MSIX 33 Copy and observed Undo; full fixture stopped at registry-path assertion",
+  "source_revision": "c4c2f4beb0a859cadae68423bfaad2e56996a4e6",
+  "package_sha256": "ff98d685a6113ba1177c938fb7ce51f95e21c23a15e9b457dc9f91d258e354da",
+  "helper_sha256": "ff95a2405883a1c3b6e480a0a68ceb2066a8183db15ff787f707f132e10c8f74",
+  "registration": {
+    "package_full_name": "Ottrin.Development_0.1.0.33_x64__vs01n017nxmbr",
+    "verified_same_package_for_distinct_accounts": true
+  },
+  "copy": {
+    "caller_process_under_package_identity": true,
+    "publication_matches_source": true,
+    "normal_exit": true
+  },
+  "undo": {
+    "new_caller_process": true,
+    "authenticated_history_loaded": true,
+    "ui_reported_copy_undone": true,
+    "publication_absent": true,
+    "source_preserved": true,
+    "full_fixture_passed": false,
+    "fixture_error": "Cannot find path 'C:\\Users\\OttrinQaCaller\\AppData\\Local\\Ottrin\\State\\copies' because it does not exist."
+  },
+  "scope": "Controlled single native comparison. No product installation or elevation policy change. Full journal location, normal Undo process exit and retained-data cleanup are unverified for this configuration.",
+  "cleanup": {
+    "domain": "ottrin-init-helper-pipe-qa",
+    "uuid": "20e8be76-b1f0-4a7a-81fd-288348c8bfc6",
+    "volume": "ottrin-init-helper-pipe-qa.qcow2",
+    "status": "pass",
+    "domain_removed": true,
+    "overlay_removed": true,
+    "protected_definitions_states_and_backing_unchanged": true,
+    "compiler_executables_restored_by_hash": 25,
+    "temporary_archive_and_restore_manifest_removed": true
+  }
+}
