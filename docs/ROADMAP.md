@@ -609,10 +609,10 @@ and [first-run timeout](../.hermes/evidence/windows-picker-keyboard-current/nati
 3. **Finish release-candidate acceptance.** Retest changed surfaces and their
    normal entry points against the packages being delivered. Keep public
    signing, Store submission, physical-device tests and personal acceptance
-   in the waiting list with their own evidence. Linux is already delivered
-   for the current Vivaldi and index checkpoint. Windows `381ef193` is
-   delivered with the Save and installer checks above. In the preceding
-   `d2031d5e` cohort, the host verified all 59 payload files,
+   in the waiting list with their own evidence. The delivery table above
+   identifies the current Linux and Windows packages. The historical
+   Windows `381ef193` delivery covered Save and installer checks. In the
+   preceding `d2031d5e` cohort, the host verified all 59 payload files,
    provenance and the installer transaction script. The exact NSIS passed
    installed Borders field checks in both editing variants after invoking
    the component by its accessible action and confirming the resulting
@@ -2229,8 +2229,10 @@ Current source, test, package and owner/external scopes stay separate.
    are separate measurements. A Linux release-build smoke test under
    private software X11 observed all six stages in order, a clean JSON
    cancellation, and silence with tracing disabled. Windows-target
-   compilation passed. Native Windows timing and refreshed packages
-   remain open.
+   compilation passed. The trace is the only runtime source change
+   from `eadf713e` to `0e4966e9`. The hosted Windows executable is the
+   pending input for a private test with the verified `eadf713e` ZIP
+   payload. Native Windows timing and refreshed packages remain open.
    Broader theme and caller acceptance also remain open.
    [Delivered Windows picker resource check](../.hermes/evidence/windows-picker-current-runtime-audit/ACCEPTANCE.json).
    [Windows picker startup comparison](../.hermes/evidence/windows-picker-startup-comparison/ACCEPTANCE.json).
