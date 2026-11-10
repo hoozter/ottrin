@@ -591,7 +591,7 @@ and [first-run timeout](../.hermes/evidence/windows-picker-keyboard-current/nati
    read-only MSIX comparison confirmed transacted opens fail under package
    identity. Verify supported folder actions, picker behavior, and remaining theme
    controls in the installed candidate. The current MSIX exposes Explorer
-   commands and reports the default-folder limitation. Current MSIX 32
+   commands and reports the default-folder limitation. Current MSIX 36
    verified Explorer background, multiple-folder and drive actions, and
    preserved the default registration. The current portable ZIP passed
    keyboard picker navigation and the reported Dark and Light theme edits.
@@ -2184,6 +2184,15 @@ Current source, test, package and owner/external scopes stay separate.
    [Native MSIX 36 assembly](../.hermes/evidence/picker-edit-location-current/ASSEMBLY_ACCEPTANCE.json).
    [Native MSIX 35-to-36 upgrade](../.hermes/evidence/picker-edit-location-current/runtime36-upgrade/ACCEPTANCE.json).
    [Windows picker delivery](../.hermes/evidence/picker-edit-location-current/WINDOWS_DELIVERY.json).
+   The delivered Linux AppImage mapped its first picker window in
+   890 ms and its repeat in 579 ms in private software X11 with shared
+   OS caches. The first picker averaged 0.033% of one core over
+   30 idle seconds and used 127 MiB RSS. Two overlapping requests
+   cancelled independently. All four launches exited normally, and
+   no private index socket or main configuration appeared. This is
+   window mapping evidence. Current Windows resource and broader
+   theme and caller acceptance remain open.
+   [Delivered Linux picker resource check](../.hermes/evidence/picker-current-runtime-audit/ACCEPTANCE.json).
 
    Linux folder setup `b9543fe9` keeps interrupted launcher replacements
    repairable while refusing edits outside the recorded versions. Eight

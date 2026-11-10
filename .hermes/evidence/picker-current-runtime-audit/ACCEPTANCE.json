@@ -1,0 +1,72 @@
+{
+  "status": "pass",
+  "source_revision": "eadf713e853ababd803fe37e6f2ea2462c60a619",
+  "artifact_sha256": "a0dc4e8c4de29f3d760f7f5af09030fbf1ec7c29bdea2d86fa2c8edb33d54c12",
+  "scope": "Mounted AppImage in private software X11. Process-cold and repeat mapping upper bounds with shared OS caches. Four normal cancellations, two overlapping requests, no private index socket or main preference writes.",
+  "observations": [
+    {
+      "case": "first",
+      "window_mapped_upper_bound_ms": 890.47,
+      "normal_cancel": true,
+      "idle_seconds": 30.00028263599961,
+      "cpu_percent_one_core": 0.03333301929629237,
+      "rss_kib": 129544
+    },
+    {
+      "case": "repeat",
+      "window_mapped_upper_bound_ms": 578.67,
+      "normal_cancel": true
+    },
+    {
+      "case": "concurrent-a",
+      "window_mapped_upper_bound_ms": 601.66,
+      "normal_cancel": true
+    },
+    {
+      "case": "concurrent-b",
+      "window_mapped_upper_bound_ms": 772.61,
+      "normal_cancel": true
+    }
+  ],
+  "fixture_bytes_preserved": true,
+  "cleanup": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-2n8t887m",
+    "owned_processes_reaped": [
+      {
+        "pid": 3568149,
+        "exit": 0
+      },
+      {
+        "pid": 3568152,
+        "exit": 0
+      },
+      {
+        "pid": 3568153,
+        "exit": 15
+      },
+      {
+        "pid": 3568242,
+        "exit": 0
+      },
+      {
+        "pid": 3568387,
+        "exit": 0
+      },
+      {
+        "pid": 3568449,
+        "exit": 0
+      },
+      {
+        "pid": 3568450,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 4
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  }
+}

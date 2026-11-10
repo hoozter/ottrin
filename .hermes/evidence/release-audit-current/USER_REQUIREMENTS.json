@@ -19,7 +19,7 @@
     {
       "id": "U02",
       "requirement": "Indexer must be quiet while idle, use its own process name, survive main-window closure when enabled, and start reliably without a first-launch readiness error.",
-      "current_scope": "Exact d76c351a mounted index daemon averaged 0.067% of one core over 60 seconds with 1,000 files and no clients, with a 0.20% peak over ten-second intervals. Current Linux 45a89d62 contains byte-identical daemon code. Promotion verified the installed ottrin-indexd stayed Ready on the same process with startup and database identity preserved. A read-only 120-second sample of the installed cgroup averaged 0.19% of one core with a 0.21% ten-second peak. The index stayed Ready, the file count stayed at 248,638, and the snapshot advanced one revision. This is a bounded live-workload sample. Current Windows idle/lifetime verification remains open.",
+      "current_scope": "The delivered Linux managed daemon returned Ready after eadf713e promotion, preserving startup, preferences and database identity. The mounted old-to-new private index passed watcher and restart checks and averaged 0.067% of one core over 60 idle seconds. MSIX 36 passed real sign-in with automatic startup enabled. Historical physical and larger-corpus observations retain their recorded scopes.",
       "evidence": [
         ".hermes/evidence/recovery-transport-delivery-current/LINUX_DAEMON_RUNTIME.json",
         ".hermes/evidence/recovery-transport-delivery-current/login/ACCEPTANCE.json",
@@ -36,7 +36,10 @@
         ".hermes/evidence/appearance-delivery-current/PROMOTION.json",
         ".hermes/evidence/fractional-border-delivery-current/LINUX_DAEMON_RUNTIME.json",
         ".hermes/evidence/search-stalled-theme-current/PROMOTION.json",
-        ".hermes/evidence/search-stalled-theme-current/PERSONAL_INDEX_OBSERVATION.json"
+        ".hermes/evidence/search-stalled-theme-current/PERSONAL_INDEX_OBSERVATION.json",
+        ".hermes/evidence/picker-edit-location-current/PROMOTION.json",
+        ".hermes/evidence/picker-edit-location-current/LINUX_DAEMON_RUNTIME.json",
+        ".hermes/evidence/picker-edit-location-current/runtime36-upgrade/ACCEPTANCE.json"
       ]
     },
     {
@@ -186,7 +189,7 @@
     {
       "id": "U13",
       "requirement": "Must-have themed open/save picker and reversible supported default-folder integration; no unnecessary always-on picker process.",
-      "current_scope": "Linux package tests cover Firefox, GTK, Flatpak and the delivered Vivaldi parenting fix within their recorded caller scopes. Staged b1bc72fe independently passes FileManager1 dispatch and Save caller lifecycle. Delivered Windows a9c718a2 passes ordinary-user multi-folder Select All and Enter in both themes without indexing, plus the installed NSIS and development MSIX scopes in the current manifest. Earlier ordinary-user default-folder restoration remains scoped to its original NSIS. MSIX default-folder registration and broader caller acceptance remain open.",
+      "current_scope": "Current eadf713e Linux mounted AppImage and Windows native portable picker pass pointer-driven location editing in both palettes. The delivered Linux AppImage also passes repeat and concurrent open/cancel without a private index socket. Prior Linux portal/Firefox/GTK/Flatpak/Vivaldi/FileManager1 and Windows Save/default-folder receipts retain exact scopes. MSIX 36 passes Explorer folder actions. Broader caller, theme property and Windows resource acceptance remain open.",
       "evidence": [
         ".hermes/evidence/current-firefox-picker/ACCEPTANCE.json",
         ".hermes/evidence/theme-selection-delivery-current/DESKTOP_INTEGRATION_ACCEPTANCE.json",
@@ -198,13 +201,18 @@
         ".hermes/evidence/vivaldi-picker-delivery-current/PROMOTION.json",
         ".hermes/evidence/smart-panel-secondary-text-current/FILE_MANAGER_DBUS_ACCEPTANCE.json",
         ".hermes/evidence/smart-panel-secondary-text-current/picker-save/RESULT.json",
-        ".hermes/evidence/windows-native-picker-folders-current/ACCEPTANCE.json"
+        ".hermes/evidence/windows-native-picker-folders-current/ACCEPTANCE.json",
+        ".hermes/evidence/picker-edit-location-current/linux-dark/ACCEPTANCE.json",
+        ".hermes/evidence/picker-edit-location-current/linux-light/ACCEPTANCE.json",
+        ".hermes/evidence/picker-edit-location-current/WINDOWS_PICKER_ACCEPTANCE.json",
+        ".hermes/evidence/picker-edit-location-current/runtime36-upgrade/ACCEPTANCE.json",
+        ".hermes/evidence/picker-current-runtime-audit/ACCEPTANCE.json"
       ]
     },
     {
       "id": "U14",
       "requirement": "Keep one stable usable package path, current GitHub checkpoints, honest status/roadmap/waiting list and no failure-email flood.",
-      "current_scope": "Stable Linux b1bc72fe and Windows a9c718a2 match the current package authorities. All four source-equivalent Smart Panel hosted jobs passed and Linux promotion is complete. The combined Linux and Windows 4d3f11a3 candidates remain staged. Public release and notification-email delivery retain separate scopes.",
+      "current_scope": "Both stable local cohorts use eadf713e. All four exact-source hosted jobs and seven local checksums passed. Both promotions updated their authorities and recorded the package and native-test scopes. Public release and notification-email delivery remain separate.",
       "evidence": [
         ".hermes/evidence/recovery-transport-delivery-current/PROGRESS.json",
         ".hermes/evidence/recovery-transport-delivery-current/NATIVE_CLEANUP_CURRENT.json",
@@ -223,13 +231,15 @@
         ".hermes/evidence/theme-editor-pointer-fix-current/WINDOWS_DELIVERY.json",
         ".hermes/evidence/theme-editor-pointer-fix-linux-current/PROMOTION.json",
         ".hermes/evidence/smart-panel-secondary-text-current/PROMOTION_PREFLIGHT.json",
-        ".hermes/evidence/smart-panel-secondary-text-current/PROMOTION.json"
+        ".hermes/evidence/smart-panel-secondary-text-current/PROMOTION.json",
+        ".hermes/evidence/picker-edit-location-current/PROMOTION.json",
+        ".hermes/evidence/picker-edit-location-current/WINDOWS_DELIVERY.json"
       ]
     },
     {
       "id": "U15",
       "requirement": "Remove owned obsolete build/QA output and test processes while preserving user data, protected VMs, useful caches and current deliverables.",
-      "current_scope": "Windows a9c718a2 promotion retired its stage and superseded package cohort. Native picker teardown removed the VM, volumes and export and restored 20 borrowed test executables by hash. Six superseded compiler sessions were removed during Linux QA. The current Linux stage remains owned pending promotion. Linux b1bc72fe promotion removed its consumed stage and superseded artifacts.",
+      "current_scope": "Both eadf713e promotions removed their owned stages and superseded packages. The Windows picker, MSIX assembly and upgrade removed their disposable guests and disks and restored borrowed test executables. The current Linux resource test retired its profile. Earlier retained diagnostics retain their individual ownership and purpose.",
       "evidence": [
         ".hermes/evidence/release-audit-current/CLEANUP.json",
         ".hermes/evidence/release-audit-current/cohort/EXTRACTION_CLEANUP.json",
@@ -251,7 +261,12 @@
         ".hermes/evidence/theme-editor-pointer-fix-current/WINDOWS_DELIVERY.json",
         ".hermes/evidence/windows-native-picker-folders-current/ACCEPTANCE.json",
         ".hermes/evidence/smart-panel-secondary-text-current/STORAGE_AFTER_LOCAL_QA.txt",
-        ".hermes/evidence/smart-panel-secondary-text-current/PROMOTION.json"
+        ".hermes/evidence/smart-panel-secondary-text-current/PROMOTION.json",
+        ".hermes/evidence/picker-edit-location-current/PROMOTION.json",
+        ".hermes/evidence/picker-edit-location-current/WINDOWS_DELIVERY.json",
+        ".hermes/evidence/picker-edit-location-current/WINDOWS_PICKER_ACCEPTANCE.json",
+        ".hermes/evidence/picker-edit-location-current/runtime36-upgrade/ACCEPTANCE.json",
+        ".hermes/evidence/picker-current-runtime-audit/ACCEPTANCE.json"
       ]
     }
   ],
@@ -261,14 +276,12 @@
     "No macOS build; owner signing/Store/final human acceptance remain explicit waits."
   ],
   "latest_scope_reconciliation": {
-    "date": "2026-11-09",
-    "stable_linux": "b1bc72fe369fea5e0f3892701b67a26833a653cd",
-    "stable_windows": "a9c718a2f21f9c1c45e798f2fc83a3f59b96bbae",
-    "staged_linux": [
-      "4d3f11a379df2d58424093a0bb13fbf42b2aa8b4"
-    ],
+    "date": "2026-11-10",
+    "stable_linux": "eadf713e853ababd803fe37e6f2ea2462c60a619",
+    "stable_windows": "eadf713e853ababd803fe37e6f2ea2462c60a619",
+    "staged_linux": [],
     "staged_windows": [],
-    "note": "Reconciled U06–U08 and U13–U15 with current exact package evidence and open boundaries. Other clauses retain their prior scopes. Added the exact combined Linux menu and Smart Panel results to U07 and U09."
+    "note": "Reconciled U02, U13, U14 and U15 against current exact evidence. Other user clauses retain their prior scopes."
   },
   "reviewed_source_revision": "2bb6da9635f8a0eb50b2d598e97ac8e3f97bc89d",
   "historical_source_revision": "7d10a8b6eba74e642fcf5028af737a98bb5c0958",

@@ -61,13 +61,16 @@
       "id": 8,
       "section": "4. Required Ottrin picker and folder integration — active",
       "requirement": "Build a reusable Ottrin Open/Save/folder picker using the authoritative theme and shared UI components. Use familiar places/bookmarks, breadcrumbs/editable path, search, file views, optional preview and a clear filename/type/action footer. Support caller-specified locations, filters, multiple selection, cancellation, overwrite confirmation and parent-window behavior. Preserve useful picker preferences without overriding the caller's request. Verify theme changes on the actual picker, including fonts, colors, borders and corner geometry.",
-      "classification": "scoped native evidence; wider requirement open",
+      "classification": "scoped current picker rendering; wider requirements open",
       "evidence": [
         ".hermes/evidence/picker-overwrite-keyboard-current/MOUNTED_KEYBOARD_ACCEPTANCE.json",
         ".hermes/evidence/linux-picker-package-current/GUI_ACCEPTANCE.json",
-        ".hermes/evidence/picker-accessibility-current/WINDOWS_NATIVE_ACCEPTANCE.json"
+        ".hermes/evidence/picker-accessibility-current/WINDOWS_NATIVE_ACCEPTANCE.json",
+        ".hermes/evidence/picker-edit-location-current/linux-dark/ACCEPTANCE.json",
+        ".hermes/evidence/picker-edit-location-current/linux-light/ACCEPTANCE.json",
+        ".hermes/evidence/picker-edit-location-current/WINDOWS_PICKER_ACCEPTANCE.json"
       ],
-      "latest_scope": "Historical exact Linux GUI and installed Windows evidence covers request precedence, selection, cancellation, theme controls and ownership at the recorded artifact scope. Mounted GTK Save at 7e89eedb covers shortcut isolation and native paths. Per-role and native parent-window coverage remains scoped to the individual receipts."
+      "latest_scope": "Exact mounted Linux and native Windows portable eadf713e passed Edit location in Dark and Light. Existing scoped Save, multiselect and theme evidence retain their original revisions. Full current property and supported caller coverage remain open."
     },
     {
       "id": 9,
@@ -102,25 +105,28 @@
       "id": 11,
       "section": "4. Required Ottrin picker and folder integration — active",
       "requirement": "Keep picker launch independent of index readiness. Browse directories directly; use the existing index asynchronously for search when available. Do not add indexing responsibilities or an always-running full GUI to the picker. Start the picker on demand; consider bounded warm retention only if measured cold startup justifies it.",
-      "classification": "verified at exact Linux artifact and current source scopes",
+      "classification": "verified at exact current Linux and Windows portable scopes",
       "evidence": [
         ".hermes/evidence/current-indexed-picker/ACCEPTANCE.json",
-        ".hermes/evidence/desktop-integration-audit-current/PICKER_FOLDER_REQUIREMENT_AUDIT.json"
+        ".hermes/evidence/desktop-integration-audit-current/PICKER_FOLDER_REQUIREMENT_AUDIT.json",
+        ".hermes/evidence/picker-current-runtime-audit/ACCEPTANCE.json",
+        ".hermes/evidence/picker-edit-location-current/WINDOWS_PICKER_ACCEPTANCE.json"
       ],
-      "latest_scope": "Exact 45a89d62 AppImage used its packaged private daemon for indexed Save and recovered direct folder browsing and Open with no daemon. Both cases preserved file bytes. The inspected current source uses the same worker, request-scoped launcher and existing index client."
+      "latest_scope": "The delivered Linux AppImage completed four picker launches including overlapping requests with no private index socket. The current native Windows portable picker completed the edited-folder request in both palettes with no index process."
     },
     {
       "id": 12,
       "section": "4. Required Ottrin picker and folder integration — active",
       "requirement": "Accept cold/repeated launch latency, idle CPU, retained memory, cancellation/cleanup, concurrent requests, operation with indexing stopped, theme persistence, and enable/disable restoration on both supported platforms. Record measured results rather than promising unverified speed or universal application coverage.",
-      "classification": "measured historical exact-package scopes; wider requirement open",
+      "classification": "current Linux exact-package measurements; broader verification open",
       "evidence": [
         ".hermes/evidence/current-picker-first-paint/ACCEPTANCE.json",
         ".hermes/evidence/borders-group-picker-resources/ACCEPTANCE.json",
         ".hermes/evidence/picker-accessibility-current/WINDOWS_NATIVE_ACCEPTANCE.json",
-        ".hermes/evidence/desktop-integration-audit-current/WINDOWS_PICKER_MEASUREMENT_AUDIT.json"
+        ".hermes/evidence/desktop-integration-audit-current/WINDOWS_PICKER_MEASUREMENT_AUDIT.json",
+        ".hermes/evidence/picker-current-runtime-audit/ACCEPTANCE.json"
       ],
-      "latest_scope": "Exact 45a89d62 Linux AppImage has process-cold and repeated content-ready upper bounds; exact e2171c3b has idle CPU, RSS, cancellation and concurrency measurements. Installed Windows d6ebd918 has separate native scope. The old measurements do not establish current Windows package performance, physical desktop performance or cold boot."
+      "latest_scope": "The eadf713e mounted Linux AppImage passed first/repeat and concurrent launches and cancellation. Idle CPU and RSS were sampled in private software X11 with shared OS caches. Historical Windows resource evidence retains its own revision. Current Windows resource and broader theme/restoration acceptance remain open."
     },
     {
       "id": 13,
@@ -288,8 +294,13 @@
       "id": 29,
       "section": "Windows",
       "requirement": "Launch the portable zip and installed application on real Windows hardware or a representative real Windows VM.",
-      "classification": "unverified in concentrated final audit",
-      "evidence": []
+      "classification": "scoped native Windows portable and installer launch verified",
+      "evidence": [
+        ".hermes/evidence/picker-edit-location-current/WINDOWS_PICKER_ACCEPTANCE.json",
+        ".hermes/evidence/windows-admin-copy-desktop-current/INSTALLED_ACCEPTANCE.json",
+        "dist/WINDOWS_CANDIDATE_ACCEPTANCE.json"
+      ],
+      "latest_scope": "The exact eadf713e portable chooser launched as an ordinary user on a Windows guest. The preceding 49748824 NSIS installed and launched normally in four separate authenticated Copy lifecycle processes. Current NSIS bytes match the current portable payload; that match does not rerun the preceding installation lifecycle."
     },
     {
       "id": 30,
@@ -361,13 +372,15 @@
       "id": 39,
       "section": "Signing and Windows distribution",
       "requirement": "The local development MSIX package is implemented. Current0.1.0.6 has native\n  assembly, actual5→6 update, enabled/disabled real-login startup and removal\n  acceptance at its recorded4a1682bd scope. Microsoft Store identity, listing,\n  certification and submission remain owner-dependent release work. Store signing applies to accepted Store packages;\n  it does not sign the separate direct EXE/MSI downloads.",
-      "classification": "development MSIX assembly and update verified; Store parked",
+      "classification": "development MSIX 36 assembly and update verified; Store parked",
       "evidence": [
         ".hermes/evidence/windows-msix-default-status-delivery-current/ASSEMBLY_ACCEPTANCE.json",
         ".hermes/evidence/windows-msix-default-status-delivery-current/MSIX_ENABLED_UPDATE_ACCEPTANCE.json",
-        "dist/WINDOWS_CANDIDATE_ACCEPTANCE.json"
+        "dist/WINDOWS_CANDIDATE_ACCEPTANCE.json",
+        ".hermes/evidence/picker-edit-location-current/ASSEMBLY_ACCEPTANCE.json",
+        ".hermes/evidence/picker-edit-location-current/runtime36-upgrade/ACCEPTANCE.json"
       ],
-      "latest_scope": "Stable development MSIX 27 uses 67d3cbe1. Production MakeAppx assembly, exact payload equality, enabled 26-to-27 upgrade, real Explorer commands and removal pass at that source. Store identity and submission remain owner work."
+      "latest_scope": "Exact eadf713e MSIX 36 passed native MakeAppx and payload comparison, enabled 35-to-36 upgrade, sign-in, Explorer folder actions and removal. Older fresh and startup-disabled checks retain their original package scopes."
     },
     {
       "id": 40,
@@ -399,7 +412,7 @@
       "id": 42,
       "section": "Release candidate gate",
       "requirement": "Linux and Windows CI pass for the release commit.",
-      "classification": "exact stable package source CI passed; final release commit pending",
+      "classification": "exact delivered source CI passed; final public release pending",
       "evidence": [
         ".hermes/evidence/worksheet-alignment-current/corrected/HOSTED_FINAL.json",
         ".github/workflows/ci.yml",
@@ -407,22 +420,27 @@
         ".hermes/evidence/recovery-transport-delivery-current/CI_CURRENT.json",
         ".hermes/evidence/theme-delivery-current/CI_CURRENT.json",
         "dist/packages/LINUX_PACKAGES_ACCEPTANCE.json",
-        "dist/WINDOWS_CANDIDATE_ACCEPTANCE.json"
+        "dist/WINDOWS_CANDIDATE_ACCEPTANCE.json",
+        ".hermes/evidence/picker-edit-location-current/PROMOTION.json",
+        ".hermes/evidence/picker-edit-location-current/WINDOWS_DELIVERY.json"
       ],
       "assessment": "Delivered Linux316 run41920332944 and Windows458 run41809847269 each pass all four jobs at their exact sources. No final release-commit or whole-platform acceptance is inferred.",
-      "latest_scope": "All four hosted jobs passed for Linux package source 45a89d62 and Windows candidate 67d3cbe1. Final public release verification remains separate."
+      "latest_scope": "All four hosted jobs passed on eadf713e. This is the current local delivery source, with public release acceptance separate."
     },
     {
       "id": 43,
       "section": "Release candidate gate",
       "requirement": "Rebuilt artifact checksums verify and archive inspection finds the expected app, indexer, helper, policies, assets and documentation.",
-      "classification": "current local archive and checksum checks verified; final release pending",
+      "classification": "current exact local package contents and hashes verified",
       "evidence": [
         "dist/packages/LINUX_PACKAGES_ACCEPTANCE.json",
         "dist/WINDOWS_CANDIDATE_ACCEPTANCE.json",
-        ".hermes/evidence/search-stalled-theme-current/PACKAGE_CONTENT_ACCEPTANCE.json"
+        ".hermes/evidence/search-stalled-theme-current/PACKAGE_CONTENT_ACCEPTANCE.json",
+        ".hermes/evidence/picker-edit-location-current/PACKAGE_CONTENT_ACCEPTANCE.json",
+        ".hermes/evidence/picker-edit-location-current/HOST_PAYLOAD.json",
+        ".hermes/evidence/picker-edit-location-current/ASSEMBLY_ACCEPTANCE.json"
       ],
-      "latest_scope": "Current Linux 45a89d62 four-format content checks cover app, daemon, helper, policy, runtime and documentation. Windows 67d3cbe1 current ZIP, NSIS and MSIX hashes and scoped payload verification are bound in the stable receipt. This is local package evidence."
+      "latest_scope": "All seven local artifacts verify by checksum. Linux package content verification, Windows 59-file payload equivalence, and native MSIX assembly retain their recorded scopes. Public signing and download verification remain separate."
     },
     {
       "id": 44,
@@ -463,8 +481,14 @@
       "id": 48,
       "section": "Release candidate gate",
       "requirement": "The themed Ottrin picker, supported external integrations, resource/startup checks and reversible preference controls pass outcome 4 acceptance on Linux and Windows.",
-      "classification": "unverified in concentrated final audit",
-      "evidence": []
+      "classification": "scoped current picker and integration acceptance; wider requirement open",
+      "evidence": [
+        ".hermes/evidence/picker-current-runtime-audit/ACCEPTANCE.json",
+        ".hermes/evidence/picker-edit-location-current/linux-dark/ACCEPTANCE.json",
+        ".hermes/evidence/picker-edit-location-current/WINDOWS_PICKER_ACCEPTANCE.json",
+        ".hermes/evidence/picker-edit-location-current/runtime36-upgrade/ACCEPTANCE.json"
+      ],
+      "latest_scope": "Current Linux and Windows pointer picker checks and Linux resource checks passed. MSIX 36 Explorer actions passed. Historical Linux caller/portal restoration and Windows desktop default restoration retain exact scopes. Current Windows resource coverage, full theme property acceptance and MSIX default-folder support remain open."
     },
     {
       "id": 49,
@@ -522,19 +546,19 @@
   ],
   "native_preview_checkpoint": ".hermes/evidence/windows-preview-safety-current/ACCEPTANCE.json",
   "latest_verification_scope_reconciliation": {
-    "date": "2026-11-08",
-    "linux_package_source": "45a89d62dcbd16b24d6a6b4db551c3d8ccaa4e90",
-    "windows_package_source": "67d3cbe14c03f1b8021284454e46ed046795131e",
+    "date": "2026-11-10",
+    "linux_package_source": "eadf713e853ababd803fe37e6f2ea2462c60a619",
+    "windows_package_source": "eadf713e853ababd803fe37e6f2ea2462c60a619",
     "reconciled_requirement_ids": [
       8,
-      9,
-      10,
-      21,
-      28,
+      11,
+      12,
+      29,
       39,
       42,
-      43
+      43,
+      48
     ],
-    "scope": "Exact local package and scoped native observations. Unreviewed clauses and prior scopes retain their earlier classifications."
+    "scope": "Scoped exact local packages and native runtime evidence. Other clauses and historical artifact scopes are unchanged."
   }
 }
