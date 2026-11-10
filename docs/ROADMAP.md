@@ -2241,14 +2241,24 @@ Current source, test, package and owner/external scopes stay separate.
    at 5.38 seconds. Guest timestamps put application entry at about
    11.81 seconds, and the first UI pass finished 452 ms after entry.
    The default path selected WGPU. The repeat mapped in 351 ms, and
-   the subsequent OpenGL runs took 373 and 361 ms. Investigate the
-   pre-entry loading path with the same GNU payload and a stock guest
-   before changing picker rendering. Refreshed packages remain open.
+   the subsequent OpenGL runs took 373 and 361 ms. A second native run
+   with that same GNU executable recorded kernel process and image-load
+   events. The first picker took 12.89 seconds to map. The process-create
+   event came at 4.31 seconds and the executable entered at 10.63 seconds.
+   The loader mapped bundled `opengl32.dll` at 4.49 seconds and
+   `libgallium_wgl.dll` at 10.56 seconds. Both mapped before application
+   entry despite the picker later selecting WGPU. The executable imports
+   WGL directly. Defender real-time protection was active, and the trace
+   establishes the loading interval without identifying which Windows
+   subsystem consumed it. Next, remove the WGPU path's dependency on
+   loading bundled Mesa before entry while preserving OpenGL compatibility
+   and verifying both renderers on Windows. Refreshed packages remain open.
    Broader theme and caller acceptance also remain open.
    [Delivered Windows picker resource check](../.hermes/evidence/windows-picker-current-runtime-audit/ACCEPTANCE.json).
    [Windows picker startup comparison](../.hermes/evidence/windows-picker-startup-comparison/ACCEPTANCE.json).
    [Installed Windows picker startup](../.hermes/evidence/windows-picker-installed-startup/ACCEPTANCE.json).
    [Native Windows startup phases](../.hermes/evidence/windows-picker-phase-trace/ACCEPTANCE.json).
+   [Native Windows loader observation](../.hermes/evidence/windows-picker-loader-observation/ACCEPTANCE.json).
 
    Linux folder setup `b9543fe9` keeps interrupted launcher replacements
    repairable while refusing edits outside the recorded versions. Eight
