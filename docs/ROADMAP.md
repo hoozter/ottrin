@@ -9,16 +9,16 @@ not complete a broader native, platform or user-acceptance requirement.
 | Platform | Launchable locally | Next delivery |
 | --- | --- | --- |
 | Linux | `b545bd2e` AppImage, portable archive, DEB and RPM in `dist/packages/`. [Exact package receipt](../dist/packages/LINUX_PACKAGES_ACCEPTANCE.json). | Promoted after mounted List-density and pointer checks, private AppImage replacement and all four [hosted jobs](https://github.com/hoozter/ottrin/actions/runs/42790815680). |
-| Windows | `f62ec5e4` portable ZIP, NSIS and development MSIX 38 in `dist/windows-candidate/`. [Exact package receipt](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json). | Promoted after native overlapping portable and installed picker checks, MSIX 37-to-38 upgrade and sign-in, and all four [hosted jobs](https://github.com/hoozter/ottrin/actions/runs/42778247908). |
+| Windows | `b545bd2e` portable ZIP, NSIS and development MSIX 39 in `dist/windows-candidate/`. [Exact package receipt](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json). | Promoted after native List-density, overlapping picker and installed Theme Editor checks, MSIX 38-to-39 upgrade and sign-in, and all four [hosted jobs](https://github.com/hoozter/ottrin/actions/runs/42790815680). |
 
 The [ordered work](#current-ordered-work) tracks the remaining software
 and package acceptance. The [owner and external waiting list](#ownerexternal-waiting-list)
 records what depends on input, signing, devices or personal acceptance.
 
 Run the remaining release checks as a single candidate pass per platform.
-Linux List-density delivery is complete. Finish Windows development
-MSIX 39 upgrade acceptance before promoting the Windows candidate.
-Keep one package identity per platform across the main daily-use
+Both platforms now have the same source revision. Start with the
+main daily-use workflows and the outstanding installed theme property
+checks. Keep one package identity per platform across the main daily-use
 workflows in the [release checklist](RELEASE_CHECKLIST.md). Rebuild a
 candidate when a product fix changes the artifact, and rerun the checks
 that the change affects. Keep separate evidence for the held MSI and the
@@ -35,17 +35,19 @@ checksum after promotion. The running index kept its process, ready
 state and database identity. The consumed stage and superseded Linux
 packages were removed. [Promotion receipt](../.hermes/evidence/linux-picker-density-delivery/PROMOTION.json).
 
-The staged Windows `b545bd2e` ZIP and NSIS installer passed the same
+The delivered Windows `b545bd2e` ZIP and NSIS installer passed the same
 26-to-37-pixel List-density change and exact file selection in an
 ordinary-user Windows guest. The picker remembered the last folder and
 preserved independent view preferences across overlapping windows.
 The installed Theme Editor passed preview-menu dismissal and pointer
 Cancel in Dark and Light, preserving the saved theme. Uninstall and
-owned VM teardown passed. Development MSIX 39 assembly and upgrade
-are separate gates before promotion of the Windows set.
+owned VM teardown passed. Development MSIX 39 passed native assembly,
+the 38-to-39 upgrade, sign-in index startup, Explorer background,
+multiple-folder and drive actions, and removal. All three stable
+checksums passed after promotion. [Windows delivery receipt](../.hermes/evidence/windows-picker-density-candidate/WINDOWS_DELIVERY.json).
 
 Windows portable and NSIS builds enable administrator Copy. The installed
-Copy and Undo lifecycle was verified on `49748824`. The current `f62ec5e4`
+Copy and Undo lifecycle was verified on `49748824`. The current `b545bd2e`
 package receipt carries that earlier acceptance separately from its own
 picker and upgrade checks. The development MSIX leaves administrator Copy
 unavailable in normal single-user deployment and preserves the existing
@@ -2372,7 +2374,8 @@ Current source, test, package and owner/external scopes stay separate.
    rows use the same height calculation. A rendered regression
    checks the density change at the minimum picker size with 135%
    theme text, keeps Cancel visible and selects the intended file
-   by pointer at the larger density. Package refresh remains open.
+   by pointer at the larger density. The exact Linux AppImage and Windows
+   ZIP and NSIS passed the native density check and were promoted.
 
    Linux folder setup `b9543fe9` keeps interrupted launcher replacements
    repairable while refusing edits outside the recorded versions. Eight
