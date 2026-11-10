@@ -297,7 +297,7 @@ impl OttrinApp {
             ui.scope_builder(UiBuilder::new().max_rect(inspector_rect), |ui| {
                 ui.set_width(inspector_rect.width());
                 let mut region = self.theme_editor.selected_region;
-                egui::ComboBox::from_id_salt("appearance_component").width(inspector_rect.width())
+                let component_selector = egui::ComboBox::from_id_salt("appearance_component").width(inspector_rect.width())
                     .selected_text(Self::theme_preview_region_label(region)).show_ui(ui, |ui| {
                         ui.selectable_value(&mut region, ThemePreviewRegion::Defaults, "Theme defaults");
                         ui.separator();
@@ -305,6 +305,7 @@ impl OttrinApp {
                             ui.selectable_value(&mut region, component, Self::theme_preview_region_label(component));
                         }
                     }).response.on_hover_text(Self::theme_preview_region_hint(region));
+                name_control(&component_selector, "Theme component");
                 if region != self.theme_editor.selected_region {
                     match region {
                         ThemePreviewRegion::Inspector => self.theme_editor.preview_inspector = true,
@@ -1869,6 +1870,7 @@ mod tests {
             app.switch_theme_editor_variant(mode, &ctx);
             app.theme_editor.selected_region = ThemePreviewRegion::Navigation;
             let output = render(&mut app, &ctx, vec![]);
+            node_id(&output, Role::ComboBox, "Theme component", Action::Click);
             let fields = super::super::tests::rendered_text_fields(&output);
             assert!(
                 fields.contains(&("Theme name".into(), app.theme_editor.save_as_name.clone())),
