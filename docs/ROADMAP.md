@@ -76,6 +76,14 @@ account, profile and fixture were removed, and the retained VM is off
 with its definition unchanged.
 [Windows desktop receipt](../.hermes/evidence/windows-b545bd2e-desktop/ACCEPTANCE.json).
 
+The same Windows ZIP passed cross-volume Move Replace and Keep Both
+after reuse of the source name. Both files had the expected bytes on
+the separate NTFS volume. The completed journals and displaced
+original stayed unchanged. The disposable volume and account were
+removed, the guest's original disk inventory was restored, and the
+retained VM is off with its definition unchanged.
+[Cross-volume Move receipt](../.hermes/evidence/windows-b545bd2e-cross-volume/ACCEPTANCE.json).
+
 Windows portable and NSIS builds enable administrator Copy. The installed
 Copy and Undo lifecycle was verified on `49748824`. The current `b545bd2e`
 package receipt carries that earlier acceptance separately from its own
