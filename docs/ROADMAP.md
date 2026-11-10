@@ -413,10 +413,16 @@ and [first-run timeout](../.hermes/evidence/windows-picker-keyboard-current/nati
    normally. The original and unrelated destination marker survived,
    and cleanup removed transaction-owned destination data. The
    private VM and borrowed-executable staging were removed.
-   Promotion still requires the hosted matrix and current MSIX
-   verification. Continue the single-user MSIX investigation separately.
+   Windows MakeAppx assembled development MSIX 35 from the same
+   source. Independent unpacking verified all 59 files. Its daemon
+   passed watcher mutations and restart and averaged 0.21% of one
+   core during the 30-second idle sample. The assembly guest, disks,
+   source clone and archive were removed. Promotion still requires
+   the hosted matrix and native MSIX upgrade and capability checks.
+   Continue the single-user MSIX investigation separately.
    [Desktop Copy package contents](../.hermes/evidence/windows-admin-copy-desktop-current/HOST_PAYLOAD.json).
    [Installed desktop Copy lifecycle](../.hermes/evidence/windows-admin-copy-desktop-current/INSTALLED_ACCEPTANCE.json).
+   [Native MSIX 35 assembly](../.hermes/evidence/windows-admin-copy-desktop-current/ASSEMBLY_ACCEPTANCE.json).
    [Hosted checks](https://github.com/hoozter/ottrin/actions/runs/42742694725).
    [MSIX helper startup sample](../.hermes/evidence/windows-admin-copy-delivery-current/MSIX_HELPER_STARTUP_FINDING.json).
    [Loader image and symbol](../.hermes/evidence/windows-admin-copy-delivery-current/WINDOWS_LOADER_IMAGE.json).
