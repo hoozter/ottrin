@@ -1,0 +1,43 @@
+{
+  "status": "reproduced MSIX 33 administrator helper failure; identified native DLL initialization status",
+  "package": "ff98d685a6113ba1177c938fb7ce51f95e21c23a15e9b457dc9f91d258e354da",
+  "source_revision": "c4c2f4beb0a859cadae68423bfaad2e56996a4e6",
+  "helper_sha256": "ff95a2405883a1c3b6e480a0a68ceb2066a8183db15ff787f707f132e10c8f74",
+  "ntdll_backing_file": {
+    "path": "C:\\WINDOWS\\SYSTEM32\\ntdll.dll",
+    "sha256": "b9775b65c47564c2571fb9175e07ec14ce2a771613230afb2c284a0501a369a7",
+    "mapped_size": 2514944
+  },
+  "sample_count": 8,
+  "error_report": {
+    "routine": "ZwRaiseHardError",
+    "instruction_rva": "0x163214",
+    "status": "0xC0000145",
+    "name": "STATUS_APP_INIT_FAILURE"
+  },
+  "loader_call": {
+    "routine": "LdrpInitializationFailure",
+    "return_rva": "0xAE264",
+    "parameter": "0xC0000142",
+    "saved_register": "0xC0000142",
+    "name": "STATUS_DLL_INIT_FAILED"
+  },
+  "method": "Verified the backing DLL hash, symbolized the loader return address and inspected the matching binary. The call passes the saved loader status as one stack-backed parameter. Its saved register and stack value agree across eight observations of the same helper.",
+  "scope": "The failed DLL and its initialization condition remain unidentified. This is diagnostic evidence, with no administrator Copy acceptance under MSIX.",
+  "disk": {
+    "source_sha256": "3fc5d485b7cbea0501dd61db76c43ff6dadea69e25a93ff970da52a3ec597073",
+    "source_present": true,
+    "target_present": false
+  },
+  "cleanup": {
+    "domain": "ottrin-init-helper-pipe-qa",
+    "uuid": "a24491b0-bdce-47a0-b09e-99c22cf21437",
+    "volume": "ottrin-init-helper-pipe-qa.qcow2",
+    "status": "pass",
+    "domain_removed": true,
+    "overlay_removed": true,
+    "protected_definitions_states_and_backing_unchanged": true,
+    "compiler_executables_restored_by_hash": 25,
+    "temporary_archive_and_restore_manifest_removed": true
+  }
+}
