@@ -51,9 +51,20 @@ passed 27 private desktop checks. The run covered navigation, List
 and Grid, search actions, tabs, Tandem View, Inspector formats, and
 actual Copy, Rename, Trash and permanent deletion of disposable files.
 File bytes and process health passed verification. Both profiles and the
-portable extraction were removed. DEB/RPM installation, cross-volume
-workflows and personal acceptance have separate gates.
+portable extraction were removed. Cross-volume workflows and
+personal acceptance have separate gates.
 [Linux desktop receipt](../.hermes/evidence/release-audit-current/LINUX_B545BD2E_DESKTOP_WORKFLOWS.json).
+
+The exact delivered DEB and RPM passed native installation and removal
+in fresh Ubuntu and Fedora guests. Each passed 12 user systemd state
+checks, including first startup with a seven-second delay. Removing the
+package with the native index running stopped the process, removed its
+unit, and preserved the fixture and preferences. Installed binaries
+matched the corresponding package bytes. The Ubuntu run used HTTPS
+after the HTTP dependency download timed out. The guests, disks, seeds,
+test keys and result archives were removed. Signed repository updates
+and native installed GUI acceptance retain separate scopes.
+[Native package receipt](../.hermes/evidence/linux-b545bd2e-native/ACCEPTANCE.json).
 
 The exact delivered Windows ZIP passed same-volume Move Replace and
 Keep Both after reuse of the source name. Both destination files
