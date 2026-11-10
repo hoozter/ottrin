@@ -1598,13 +1598,12 @@ impl PickerApp {
     pub fn new(
         cc: &eframe::CreationContext<'_>,
         request: PickerRequest,
-        runtime: ottrin_core::GraphicsRuntimeStatus,
+        config: AppConfig,
         outcome: Arc<std::sync::Mutex<Option<PickerResponse>>>,
         caller_cancelled: Arc<AtomicBool>,
     ) -> Result<Self, String> {
         crate::install_application_fonts(&cc.egui_ctx);
         egui_extras::install_image_loaders(&cc.egui_ctx);
-        let config = crate::load_config()?;
         let colors = Colors::for_config(&config, cc.egui_ctx.system_theme());
         crate::theme_colors::apply_to_context(&cc.egui_ctx, &colors);
         let parent = crate::picker_parent::PickerParent::attach(cc, &request.parent_window)?;
@@ -1622,7 +1621,7 @@ impl PickerApp {
             config,
             colors,
             appearance: crate::system_appearance::SystemAppearance::start(cc.egui_ctx.clone()),
-            is_windows: runtime.is_windows,
+            is_windows: cfg!(target_os = "windows"),
             outcome,
         })
     }

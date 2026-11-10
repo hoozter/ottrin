@@ -893,7 +893,7 @@ fn run_picker_gui(
                     ctx.request_repaint()
                 })?;
             }
-            let app = ottrin_ui::PickerApp::new(cc, request, runtime, outcome, cancelled)?;
+            let app = ottrin_ui::PickerApp::new(cc, request, config, outcome, cancelled)?;
             if let Some(trace) = trace {
                 trace.record("picker_ready");
                 let first_pass = std::sync::atomic::AtomicBool::new(true);

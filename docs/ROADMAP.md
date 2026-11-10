@@ -600,7 +600,7 @@ and [first-run timeout](../.hermes/evidence/windows-picker-keyboard-current/nati
    read-only MSIX comparison confirmed transacted opens fail under package
    identity. Verify supported folder actions, picker behavior, and remaining theme
    controls in the installed candidate. The current MSIX exposes Explorer
-   commands and reports the default-folder limitation. Current MSIX 36
+   commands and reports the default-folder limitation. Current MSIX 37
    verified Explorer background, multiple-folder and drive actions, and
    preserved the default registration. The current portable ZIP passed
    keyboard picker navigation and the reported Dark and Light theme edits.
@@ -2289,6 +2289,12 @@ Current source, test, package and owner/external scopes stay separate.
    [MSIX 37 assembly](../.hermes/evidence/windows-deferred-mesa-delivery/ASSEMBLY_ACCEPTANCE.json),
    [native MSIX upgrade](../.hermes/evidence/windows-deferred-mesa-delivery/runtime37-upgrade/ACCEPTANCE.json)
    and [Windows package delivery](../.hermes/evidence/windows-deferred-mesa-delivery/WINDOWS_DELIVERY.json).
+
+   The standalone picker now uses one settings snapshot for renderer
+   selection and theme construction. Previously it read the same
+   settings file again after renderer setup, so a concurrent settings
+   save could mix revisions within the same picker launch. This source
+   change is pending package refresh.
 
    Linux folder setup `b9543fe9` keeps interrupted launcher replacements
    repairable while refusing edits outside the recorded versions. Eight
