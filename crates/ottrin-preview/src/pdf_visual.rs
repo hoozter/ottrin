@@ -1,9 +1,19 @@
 use pdfium_render::prelude::*;
 use std::io::Cursor;
 use std::path::{Path, PathBuf};
+use std::sync::{Mutex, MutexGuard};
 
 const PDFIUM_DIR_ENV: &str = "OTTRIN_PDFIUM_DIR";
 const MAX_PDF_VISUAL_BYTES: u64 = 128 * 1024 * 1024;
+// PDFium uses process-global state. Serialize initialization and the full
+// lifetime of each native document across the preview and thumbnail workers.
+static PDFIUM_ACCESS: Mutex<()> = Mutex::new(());
+
+fn lock_pdfium() -> MutexGuard<'static, ()> {
+    PDFIUM_ACCESS
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner())
+}
 
 #[derive(Debug, thiserror::Error)]
 pub enum PdfVisualError {
@@ -101,11 +111,15 @@ pub fn render_pdf_page_png_with_library(
             limit: MAX_PDF_VISUAL_BYTES,
         });
     }
-    let pdfium = bind_pdfium(library)?;
-    let document = pdfium
-        .load_pdf_from_file(path, None)
-        .map_err(|error| PdfVisualError::DocumentLoad(error.to_string()))?;
-    render_pdf_document_page(document, page_index, target_dim)
+    let image = {
+        let _access = lock_pdfium();
+        let pdfium = bind_pdfium(library)?;
+        let document = pdfium
+            .load_pdf_from_file(path, None)
+            .map_err(|error| PdfVisualError::DocumentLoad(error.to_string()))?;
+        render_pdf_document_page(document, page_index, target_dim)?
+    };
+    encode_png(image)
 }
 
 pub fn render_pdf_bytes_page_png_with_library(
@@ -120,11 +134,15 @@ pub fn render_pdf_bytes_page_png_with_library(
             limit: MAX_PDF_VISUAL_BYTES,
         });
     }
-    let pdfium = bind_pdfium(library)?;
-    let document = pdfium
-        .load_pdf_from_byte_slice(bytes, None)
-        .map_err(|error| PdfVisualError::DocumentLoad(error.to_string()))?;
-    render_pdf_document_page(document, page_index, target_dim)
+    let image = {
+        let _access = lock_pdfium();
+        let pdfium = bind_pdfium(library)?;
+        let document = pdfium
+            .load_pdf_from_byte_slice(bytes, None)
+            .map_err(|error| PdfVisualError::DocumentLoad(error.to_string()))?;
+        render_pdf_document_page(document, page_index, target_dim)?
+    };
+    encode_png(image)
 }
 
 fn bind_pdfium(library: &Path) -> Result<Pdfium, PdfVisualError> {
@@ -142,7 +160,7 @@ fn render_pdf_document_page(
     document: PdfDocument<'_>,
     page_index: usize,
     target_dim: u32,
-) -> Result<Vec<u8>, PdfVisualError> {
+) -> Result<image::DynamicImage, PdfVisualError> {
     let target_dim = target_dim.clamp(64, 2_048) as i32;
     let pages = document.pages();
     let page_count = pages.len() as usize;
@@ -155,15 +173,17 @@ fn render_pdf_document_page(
             requested: page_index,
             page_count,
         })?;
-    let image = page
-        .render_with_config(
-            &PdfRenderConfig::new()
-                .set_target_width(target_dim)
-                .set_maximum_height(target_dim),
-        )
-        .map_err(|error| PdfVisualError::Render(error.to_string()))?
-        .as_image()
-        .map_err(|error| PdfVisualError::Render(error.to_string()))?;
+    page.render_with_config(
+        &PdfRenderConfig::new()
+            .set_target_width(target_dim)
+            .set_maximum_height(target_dim),
+    )
+    .map_err(|error| PdfVisualError::Render(error.to_string()))?
+    .as_image()
+    .map_err(|error| PdfVisualError::Render(error.to_string()))
+}
+
+fn encode_png(image: image::DynamicImage) -> Result<Vec<u8>, PdfVisualError> {
     let mut bytes = Vec::new();
     image
         .write_to(&mut Cursor::new(&mut bytes), image::ImageFormat::Png)

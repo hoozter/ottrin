@@ -146,8 +146,25 @@ The staged Windows `d7726c9b` installer passed UI Automation
 activation and selection readback for Theme component in both
 palettes. Button corners accepted 14 px and restored its initial
 value. Cancel, picker regressions, uninstall and teardown passed.
-Development MSIX 40 assembly and upgrade retain separate gates.
 [Windows theme selector receipt](../.hermes/evidence/windows-theme-component-candidate/ACCEPTANCE.json).
+Development MSIX 40 also passed the native 39-to-40 upgrade, index
+startup at sign-in, Explorer commands, and removal. The owned VM and
+volumes were removed, and temporarily relocated build files were
+restored and verified by hash.
+[MSIX acceptance](../.hermes/evidence/windows-theme-component-candidate/runtime40-upgrade/ACCEPTANCE.json).
+
+The full desktop pass on the staged `d7726c9b` AppImage reached Quick
+Inspector, then Ottrin exited with SIGSEGV while opening the first PDF
+after an image. The system crash report places the fault in the bundled
+PDFium library. Keep the staged build out of the stable paths while
+the corrected candidate is built and rerun the desktop pass with PDF
+previews enabled.
+[Desktop failure](../.hermes/evidence/release-audit-current/linux-d7726c9b-appimage/workflow-failure.json).
+An eight-worker test using the staged PDFium library also terminated
+inside the native runtime before the fix. Serializing PDFium initialization,
+rendering and document teardown passed the same test and the other six PDF
+checks. PNG encoding remains outside the lock. Packaged desktop acceptance
+of the fix is pending.
 
 Windows portable and NSIS builds enable administrator Copy. The installed
 Copy and Undo lifecycle was verified on `49748824`. The current `b545bd2e`

@@ -1,6 +1,6 @@
 use ottrin_preview::{
-    PdfVisualError, render_pdf_first_page_png, render_pdf_first_page_png_with_library,
-    render_pdf_page_png_with_library,
+    PdfVisualError, render_pdf_bytes_page_png_with_library, render_pdf_first_page_png,
+    render_pdf_first_page_png_with_library, render_pdf_page_png_with_library,
 };
 use std::path::Path;
 use std::sync::{LazyLock, Mutex, MutexGuard};
@@ -93,6 +93,29 @@ fn packaged_runtime_renders_more_than_one_pdf_per_process() {
 
     let _ = std::fs::remove_file(first);
     let _ = std::fs::remove_file(second);
+}
+
+#[test]
+#[ignore = "requires the pinned packaged PDFium runtime"]
+fn packaged_runtime_renders_concurrent_previews() {
+    let _guard = packaged_pdfium_test_lock();
+    let library = packaged_pdfium_library().expect("packaged PDFium runtime");
+    let pdf = two_page_pdf_fixture();
+    let start = std::sync::Barrier::new(8);
+
+    std::thread::scope(|scope| {
+        for worker in 0..8 {
+            let (start, pdf, library) = (&start, &pdf, &library);
+            scope.spawn(move || {
+                start.wait();
+                for _ in 0..8 {
+                    let png = render_pdf_bytes_page_png_with_library(pdf, worker % 2, 256, library)
+                        .expect("render concurrent preview");
+                    assert!(png.starts_with(b"\x89PNG\r\n\x1a\n"));
+                }
+            });
+        }
+    });
 }
 
 #[test]
