@@ -15,6 +15,24 @@ The [ordered work](#current-ordered-work) tracks the remaining software
 and package acceptance. The [owner and external waiting list](#ownerexternal-waiting-list)
 records what depends on input, signing, devices or personal acceptance.
 
+Run the remaining release checks as a single candidate pass per platform.
+First finish the staged Linux List-density delivery. On Windows, include
+the density fix in the next candidate with installed theme and desktop
+checks. Keep one package identity per platform across the main daily-use
+workflows in the [release checklist](RELEASE_CHECKLIST.md). Rebuild a
+candidate when a product fix changes the artifact, and rerun the checks
+that the change affects. Keep separate evidence for the held MSI and the
+owner and external waits.
+
+The staged Linux `b545bd2e` AppImage passed native List-density and
+pointer selection on a private X11 desktop. At saved scales 0.90 and
+1.35, row pitch measured 26 and 37 pixels, respectively. The previous
+`f62ec5e4` image measured 28 pixels at both scales. Both builds opened
+the exact selected file at both scales. The new image also passed
+replacement while a window from the old image stayed open. All four
+staged formats passed content inspection. The stable package receipt
+records publication after the [exact-source hosted checks](https://github.com/hoozter/ottrin/actions/runs/42790815680).
+
 Windows portable and NSIS builds enable administrator Copy. The installed
 Copy and Undo lifecycle was verified on `49748824`. The current `f62ec5e4`
 package receipt carries that earlier acceptance separately from its own
