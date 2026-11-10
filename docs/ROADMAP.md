@@ -8,7 +8,7 @@ not complete a broader native, platform or user-acceptance requirement.
 
 | Platform | Launchable locally | Next delivery |
 | --- | --- | --- |
-| Linux | `f62ec5e4` AppImage, portable archive, DEB and RPM in `dist/packages/`. [Exact package receipt](../dist/packages/LINUX_PACKAGES_ACCEPTANCE.json). | Promoted after mounted overlapping picker checks, private AppImage replacement and all four [hosted jobs](https://github.com/hoozter/ottrin/actions/runs/42778247908). |
+| Linux | `b545bd2e` AppImage, portable archive, DEB and RPM in `dist/packages/`. [Exact package receipt](../dist/packages/LINUX_PACKAGES_ACCEPTANCE.json). | Promoted after mounted List-density and pointer checks, private AppImage replacement and all four [hosted jobs](https://github.com/hoozter/ottrin/actions/runs/42790815680). |
 | Windows | `f62ec5e4` portable ZIP, NSIS and development MSIX 38 in `dist/windows-candidate/`. [Exact package receipt](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json). | Promoted after native overlapping portable and installed picker checks, MSIX 37-to-38 upgrade and sign-in, and all four [hosted jobs](https://github.com/hoozter/ottrin/actions/runs/42778247908). |
 
 The [ordered work](#current-ordered-work) tracks the remaining software
@@ -16,22 +16,24 @@ and package acceptance. The [owner and external waiting list](#ownerexternal-wai
 records what depends on input, signing, devices or personal acceptance.
 
 Run the remaining release checks as a single candidate pass per platform.
-First finish the staged Linux List-density delivery. On Windows, include
-the density fix in the next candidate with installed theme and desktop
-checks. Keep one package identity per platform across the main daily-use
+Linux List-density delivery is complete. Finish Windows development
+MSIX 39 upgrade acceptance before promoting the Windows candidate.
+Keep one package identity per platform across the main daily-use
 workflows in the [release checklist](RELEASE_CHECKLIST.md). Rebuild a
 candidate when a product fix changes the artifact, and rerun the checks
 that the change affects. Keep separate evidence for the held MSI and the
 owner and external waits.
 
-The staged Linux `b545bd2e` AppImage passed native List-density and
+The delivered Linux `b545bd2e` AppImage passed native List-density and
 pointer selection on a private X11 desktop. At saved scales 0.90 and
 1.35, row pitch measured 26 and 37 pixels, respectively. The previous
 `f62ec5e4` image measured 28 pixels at both scales. Both builds opened
 the exact selected file at both scales. The new image also passed
 replacement while a window from the old image stayed open. All four
-staged formats passed content inspection. The stable package receipt
-records publication after the [exact-source hosted checks](https://github.com/hoozter/ottrin/actions/runs/42790815680).
+formats passed content inspection and their stable paths verified by
+checksum after promotion. The running index kept its process, ready
+state and database identity. The consumed stage and superseded Linux
+packages were removed. [Promotion receipt](../.hermes/evidence/linux-picker-density-delivery/PROMOTION.json).
 
 The staged Windows `b545bd2e` ZIP and NSIS installer passed the same
 26-to-37-pixel List-density change and exact file selection in an
