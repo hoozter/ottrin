@@ -1,0 +1,49 @@
+{
+  "status": "pass scoped Linux picker location delivery",
+  "source_revision": "eadf713e853ababd803fe37e6f2ea2462c60a619",
+  "artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "f5071107380c01188f8e24b450d4fd34e495fa5fb6f6a458b970950b01858ed4",
+    "Ottrin-0.1.0-x86_64.AppImage": "a0dc4e8c4de29f3d760f7f5af09030fbf1ec7c29bdea2d86fa2c8edb33d54c12",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "d905dc4544df164c46dced4cd6614b4c03d3bd48a42b2dbe29afb249579705f5",
+    "ottrin_0.1.0_amd64.deb": "48de090eca591666c1236b476b85959aa1a33c81f25c32268caa029a6875cb06"
+  },
+  "evidence": ".hermes/evidence/picker-edit-location-current",
+  "checks": [
+    "production portable/AppImage runtime closure and playback checks",
+    "production native payload, dependencies, policy, hooks and code identity blocks",
+    "exact bundled-font notice in all four formats",
+    "seven matching portable/AppImage runtime payloads including the HTML helper",
+    "exact current documentation and clean source notes",
+    "actual AppImage and RPM index daemon namespace/ownership refusal checks"
+  ],
+  "runtime_sha256": {
+    "application": "e97b38c7365eef84333abfb06993d25dac8a24ed6729e9a78b69f14f25802d14",
+    "index_daemon": "c9a831be475532b338c2ded7a637c830f6d78ee23d261cb7082125ad19a90c31",
+    "privileged_helper": "f123b93368d7919067bdcfe6f295c079fc1d000c38fdb2f3f493c465bd0f932f",
+    "html_renderer": "f6a4ebe343c58ad3f06398c81574aa44d2b1afcfd7486e9e180c9368efefcbed"
+  },
+  "hosted_source": {
+    "run": 42750682313,
+    "tested_source_revision": "eadf713e853ababd803fe37e6f2ea2462c60a619",
+    "all_four_jobs_success": true
+  },
+  "source_scope": ".hermes/evidence/picker-edit-location-current/BUILD_SOURCE.json",
+  "mounted_picker_location": [
+    ".hermes/evidence/picker-edit-location-current/linux-dark/ACCEPTANCE.json",
+    ".hermes/evidence/picker-edit-location-current/linux-light/ACCEPTANCE.json"
+  ],
+  "daemon_runtime": ".hermes/evidence/picker-edit-location-current/LINUX_DAEMON_RUNTIME.json",
+  "current_helper_read_only": [
+    ".hermes/evidence/picker-edit-location-current/LINUX_HELPER_RUNTIME.json"
+  ],
+  "previous_cohort": {
+    "source_revision": "19b156e249256b8b70e6ce4cdf6b06f531ace1d4",
+    "receipt": ".hermes/evidence/picker-edit-location-current/PREVIOUS_LINUX_PACKAGES_ACCEPTANCE.json"
+  },
+  "limits": [
+    "Mounted Dark and Light X11 at 150% verified physical Edit location and exact folder response. Main preferences and file bytes were preserved.",
+    "The private mounted old-to-new daemon transition preserved database identity and passed watcher, restart and idle checks. The privileged helper and HTML renderer match the previous binaries by hash.",
+    "Bundled administrator helper passed read-only protocol checks. Updating the installed system helper requires its own administrator action.",
+    "Packaged manuals are build-time snapshots at eadf713e; repository metadata records later delivery."
+  ]
+}

@@ -8,7 +8,7 @@ not complete a broader native, platform or user-acceptance requirement.
 
 | Platform | Launchable locally | Next delivery |
 | --- | --- | --- |
-| Linux | `eadf713e` AppImage, portable archive, DEB and RPM in `dist/packages/`. [Exact package receipt](../dist/packages/LINUX_PACKAGES_ACCEPTANCE.json). | Promoted after mounted Dark and Light picker checks, an old-to-new index transition and all four [hosted jobs](https://github.com/hoozter/ottrin/actions/runs/42750682313). |
+| Linux | `f62ec5e4` AppImage, portable archive, DEB and RPM in `dist/packages/`. [Exact package receipt](../dist/packages/LINUX_PACKAGES_ACCEPTANCE.json). | Promoted after mounted overlapping picker checks, private AppImage replacement and all four [hosted jobs](https://github.com/hoozter/ottrin/actions/runs/42778247908). |
 | Windows | `68b145fd` portable ZIP, NSIS and development MSIX 37 in `dist/windows-candidate/`. [Exact package receipt](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json). | Promoted after native WGPU and OpenGL picker checks in the ZIP and installed EXE, MSIX 36-to-37 upgrade and sign-in, and all four [hosted jobs](https://github.com/hoozter/ottrin/actions/runs/42771072382). |
 
 The [ordered work](#current-ordered-work) tracks the remaining software
@@ -2299,16 +2299,18 @@ Current source, test, package and owner/external scopes stay separate.
    serialized across internal and standalone pickers, so closing an
    older dialog no longer restores stale grid, hidden-file or preview
    options. The last closed dialog still supplies the remembered folder.
-   The `f62ec5e4` Linux AppImage, portable archive, DEB and RPM are
-   staged and passed content verification. Three mounted AppImage
+   The `f62ec5e4` Linux AppImage, portable archive, DEB and RPM
+   passed content verification and are delivered. Three mounted AppImage
    picker processes preserved independent grid and hidden-file changes
    when the untouched picker closed last. Atomic replacement preserved
    the open window in the private fixture and its next launch used the
    new binary. The staged daemon, privileged helper and HTML renderer
-   match the delivered binaries by hash. Promotion preflight passed
-   without mutating the running service. Hosted Windows verification
-   remains pending.
+   match the preceding binaries by hash. All four hosted checks passed.
+   Promotion preserved the open AppImage holder and the running Ready
+   index, including its database identity, preferences and startup setting.
+   The Linux staging and superseded packages were removed.
    [Mounted picker preference check](../.hermes/evidence/linux-picker-preferences-delivery/mounted-overlap/ACCEPTANCE.json).
+   [Linux package delivery](../.hermes/evidence/linux-picker-preferences-delivery/PROMOTION.json).
    The matching Windows ZIP and NSIS from `f62ec5e4` are also staged.
    The archives match across 59 payload files and pass the deferred
    OpenGL loader check. Native overlapping picker acceptance, MSIX
