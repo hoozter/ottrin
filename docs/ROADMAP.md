@@ -352,7 +352,13 @@ and [first-run timeout](../.hermes/evidence/windows-picker-keyboard-current/nati
    reported that the helper did not connect. The destination stayed
    empty of the proposed publication and the source hash was preserved.
    The native EXE acceptance remains scoped to that installer. The
-   MSIX diagnostic checks the launched process and its pipe arguments.
+   MSIX diagnostic reproduced the failure and observed the exact bundled
+   helper under the expected administrator SID, with the correct caller
+   PID and pipe arguments. It was still alive after 35 seconds. The next
+   check is the helper's caller capture and pipe connection, before any
+   filesystem request. The diagnostic guest and overlay were removed and
+   the borrowed test executables restored by hash.
+   [MSIX helper launch observation](../.hermes/evidence/windows-admin-copy-delivery-current/msix-copy-undo/HELPER_LAUNCH_OBSERVATION.json).
    [MSIX 33 assembly](../.hermes/evidence/windows-admin-copy-delivery-current/ASSEMBLY_ACCEPTANCE.json).
    [Fresh deployment](../.hermes/evidence/windows-admin-copy-delivery-current/runtime33-fresh/ACCEPTANCE.json),
    [enabled upgrade](../.hermes/evidence/windows-admin-copy-delivery-current/runtime33-upgrade/ACCEPTANCE.json)

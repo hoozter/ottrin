@@ -1,0 +1,9 @@
+{
+  "domain": "ottrin-init-helper-pipe-qa",
+  "uuid": "3f46584a-41ba-42b5-989c-d1b3ac1b7ebc",
+  "volume": "ottrin-init-helper-pipe-qa.qcow2",
+  "status": "pass",
+  "domain_removed": true,
+  "overlay_removed": true,
+  "protected_definitions_states_and_backing_unchanged": true
+}
