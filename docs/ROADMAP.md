@@ -92,6 +92,10 @@ same image passed a private AppImage replacement trial. These checks
 cover control behavior. Visual coverage of each property's consumers
 and installed Windows acceptance remain separate.
 [Theme control receipt](../.hermes/evidence/linux-theme-component-delivery/THEME_COMPONENT_ACCEPTANCE.json).
+The staged editor's real Cancel button also rounded when Button corners
+changed from 0 to 14 px and returned to its original shape after Restore.
+The fill and bounds stayed the same in both palettes.
+[Rendered button receipt](../.hermes/evidence/linux-theme-component-delivery/RENDERED_BUTTON_CORNERS.json).
 
 Windows portable and NSIS builds enable administrator Copy. The installed
 Copy and Undo lifecycle was verified on `49748824`. The current `b545bd2e`
