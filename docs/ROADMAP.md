@@ -2,14 +2,14 @@
 
 ## Current delivery and next work
 
-Updated 2026-11-09. This is the single active queue. Historical sections and
+Updated 2026-11-10. This is the single active queue. Historical sections and
 receipts keep their original artifact/source scope. Passing a focused test does
 not complete a broader native, platform or user-acceptance requirement.
 
 | Platform | Launchable locally | Next delivery |
 | --- | --- | --- |
-| Linux | `4d3f11a3` AppImage, portable archive, DEB and RPM in `dist/packages/`. [Exact package receipt](../dist/packages/LINUX_PACKAGES_ACCEPTANCE.json). | Promoted after mounted Dark and Light menu and Smart Panel checks, watcher and restart checks, and all four [hosted jobs](https://github.com/hoozter/ottrin/actions/runs/42687932598). |
-| Windows | `4d3f11a3` portable ZIP, NSIS and development MSIX 32 in `dist/windows-candidate/`. [Exact package receipt](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json). | Promoted after native MSIX deployment and upgrade, portable theme rendering and NSIS lifecycle checks. |
+| Linux | `19b156e2` AppImage, portable archive, DEB and RPM in `dist/packages/`. [Exact package receipt](../dist/packages/LINUX_PACKAGES_ACCEPTANCE.json). | Promoted after mounted Dark and Light More menu checks and all four [hosted jobs](https://github.com/hoozter/ottrin/actions/runs/42727014406). |
+| Windows | `19b156e2` portable ZIP, NSIS and development MSIX 34 in `dist/windows-candidate/`. [Exact package receipt](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json). | Promoted after native portable More menu checks, exact NSIS payload comparison, and MSIX 32-to-34 upgrade, sign-in and removal. |
 
 The [ordered work](#current-ordered-work) tracks the remaining software
 and package acceptance. The [owner and external waiting list](#ownerexternal-waiting-list)
@@ -1221,7 +1221,9 @@ Current source, test, package and owner/external scopes stay separate.
    passed package content checks. The exact mounted AppImage rendered
    all three icons and aligned labels in Dark and Light at 150%.
    Cancel preserved the saved preferences. Private profiles and
-   extraction were removed. Promotion waits for the hosted matrix.
+   extraction were removed. All four hosted jobs passed. The Linux
+   promotion preserved the sign-in setting, preferences and database
+   identity and confirmed the managed index was Ready.
    [Mounted More menu verification](../.hermes/evidence/theme-editor-more-menu-current/PACKAGED_MORE_MENU_ACCEPTANCE.json).
    The exact Windows portable candidate from the same source rendered
    the three icons and aligned labels in Dark and Light at 100%.
@@ -1237,11 +1239,15 @@ Current source, test, package and owner/external scopes stay separate.
    Explorer background, multiple-folder and drive actions passed.
    Removal cleared the package, processes, index tasks and COM
    registration. The runtime guest, volumes and disposable captures
-   were removed. The stable Windows packages remain on `4d3f11a3`
-   with development MSIX 32 pending the hosted matrix and promotion.
+   were removed. The Windows ZIP, NSIS and development MSIX 34 were
+   promoted after the hosted matrix passed. All seven Linux and Windows
+   artifact hashes passed at their stable paths. Both stages and the
+   superseded packages were removed.
    [Native Windows More menu verification](../.hermes/evidence/theme-editor-more-menu-current/WINDOWS_MORE_ACCEPTANCE.json).
    [Native MSIX 34 assembly](../.hermes/evidence/theme-editor-more-menu-current/ASSEMBLY_ACCEPTANCE.json).
    [Native MSIX 32-to-34 upgrade](../.hermes/evidence/theme-editor-more-menu-current/runtime34-upgrade/ACCEPTANCE.json).
+   [Linux promotion](../.hermes/evidence/theme-editor-more-menu-current/PROMOTION.json).
+   [Windows promotion](../.hermes/evidence/theme-editor-more-menu-current/WINDOWS_DELIVERY.json).
    Live navigation/menu/view/breadcrumb, tab/window-control and Miller presenters
    have bounded acceptance; List/Grid now has source and actual mounted Linux package checks described
    above, with original package acceptance at Linux source43. The stable

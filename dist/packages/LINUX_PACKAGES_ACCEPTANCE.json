@@ -1,13 +1,13 @@
 {
-  "status": "pass scoped Linux Smart Panel color and menu divider delivery",
-  "source_revision": "4d3f11a379df2d58424093a0bb13fbf42b2aa8b4",
+  "status": "pass scoped Linux theme editor More menu delivery",
+  "source_revision": "19b156e249256b8b70e6ce4cdf6b06f531ace1d4",
   "artifacts": {
-    "ottrin-0.1.0-1.x86_64.rpm": "871b2797e62e39229e12224847ef3f24a898ac7c7657143a802269da4e20d1b2",
-    "Ottrin-0.1.0-x86_64.AppImage": "b027f220f7d29e62de523acfe1259ed15fa8c683be399655612b3cff0a18a6d1",
-    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "5852a35c4eef6f956f1fc23c750377fbc3201b08284b3933854fe2359f5984cd",
-    "ottrin_0.1.0_amd64.deb": "70fa59900845db2d2d8a55334f25a4471671d946969d2e4a7f56c77d7b862fff"
+    "ottrin-0.1.0-1.x86_64.rpm": "d74ca8bdba5e5675cb4ad88ddb797667e95556518c56eac24470742c854a551e",
+    "Ottrin-0.1.0-x86_64.AppImage": "7942cacc4b378c8087b0cfe2253a6b14b8758fd4a37aa01577ef3dc5a45fb950",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "2f02dd3f73ff5307744e92a8eb1354e07b0ccce7911450863f30f81e53f8208e",
+    "ottrin_0.1.0_amd64.deb": "6e6aeb7d30f6b047231d7f080e4abf994dd825985222d5d046bf0c19899ee230"
   },
-  "evidence": ".hermes/evidence/view-options-alignment-current",
+  "evidence": ".hermes/evidence/theme-editor-more-menu-current",
   "checks": [
     "production portable/AppImage runtime closure and playback checks",
     "production native payload, dependencies, policy, hooks and code identity blocks",
@@ -17,33 +17,30 @@
     "actual AppImage and RPM index daemon namespace/ownership refusal checks"
   ],
   "runtime_sha256": {
-    "application": "033cdc44fc35978e01cd5cb2e0a7b3bc03b2dc2e57d6bbff04a4ffaa7249b362",
+    "application": "ed04653d2db372a05a1383040c9ae26dcd0e2020283e4df941f292becba437b9",
     "index_daemon": "f456fca656cb1c1dfe36832b4cf58beaefc0949d7bc065b6f673fe7afe613aaa",
     "privileged_helper": "f123b93368d7919067bdcfe6f295c079fc1d000c38fdb2f3f493c465bd0f932f",
     "html_renderer": "f6a4ebe343c58ad3f06398c81574aa44d2b1afcfd7486e9e180c9368efefcbed"
   },
   "hosted_source": {
-    "run": 42687932598,
-    "tested_source_revision": "f6d48ef73c0b3feb416a36f327ef2eecb97276cb",
+    "run": 42727014406,
+    "tested_source_revision": "19b156e249256b8b70e6ce4cdf6b06f531ace1d4",
     "all_four_jobs_success": true
   },
-  "source_scope": ".hermes/evidence/view-options-alignment-current/BUILD_SOURCE.json",
-  "mounted_smart_panel": ".hermes/evidence/view-options-alignment-current/PACKAGED_SMART_PANEL_ACCEPTANCE.json",
-  "mounted_menu_dividers": ".hermes/evidence/view-options-alignment-current/PACKAGED_MENU_ACCEPTANCE.json",
-  "mounted_file_manager": ".hermes/evidence/view-options-alignment-current/FILE_MANAGER_DBUS_ACCEPTANCE.json",
-  "mounted_picker_caller": ".hermes/evidence/view-options-alignment-current/picker-save/RESULT.json",
+  "source_scope": ".hermes/evidence/theme-editor-more-menu-current/BUILD_SOURCE.json",
+  "mounted_more_menu": ".hermes/evidence/theme-editor-more-menu-current/PACKAGED_MORE_MENU_ACCEPTANCE.json",
   "daemon_runtime": ".hermes/evidence/view-options-alignment-current/LINUX_DAEMON_RUNTIME.json",
   "current_helper_read_only": [
-    ".hermes/evidence/view-options-alignment-current/LINUX_HELPER_RUNTIME.json"
+    ".hermes/evidence/theme-editor-more-menu-current/LINUX_HELPER_RUNTIME.json"
   ],
   "previous_cohort": {
-    "source_revision": "b1bc72fe369fea5e0f3892701b67a26833a653cd",
-    "receipt": ".hermes/evidence/view-options-alignment-current/PREVIOUS_LINUX_PACKAGES_ACCEPTANCE.json"
+    "source_revision": "4d3f11a379df2d58424093a0bb13fbf42b2aa8b4",
+    "receipt": ".hermes/evidence/theme-editor-more-menu-current/PREVIOUS_LINUX_PACKAGES_ACCEPTANCE.json"
   },
   "limits": [
-    "Mounted Dark and Light X11 at 150% verified Smart Panel Search icon color and real main menu, View Options and preview dividers. Cancel preserved preferences.",
-    "Other portal, theme and native distro receipts retain their recorded package scopes.",
+    "Mounted Dark and Light X11 at 150% verified the three theme editor More menu icons and row alignment. Cancel preserved preferences.",
+    "The index daemon, privileged helper and HTML renderer match the previous delivered binaries by hash. Other portal, theme and distro receipts retain their recorded package scopes.",
     "Bundled administrator helper passed read-only protocol checks. Updating the installed system helper requires its own administrator action.",
-    "Packaged manuals are build-time snapshots at 4d3f11a3; repository metadata records later delivery."
+    "Packaged manuals are build-time snapshots at 19b156e2; repository metadata records later delivery."
   ]
 }

@@ -1,46 +1,51 @@
 {
-  "status": "pass scoped Windows theme, installer and desktop integration",
-  "source_commit": "4d3f11a379df2d58424093a0bb13fbf42b2aa8b4",
+  "status": "pass scoped Windows More menu, matching NSIS payload and MSIX upgrade",
+  "source_commit": "19b156e249256b8b70e6ce4cdf6b06f531ace1d4",
   "working_tree_at_build": "clean",
   "candidate": "/home/campbell/Projects/Ottrin/dist/windows-candidate",
   "artifacts": {
-    "Ottrin-0.1.0-windows-x64-setup.exe": "50c713d4ba37a61949e809e1d820a76a3e0ea4619c2c50c2902de959a586744f",
-    "Ottrin-0.1.0-windows-x64-portable.zip": "1759dce7320b0f5015e144db54880550044326a4c2687717fd7382e30b95c457",
-    "Ottrin-0.1.0-windows-x64-development.msix": "3a1a054485612fb0024059ddc3d1e3aa63614a38bd47558cff6832979850a186"
+    "Ottrin-0.1.0-windows-x64-setup.exe": "f8f84e9fb595edc928088fcdacb74d41e806d32bf44535436149bf8ec26afa5d",
+    "Ottrin-0.1.0-windows-x64-portable.zip": "2ec4860ff9aeda8b4940b84c6769faf923194ae6f3ec116de067c3b47f810496",
+    "Ottrin-0.1.0-windows-x64-development.msix": "ea596a157b52018203b76cfc3aa149a2f140a92280874620bd34f9c14bde62c2"
   },
   "payload_files": 59,
-  "evidence_directory": ".hermes/evidence/windows-menu-divider-delivery-current",
+  "evidence_directory": ".hermes/evidence/theme-editor-more-menu-current",
   "hosted_source": {
-    "run": 42687932598,
-    "tested_source_revision": "f6d48ef73c0b3feb416a36f327ef2eecb97276cb",
+    "run": 42727014406,
+    "tested_source_revision": "19b156e249256b8b70e6ce4cdf6b06f531ace1d4",
     "all_four_jobs_success": true
   },
-  "host_content": "HOST_PAYLOAD.json",
+  "host_content": "WINDOWS_HOST_PAYLOAD.json",
   "current_native_fields": ".hermes/evidence/windows-menu-divider-delivery-current/native-theme-retry/ACCEPTANCE.json",
-  "daemon_runtime": ".hermes/evidence/windows-menu-divider-delivery-current/WINDOWS_DAEMON_RUNTIME.json",
+  "daemon_runtime": ".hermes/evidence/theme-editor-more-menu-current/WINDOWS_DAEMON_RUNTIME.json",
   "native_msix": {
-    "current_assembly": ".hermes/evidence/windows-menu-divider-delivery-current/ASSEMBLY_ACCEPTANCE.json",
-    "current_runtime_login_removal": ".hermes/evidence/windows-menu-divider-delivery-current/runtime32-fresh/ACCEPTANCE.json",
-    "current_enabled_update": ".hermes/evidence/windows-menu-divider-delivery-current/runtime32-upgrade/ACCEPTANCE.json",
-    "current_disabled_update": ".hermes/evidence/windows-menu-divider-delivery-current/runtime32-disabled/ACCEPTANCE.json"
+    "current_assembly": ".hermes/evidence/theme-editor-more-menu-current/ASSEMBLY_ACCEPTANCE.json",
+    "current_enabled_update": ".hermes/evidence/theme-editor-more-menu-current/runtime34-upgrade/ACCEPTANCE.json"
   },
   "native_msi_rollback": {
     "status": "held: ordinary-user registration rollback/retry failed on exact8ede diagnostic; no current accepted MSI",
     "release_accepted": false,
     "diagnostic_input": ".hermes/evidence/windows-msi-package-control-current/input/DIAGNOSTIC_INPUT.json"
   },
-  "source_scope": ".hermes/evidence/windows-menu-divider-delivery-current/WINDOWS_DELIVERY.json",
+  "source_scope": ".hermes/evidence/theme-editor-more-menu-current/WINDOWS_DELIVERY.json",
   "public_release_published": false,
   "limits": [
     "Software Windows guest; physical GPU, Store, signing and human acceptance remain separate.",
-    "Windows menu divider and Smart Panel pixels were verified with the exact portable ZIP. Earlier installed theme, Save and default-folder receipts retain their original package scopes.",
+    "Earlier theme, Save, NSIS lifecycle and default-folder receipts retain their original package scopes.",
     "MSIX exposes Explorer folder actions and preserves the default folder app.",
-    "Administrator Copy remains disabled and ordinary MSI rollback remains held."
+    "Administrator Copy remains disabled in these artifacts. Ordinary MSI rollback remains held."
   ],
   "previous_native_upgrade": ".hermes/evidence/theme-editor-pointer-fix-current/nsis31-lifecycle-headroom/ACCEPTANCE.json",
   "native_default_capability": ".hermes/evidence/windows-picker-keyboard-current/native-default/ACCEPTANCE.json",
   "native_upgrade": ".hermes/evidence/windows-menu-divider-delivery-current/nsis32-completion/ACCEPTANCE.json",
   "native_borders": ".hermes/evidence/windows-shared-ui-current/BORDERS_ACCEPTANCE.json",
   "native_pointer_portable": ".hermes/evidence/theme-editor-pointer-fix-current/native-portable/GUEST_RESULT.json",
-  "previous_native_save_identity": ".hermes/evidence/windows-save-identity-delivery-current/INSTALLED_SAVE_IDENTITY.json"
+  "previous_native_save_identity": ".hermes/evidence/windows-save-identity-delivery-current/INSTALLED_SAVE_IDENTITY.json",
+  "native_more_menu": ".hermes/evidence/theme-editor-more-menu-current/WINDOWS_MORE_ACCEPTANCE.json",
+  "previous_native_msix": {
+    "current_assembly": ".hermes/evidence/windows-menu-divider-delivery-current/ASSEMBLY_ACCEPTANCE.json",
+    "current_runtime_login_removal": ".hermes/evidence/windows-menu-divider-delivery-current/runtime32-fresh/ACCEPTANCE.json",
+    "current_enabled_update": ".hermes/evidence/windows-menu-divider-delivery-current/runtime32-upgrade/ACCEPTANCE.json",
+    "current_disabled_update": ".hermes/evidence/windows-menu-divider-delivery-current/runtime32-disabled/ACCEPTANCE.json"
+  }
 }
