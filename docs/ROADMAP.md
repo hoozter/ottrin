@@ -2163,12 +2163,16 @@ Current source, test, package and owner/external scopes stay separate.
    on Edit location in Dark and Light and returned the exact typed
    UTF-16 folder. No index started. The chooser preserved preferences
    and fixture files. The guest, its disks, the private desktop and
-   portable extraction were removed. Windows promotion awaits MSIX
-   verification and the hosted matrix.
+   portable extraction were removed. Native MakeAppx assembled
+   development MSIX 36 and all 59 payload files matched. The
+   assembly guest, disks, source clone and archive were removed.
+   Windows promotion awaits native MSIX upgrade, sign-in and
+   removal verification and the hosted matrix.
    [Mounted Dark picker](../.hermes/evidence/picker-edit-location-current/linux-dark/ACCEPTANCE.json).
    [Mounted Light picker](../.hermes/evidence/picker-edit-location-current/linux-light/ACCEPTANCE.json).
    [Mounted daemon transition](../.hermes/evidence/picker-edit-location-current/LINUX_DAEMON_RUNTIME.json).
    [Native Windows picker](../.hermes/evidence/picker-edit-location-current/WINDOWS_PICKER_ACCEPTANCE.json).
+   [Native MSIX 36 assembly](../.hermes/evidence/picker-edit-location-current/ASSEMBLY_ACCEPTANCE.json).
 
    Linux folder setup `b9543fe9` keeps interrupted launcher replacements
    repairable while refusing edits outside the recorded versions. Eight
