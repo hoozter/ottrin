@@ -120,6 +120,12 @@ and Content background independently in Dark and Light. The active
 tab matched the production toolbar/title blend and stayed unchanged
 when the canvas color changed. Restore and Cancel passed.
 [Chrome color receipt](../.hermes/evidence/linux-theme-component-delivery/RENDERED_CHROME_COLORS.json).
+The mounted editor also verified the panel, raised input, Locations
+rail, Status bar, and collapsed Smart Panel colors in both palettes.
+The collapsed strip follows its production blend of Smart Panel and
+raised surface colors. The other sampled surfaces retained their own
+colors. Restore and Cancel passed.
+[Shared surface color receipt](../.hermes/evidence/linux-theme-component-delivery/RENDERED_SHARED_SURFACE_COLORS.json).
 
 The staged Windows `d7726c9b` installer passed UI Automation
 activation and selection readback for Theme component in both
