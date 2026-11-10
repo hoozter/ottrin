@@ -2220,8 +2220,17 @@ Current source, test, package and owner/external scopes stay separate.
    executable for index setup. The fixture stopped the index before the
    picker test and verified all four cancellations and uninstall. That
    verifies the installed user path. The fresh portable startup delay
-   remains open. Time executable entry, renderer setup and first UI
-   update separately on the first launch after portable extraction.
+   remains open. The app has opt-in startup phase logging for the next
+   diagnostic build. Set `OTTRIN_TRACE_PICKER_STARTUP=1` and capture
+   standard error alongside the launcher's process creation and visible
+   window measurements. The trace records executable entry, request
+   readiness, renderer selection and readiness, picker construction and
+   the end of the first UI pass. First UI pass and first visible window
+   are separate measurements. A Linux release-build smoke test under
+   private software X11 observed all six stages in order, a clean JSON
+   cancellation, and silence with tracing disabled. Windows-target
+   compilation passed. Native Windows timing and refreshed packages
+   remain open.
    Broader theme and caller acceptance also remain open.
    [Delivered Windows picker resource check](../.hermes/evidence/windows-picker-current-runtime-audit/ACCEPTANCE.json).
    [Windows picker startup comparison](../.hermes/evidence/windows-picker-startup-comparison/ACCEPTANCE.json).

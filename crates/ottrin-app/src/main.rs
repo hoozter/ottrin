@@ -394,7 +394,33 @@ fn windows_graphics_evidence() -> GraphicsEvidence {
     GraphicsEvidence::default()
 }
 
+#[derive(Clone, Copy)]
+struct PickerStartupTrace {
+    start: std::time::Instant,
+    entry: std::time::SystemTime,
+}
+
+impl PickerStartupTrace {
+    fn record(self, phase: &str) {
+        let entry_ms = self
+            .entry
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_millis();
+        let elapsed_ms = self.start.elapsed().as_secs_f64() * 1_000.0;
+        eprintln!(
+            "ottrin picker startup: {phase} entry_unix_ms={entry_ms} elapsed_ms={elapsed_ms:.3}"
+        );
+    }
+}
+
 fn main() {
+    let picker_trace = (std::env::var_os("OTTRIN_TRACE_PICKER_STARTUP").as_deref()
+        == Some(OsStr::new("1")))
+    .then(|| PickerStartupTrace {
+        start: std::time::Instant::now(),
+        entry: std::time::SystemTime::now(),
+    });
     #[cfg(target_os = "linux")]
     let startup = {
         let value = ottrin_ui::StartupNotification {
@@ -451,6 +477,9 @@ fn main() {
     }) = &action
     {
         let cancel_on_disconnect = *cancel_on_disconnect;
+        if let Some(trace) = picker_trace {
+            trace.record("reading_request");
+        }
         let request = match if cancel_on_disconnect {
             read_picker_request_line(std::io::stdin().lock())
         } else {
@@ -463,7 +492,7 @@ fn main() {
             }
         };
         install_windows_startup_panic_hook();
-        if let Err(error) = run_picker_gui(request, cli, cancel_on_disconnect) {
+        if let Err(error) = run_picker_gui(request, cli, cancel_on_disconnect, picker_trace) {
             eprintln!("ottrin picker: {error}");
             std::process::exit(1);
         }
@@ -812,7 +841,11 @@ fn run_picker_gui(
     request: ottrin_core::picker::PickerRequest,
     cli: CliArguments,
     cancel_on_disconnect: bool,
+    trace: Option<PickerStartupTrace>,
 ) -> Result<(), String> {
+    if let Some(trace) = trace {
+        trace.record("request_ready");
+    }
     #[cfg(target_os = "linux")]
     let startup = cli.startup;
     let renderer_override = graphics_renderer_override(cli.renderer_override.as_deref())?;
@@ -840,10 +873,19 @@ fn run_picker_gui(
     let result = outcome.clone();
     let cancelled = request.cancelled_response();
     let validate = request.clone();
+    if let Some(trace) = trace {
+        trace.record(match options.renderer {
+            eframe::Renderer::Glow => "starting_opengl",
+            eframe::Renderer::Wgpu => "starting_wgpu",
+        });
+    }
     eframe::run_native(
         &title,
         options,
         Box::new(move |cc| {
+            if let Some(trace) = trace {
+                trace.record("renderer_ready");
+            }
             let cancelled = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
             if cancel_on_disconnect {
                 let ctx = cc.egui_ctx.clone();
@@ -852,6 +894,18 @@ fn run_picker_gui(
                 })?;
             }
             let app = ottrin_ui::PickerApp::new(cc, request, runtime, outcome, cancelled)?;
+            if let Some(trace) = trace {
+                trace.record("picker_ready");
+                let first_pass = std::sync::atomic::AtomicBool::new(true);
+                cc.egui_ctx.on_end_pass(
+                    "picker_startup_trace",
+                    std::sync::Arc::new(move |_| {
+                        if first_pass.swap(false, std::sync::atomic::Ordering::Relaxed) {
+                            trace.record("first_ui_pass");
+                        }
+                    }),
+                );
+            }
             #[cfg(target_os = "linux")]
             startup.apply(cc);
             Ok(Box::new(app))
