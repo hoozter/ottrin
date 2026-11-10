@@ -24,6 +24,16 @@ candidate when a product fix changes the artifact, and rerun the checks
 that the change affects. Keep separate evidence for the held MSI and the
 owner and external waits.
 
+Record one acceptance summary per platform, keyed by source revision and
+package checksum. On Linux, group the AppImage and portable desktop
+workflows with DEB/RPM lifecycle, helper and portal checks. On Windows,
+group the ZIP and installed desktop workflows with NSIS lifecycle and
+development MSIX sign-in, upgrade and removal. Cover menu alignment,
+preview input and PDF sizing, and intended theme effects in both palettes
+within those desktop passes. Keep isolated test details in the receipts.
+Reconcile each release checklist item against the resulting evidence and
+record any uncovered workflow before calling either platform release-ready.
+
 The delivered Linux `b545bd2e` AppImage passed native List-density and
 pointer selection on a private X11 desktop. At saved scales 0.90 and
 1.35, row pitch measured 26 and 37 pixels, respectively. The previous
