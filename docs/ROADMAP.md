@@ -388,13 +388,15 @@ and [first-run timeout](../.hermes/evidence/windows-picker-keyboard-current/nati
    An independent SYSTEM scan found no journal in accessible roots
    and received access denied only at the standard caller's package
    LocalCache State directory after Copy and Undo. The administrator's
-   scanned roots had no errors or journal matches. Inspect that caller
-   directory with a read-only backup-mode listing or an authorized
-   caller-context observation before and after authenticated cleanup.
-   The journal location, normal Undo exit and retained-data cleanup
-   remain unverified. This registration test is diagnostic. Ordinary
-   single-user MSIX deployment still lacks a verified administrator
-   Copy path.
+   scanned roots had no errors or journal matches. A subsequent
+   read-only backup-mode listing found the same journal after Copy
+   and Undo in the standard caller's package LocalCache. Authenticated
+   cleanup removed it, and a fresh process confirmed it stayed gone.
+   The original bytes were preserved, the Undo publication stayed
+   absent and all four processes exited normally. The VM, overlay
+   and temporary archives were removed. This verifies the lifecycle
+   with two registered accounts. Ordinary single-user MSIX deployment
+   still lacks a verified administrator Copy path.
    [MSIX helper startup sample](../.hermes/evidence/windows-admin-copy-delivery-current/MSIX_HELPER_STARTUP_FINDING.json).
    [Loader image and symbol](../.hermes/evidence/windows-admin-copy-delivery-current/WINDOWS_LOADER_IMAGE.json).
    [Native DLL initialization failure](../.hermes/evidence/windows-admin-copy-delivery-current/MSIX_HELPER_DLL_INIT_FAILURE.json).
@@ -402,6 +404,7 @@ and [first-run timeout](../.hermes/evidence/windows-picker-keyboard-current/nati
    [Alternate administrator registration comparison](../.hermes/evidence/windows-admin-copy-delivery-current/MSIX_HELPER_ADMIN_REGISTRATION_COMPARISON.json).
    [Packaged caller journal path comparison](../.hermes/evidence/windows-admin-copy-delivery-current/MSIX_HELPER_CALLER_JOURNAL_LOOKUP.json).
    [SYSTEM journal disk scan](../.hermes/evidence/windows-admin-copy-delivery-current/MSIX_HELPER_JOURNAL_DISK_SCAN.json).
+   [Two-account MSIX Copy lifecycle](../.hermes/evidence/windows-admin-copy-delivery-current/MSIX_ADMIN_COPY_JOURNAL_LIFECYCLE.json).
    [MSIX 33 assembly](../.hermes/evidence/windows-admin-copy-delivery-current/ASSEMBLY_ACCEPTANCE.json).
    [Fresh deployment](../.hermes/evidence/windows-admin-copy-delivery-current/runtime33-fresh/ACCEPTANCE.json),
    [enabled upgrade](../.hermes/evidence/windows-admin-copy-delivery-current/runtime33-upgrade/ACCEPTANCE.json)

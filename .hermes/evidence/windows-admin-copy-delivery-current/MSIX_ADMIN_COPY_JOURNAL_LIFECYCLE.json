@@ -1,0 +1,59 @@
+{
+  "status": "pass native MSIX 33 Copy, Undo, cleanup and reopen when package is registered for both UAC accounts",
+  "source_revision": "c4c2f4beb0a859cadae68423bfaad2e56996a4e6",
+  "package_sha256": "ff98d685a6113ba1177c938fb7ce51f95e21c23a15e9b457dc9f91d258e354da",
+  "helper_sha256": "ff95a2405883a1c3b6e480a0a68ceb2066a8183db15ff787f707f132e10c8f74",
+  "registration": "Verified exact same MSIX for distinct standard caller and consenting administrator.",
+  "physical_journal_path": "C:\\Users\\OttrinQaCaller\\AppData\\Local\\Packages\\Ottrin.Development_vs01n017nxmbr\\LocalCache\\Local\\ottrin\\State\\copies\\87c5fe7ad06be6e678d13b2ec538704b.copy-journal",
+  "phases": [
+    {
+      "phase": "before_copy",
+      "standard_caller_journals": 0,
+      "administrator_journals": 0,
+      "target_present": false,
+      "source_sha256": null
+    },
+    {
+      "phase": "copy",
+      "standard_caller_journals": 1,
+      "administrator_journals": 0,
+      "target_present": true,
+      "source_sha256": "3fc5d485b7cbea0501dd61db76c43ff6dadea69e25a93ff970da52a3ec597073"
+    },
+    {
+      "phase": "history-undo",
+      "standard_caller_journals": 1,
+      "administrator_journals": 0,
+      "target_present": false,
+      "source_sha256": "3fc5d485b7cbea0501dd61db76c43ff6dadea69e25a93ff970da52a3ec597073"
+    },
+    {
+      "phase": "undone",
+      "standard_caller_journals": 0,
+      "administrator_journals": 0,
+      "target_present": false,
+      "source_sha256": "3fc5d485b7cbea0501dd61db76c43ff6dadea69e25a93ff970da52a3ec597073"
+    },
+    {
+      "phase": "cleared",
+      "standard_caller_journals": 0,
+      "administrator_journals": 0,
+      "target_present": false,
+      "source_sha256": "3fc5d485b7cbea0501dd61db76c43ff6dadea69e25a93ff970da52a3ec597073"
+    }
+  ],
+  "all_four_distinct_processes_exited_normally": true,
+  "independent_observer": "Guest SYSTEM used a read-only Robocopy /L /B listing without creating a destination.",
+  "scope": "Full observed lifecycle for the controlled two-account registration only. Ordinary single-user MSIX and Store distribution remain separate.",
+  "cleanup": {
+    "domain": "ottrin-init-helper-pipe-qa",
+    "uuid": "ac54fd86-9ab1-49f8-803f-e5cb14ce4264",
+    "volume": "ottrin-init-helper-pipe-qa.qcow2",
+    "status": "pass",
+    "domain_removed": true,
+    "overlay_removed": true,
+    "protected_definitions_states_and_backing_unchanged": true,
+    "compiler_executables_restored_by_hash": 25,
+    "temporary_archive_and_restore_manifest_removed": true
+  }
+}
