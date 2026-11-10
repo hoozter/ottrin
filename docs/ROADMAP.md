@@ -15,6 +15,14 @@ The [ordered work](#current-ordered-work) tracks the remaining software
 and package acceptance. The [owner and external waiting list](#ownerexternal-waiting-list)
 records what depends on input, signing, devices or personal acceptance.
 
+Windows portable and NSIS builds enable administrator Copy. The installed
+Copy and Undo lifecycle was verified on `49748824`. The current `eadf713e`
+package receipt carries that earlier acceptance separately from its own
+picker and upgrade checks. The development MSIX leaves administrator Copy
+unavailable in normal single-user deployment and preserves the existing
+default folder app. The separate MSI remains a diagnostic build pending
+ordinary-user uninstall rollback.
+
 ### Recent delivery evidence
 
 The earlier Linux AppImage, portable archive, DEB and RPM cohort used
@@ -327,7 +335,8 @@ and [first-run timeout](../.hermes/evidence/windows-picker-keyboard-current/nati
    while preserving the source. Installed UI and interrupted recovery remain
    open at this checkpoint. The installed recovery and interruption
    receipts below cover those paths on capability-enabled private builds.
-   Administrator Copy is still disabled in the current Windows candidate.
+   At that checkpoint the public candidate still had administrator Copy
+   disabled. The desktop delivery later in this item enabled it.
    The matched installed timing comparison is complete. Candidate
    `c4c2f4be` enables the shared Windows capability on the current
    product source. Its private ZIP and NSIS match across all 59 files
