@@ -52,9 +52,10 @@ exact release commit and artifacts.
   desktop entry, AppStream metadata, and polkit policy.
 - The freshly packaged Linux portable executable and AppImage each remained
   running until an eight-second smoke-test timeout, with no startup error.
-- The Windows portable app imports `opengl32.dll`; corrected packaging must
-  place Mesa's pinned loader beside the executable so Windows does not resolve
-  that import to its OpenGL 1.1 system loader on compatibility-path machines.
+- Package Mesa's pinned `opengl32.dll` beside the Windows executable for the
+  OpenGL compatibility renderer. Check that Ottrin has no eager OpenGL
+  import and verify that compatibility mode loads the bundled Mesa library
+  in a native Windows session.
 - The 2026-07-27 Wine launch result was a false positive because wrapper/error-
   dialog liveness was accepted without checking `startup.log` or DLL provenance.
   Corrected preflight checks both and does not treat Wine native WGPU as a real-

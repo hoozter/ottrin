@@ -18,8 +18,9 @@ if [[ ! -f "$loader" ]]; then
 fi
 printf '%s  %s\n' "$EXPECTED_OPENGL32_SHA256" "$loader" | sha256sum -c - >/dev/null
 
-if ! x86_64-w64-mingw32-objdump -p "$binary" | grep -Fi 'DLL Name: opengl32.dll' >/dev/null; then
-  printf 'Windows OpenGL loader contract: ottrin.exe does not import opengl32.dll.\n' >&2
+binary_imports="$(x86_64-w64-mingw32-objdump -p "$binary")"
+if grep -Fiq 'DLL Name: opengl32.dll' <<<"$binary_imports"; then
+  printf 'Windows OpenGL loader contract: ottrin.exe must defer loading opengl32.dll.\n' >&2
   exit 1
 fi
 if ! x86_64-w64-mingw32-objdump -p "$loader" | grep -Fi 'DLL Name: libgallium_wgl.dll' >/dev/null; then
@@ -27,4 +28,4 @@ if ! x86_64-w64-mingw32-objdump -p "$loader" | grep -Fi 'DLL Name: libgallium_wg
   exit 1
 fi
 
-printf 'Verified app-local Mesa OpenGL loader contract.\n'
+printf 'Verified app-local Mesa loader and absence of an eager OpenGL import.\n'
