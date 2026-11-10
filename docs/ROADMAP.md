@@ -2199,9 +2199,19 @@ Current source, test, package and owner/external scopes stay separate.
    30 idle seconds and used 127 MiB RSS. Two overlapping requests
    cancelled independently. All four launches exited normally, and
    no private index socket or main configuration appeared. This is
-   window mapping evidence. Current Windows resource and broader
-   theme and caller acceptance remain open.
+   window mapping evidence.
    [Delivered Linux picker resource check](../.hermes/evidence/picker-current-runtime-audit/ACCEPTANCE.json).
+   The same source's delivered Windows portable picker returned clean
+   cancellations for first, repeat, and two overlapping requests without
+   starting the index or changing the fixture file or preferences. The
+   first visible window took up to 15.25 seconds in the fresh software
+   OpenGL guest. The repeat took 1.04 seconds. The 30-second idle sample
+   showed no measurable CPU time and an 84.4 MiB working set. The first
+   launch is too slow. Compare the default renderer against OpenGL and
+   separate process initialization, renderer setup, and first window mapping
+   before accepting startup performance. Broader theme and caller
+   acceptance also remain open.
+   [Delivered Windows picker resource check](../.hermes/evidence/windows-picker-current-runtime-audit/ACCEPTANCE.json).
 
    Linux folder setup `b9543fe9` keeps interrupted launcher replacements
    repairable while refusing edits outside the recorded versions. Eight

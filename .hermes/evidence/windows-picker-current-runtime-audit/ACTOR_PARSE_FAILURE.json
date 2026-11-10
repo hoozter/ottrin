@@ -1,0 +1,26 @@
+{
+  "status": "actor parse rejected before product launch",
+  "error": "\r\nExtent                                                                                                                 \r\n------                                                                                                                 \r\n\";process=$process;timer=$timer}...                                                                                    \r\n$title\";process=$process;timer=$timer}...                                                                              \r\n                                                                                                                       \r\n\";process=$process;timer=$timer}...                                                                                    \r\n{                                                                                                                      \r\n\r\n\r\n",
+  "input": {
+    "source_revision": "eadf713e853ababd803fe37e6f2ea2462c60a619",
+    "files": [
+      {
+        "name": "portable.zip",
+        "sha256": "57198b5b6537e281ba71214a3bb530380b3443654885efe5f667ef702fcd3cef"
+      }
+    ],
+    "actor_sha256": "37f0190eb2f78c3cf171a5331e9b9004bd2f6fe736d0a1990cd951ca74c64e02",
+    "scope": "Exact delivered portable chooser, ordinary-user window mapping, idle and concurrent cancellation."
+  },
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "compiler_outputs_restored": 36
+}

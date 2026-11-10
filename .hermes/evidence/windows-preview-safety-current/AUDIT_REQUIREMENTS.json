@@ -118,15 +118,16 @@
       "id": 12,
       "section": "4. Required Ottrin picker and folder integration — active",
       "requirement": "Accept cold/repeated launch latency, idle CPU, retained memory, cancellation/cleanup, concurrent requests, operation with indexing stopped, theme persistence, and enable/disable restoration on both supported platforms. Record measured results rather than promising unverified speed or universal application coverage.",
-      "classification": "current Linux exact-package measurements; broader verification open",
+      "classification": "current Linux and Windows exact-package measurements; Windows first launch and broader acceptance open",
       "evidence": [
         ".hermes/evidence/current-picker-first-paint/ACCEPTANCE.json",
         ".hermes/evidence/borders-group-picker-resources/ACCEPTANCE.json",
         ".hermes/evidence/picker-accessibility-current/WINDOWS_NATIVE_ACCEPTANCE.json",
         ".hermes/evidence/desktop-integration-audit-current/WINDOWS_PICKER_MEASUREMENT_AUDIT.json",
-        ".hermes/evidence/picker-current-runtime-audit/ACCEPTANCE.json"
+        ".hermes/evidence/picker-current-runtime-audit/ACCEPTANCE.json",
+        ".hermes/evidence/windows-picker-current-runtime-audit/ACCEPTANCE.json"
       ],
-      "latest_scope": "The eadf713e mounted Linux AppImage passed first/repeat and concurrent launches and cancellation. Idle CPU and RSS were sampled in private software X11 with shared OS caches. Historical Windows resource evidence retains its own revision. Current Windows resource and broader theme/restoration acceptance remain open."
+      "latest_scope": "Exact eadf713e Linux AppImage and Windows portable first/repeat and concurrent cancellations pass. Linux software X11 mapped in 890 ms first and 579 ms repeat. Windows software OpenGL mapped in up to 15.25 seconds first and 1.04 seconds repeat, with no measured CPU time over 30 idle seconds and an 84.4 MiB working set. Windows first launch performance and broader theme/restoration remain open."
     },
     {
       "id": 13,
@@ -486,9 +487,10 @@
         ".hermes/evidence/picker-current-runtime-audit/ACCEPTANCE.json",
         ".hermes/evidence/picker-edit-location-current/linux-dark/ACCEPTANCE.json",
         ".hermes/evidence/picker-edit-location-current/WINDOWS_PICKER_ACCEPTANCE.json",
-        ".hermes/evidence/picker-edit-location-current/runtime36-upgrade/ACCEPTANCE.json"
+        ".hermes/evidence/picker-edit-location-current/runtime36-upgrade/ACCEPTANCE.json",
+        ".hermes/evidence/windows-picker-current-runtime-audit/ACCEPTANCE.json"
       ],
-      "latest_scope": "Current Linux and Windows pointer picker checks and Linux resource checks passed. MSIX 36 Explorer actions passed. Historical Linux caller/portal restoration and Windows desktop default restoration retain exact scopes. Current Windows resource coverage, full theme property acceptance and MSIX default-folder support remain open."
+      "latest_scope": "Current Linux and Windows pointer picker checks and Linux resource checks passed. Windows portable concurrent cancellation and quiet idle passed, with a 15.25-second first window in the software OpenGL VM. Windows startup performance, full theme property acceptance and MSIX default-folder support remain open. MSIX 36 Explorer actions passed. Earlier caller and restoration receipts retain their exact scopes."
     },
     {
       "id": 49,

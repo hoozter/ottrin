@@ -1,0 +1,86 @@
+{
+  "status": "pass",
+  "input": {
+    "source_revision": "eadf713e853ababd803fe37e6f2ea2462c60a619",
+    "files": [
+      {
+        "name": "portable.zip",
+        "sha256": "57198b5b6537e281ba71214a3bb530380b3443654885efe5f667ef702fcd3cef"
+      }
+    ],
+    "actor_sha256": "16355a327e4a6f92dba9e32344fd0041462a7374308d628f2c7847c719db0d3a",
+    "scope": "Exact delivered portable chooser, ordinary-user window mapping, idle and concurrent cancellation."
+  },
+  "binary_sha256": "8d10842f6d7a25c1dd6d6183fb2863624d226453289886910ce8c11e60e4c13d",
+  "cases": [
+    {
+      "working_set_bytes": 88535040,
+      "response": {
+        "accepted": false,
+        "paths": [],
+        "current_filter": null,
+        "choices": {}
+      },
+      "window_mapped_upper_bound_ms": 15253.89,
+      "normal_cancel": true,
+      "case": "first",
+      "idle_seconds": 30.0026172,
+      "cpu_percent_one_core": 0
+    },
+    {
+      "case": "repeat",
+      "normal_cancel": true,
+      "window_mapped_upper_bound_ms": 1042.38,
+      "response": {
+        "accepted": false,
+        "paths": [],
+        "current_filter": null,
+        "choices": {}
+      }
+    },
+    {
+      "case": "concurrent-a",
+      "normal_cancel": true,
+      "window_mapped_upper_bound_ms": 393.91,
+      "response": {
+        "accepted": false,
+        "paths": [],
+        "current_filter": null,
+        "choices": {}
+      }
+    },
+    {
+      "case": "concurrent-b",
+      "normal_cancel": true,
+      "window_mapped_upper_bound_ms": 384.44,
+      "response": {
+        "accepted": false,
+        "paths": [],
+        "current_filter": null,
+        "choices": {}
+      }
+    }
+  ],
+  "no_index": true,
+  "preferences_and_fixture_preserved": true,
+  "scope": "Direct picker protocol, ordinary interactive software OpenGL VM. Mapping times are upper bounds with shared OS caches.",
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "compiler_outputs_restored": 36,
+  "retired": [
+    ".hermes/evidence/windows-picker-current-runtime-audit/windows-native/RESULTS.zip",
+    ".hermes/evidence/windows-picker-current-runtime-audit/windows-native/desktop-ready.png",
+    ".hermes/evidence/windows-picker-current-runtime-audit/windows-native/privacy-accepted-0.png",
+    ".hermes/evidence/windows-picker-current-runtime-audit/windows-native/privacy-accepted-1.png"
+  ],
+  "export_sha256": "a6c40de8a043e65b8eaffd19c973e5adc3ac6dfa59625d3a7bbd76807c76d491",
+  "screenshot_sha256": "e2314f70df72238b5b8797b2d8c4d77d7a1499b15a98784da81da58d4932ba7a"
+}
