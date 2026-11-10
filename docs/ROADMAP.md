@@ -84,6 +84,15 @@ removed, the guest's original disk inventory was restored, and the
 retained VM is off with its definition unchanged.
 [Cross-volume Move receipt](../.hermes/evidence/windows-b545bd2e-cross-volume/ACCEPTANCE.json).
 
+The Linux `d7726c9b` packages are staged. The mounted AppImage exposes
+the named Theme component selector through AT-SPI. Dark at 100% and
+Light at 150% passed native typing, Restore, and Cancel for all six
+numeric controls. The source fixtures and saved theme survived. The
+same image passed a private AppImage replacement trial. These checks
+cover control behavior. Visual coverage of each property's consumers
+and installed Windows acceptance remain separate.
+[Theme control receipt](../.hermes/evidence/linux-theme-component-delivery/THEME_COMPONENT_ACCEPTANCE.json).
+
 Windows portable and NSIS builds enable administrator Copy. The installed
 Copy and Undo lifecycle was verified on `49748824`. The current `b545bd2e`
 package receipt carries that earlier acceptance separately from its own
