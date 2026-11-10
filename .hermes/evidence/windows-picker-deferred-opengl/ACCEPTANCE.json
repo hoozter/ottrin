@@ -1,0 +1,970 @@
+{
+  "status": "pass native default and compatibility renderer loading",
+  "input": {
+    "source_revision": "68b145fd51946c81de29289d8d40c9efdf03e28c",
+    "portable_source_revision": "eadf713e853ababd803fe37e6f2ea2462c60a619",
+    "files": [
+      {
+        "name": "portable.zip",
+        "sha256": "57198b5b6537e281ba71214a3bb530380b3443654885efe5f667ef702fcd3cef"
+      },
+      {
+        "name": "trace-app.exe",
+        "sha256": "53a5dc63f210d0402e806b171fb74133e9d5b452501a65041405402ac181057a"
+      }
+    ],
+    "actor_sha256": "99cddd4f4861a4158e98682506d143d5dca5f450fd361806950cf00b2e20031e",
+    "scope": "GNU release diagnostic executable in exact delivered portable payload; native process, renderer, UI pass and window mapping timings."
+  },
+  "diagnostic_build": {
+    "source_revision": "68b145fd51946c81de29289d8d40c9efdf03e28c",
+    "target": "x86_64-pc-windows-gnu",
+    "profile": "release",
+    "eager_opengl_import": false,
+    "binary_sha256": "53a5dc63f210d0402e806b171fb74133e9d5b452501a65041405402ac181057a"
+  },
+  "binary_sha256": "53a5dc63f210d0402e806b171fb74133e9d5b452501a65041405402ac181057a",
+  "cases": [
+    {
+      "start_ms": 6415.1187,
+      "request_sent_ms": 6774.2762,
+      "case": "default-first",
+      "process_id": 10088,
+      "window_mapped_upper_bound_ms": 11312.85,
+      "renderer_arguments": "",
+      "normal_cancel": true,
+      "launch_unix_ms": 1794297240891,
+      "response": {
+        "accepted": false,
+        "paths": [],
+        "current_filter": null,
+        "choices": {}
+      },
+      "trace": [
+        {
+          "phase": "reading_request",
+          "elapsed_ms": 0.031,
+          "entry_unix_ms": 1794297249889
+        },
+        {
+          "phase": "request_ready",
+          "elapsed_ms": 0.9,
+          "entry_unix_ms": 1794297249889
+        },
+        {
+          "phase": "starting_wgpu",
+          "elapsed_ms": 3.542,
+          "entry_unix_ms": 1794297249889
+        },
+        {
+          "phase": "renderer_ready",
+          "elapsed_ms": 913.315,
+          "entry_unix_ms": 1794297249889
+        },
+        {
+          "phase": "picker_ready",
+          "elapsed_ms": 918.341,
+          "entry_unix_ms": 1794297249889
+        },
+        {
+          "phase": "first_ui_pass",
+          "elapsed_ms": 926.608,
+          "entry_unix_ms": 1794297249889
+        }
+      ],
+      "process_launch_to_entry_wall_ms": 8998,
+      "kernel_process_creation_ms": 6384,
+      "images_mapped_before_entry": [
+        {
+          "image": "ottrin.exe",
+          "beside_executable": true,
+          "since_launch_ms": 6422
+        },
+        {
+          "image": "ntdll.dll",
+          "beside_executable": false,
+          "since_launch_ms": 6422
+        },
+        {
+          "image": "kernel32.dll",
+          "beside_executable": false,
+          "since_launch_ms": 6423
+        },
+        {
+          "image": "KernelBase.dll",
+          "beside_executable": false,
+          "since_launch_ms": 6424
+        },
+        {
+          "image": "apphelp.dll",
+          "beside_executable": false,
+          "since_launch_ms": 6427
+        },
+        {
+          "image": "user32.dll",
+          "beside_executable": false,
+          "since_launch_ms": 6429
+        },
+        {
+          "image": "win32u.dll",
+          "beside_executable": false,
+          "since_launch_ms": 6430
+        },
+        {
+          "image": "gdi32.dll",
+          "beside_executable": false,
+          "since_launch_ms": 6430
+        },
+        {
+          "image": "gdi32full.dll",
+          "beside_executable": false,
+          "since_launch_ms": 6431
+        },
+        {
+          "image": "msvcp_win.dll",
+          "beside_executable": false,
+          "since_launch_ms": 6431
+        },
+        {
+          "image": "ucrtbase.dll",
+          "beside_executable": false,
+          "since_launch_ms": 6431
+        },
+        {
+          "image": "imm32.dll",
+          "beside_executable": false,
+          "since_launch_ms": 6432
+        },
+        {
+          "image": "ole32.dll",
+          "beside_executable": false,
+          "since_launch_ms": 6432
+        },
+        {
+          "image": "combase.dll",
+          "beside_executable": false,
+          "since_launch_ms": 6432
+        },
+        {
+          "image": "rpcrt4.dll",
+          "beside_executable": false,
+          "since_launch_ms": 6432
+        },
+        {
+          "image": "bcryptprimitives.dll",
+          "beside_executable": false,
+          "since_launch_ms": 6433
+        },
+        {
+          "image": "oleaut32.dll",
+          "beside_executable": false,
+          "since_launch_ms": 6434
+        },
+        {
+          "image": "advapi32.dll",
+          "beside_executable": false,
+          "since_launch_ms": 6434
+        },
+        {
+          "image": "msvcrt.dll",
+          "beside_executable": false,
+          "since_launch_ms": 6434
+        },
+        {
+          "image": "sechost.dll",
+          "beside_executable": false,
+          "since_launch_ms": 6435
+        },
+        {
+          "image": "shell32.dll",
+          "beside_executable": false,
+          "since_launch_ms": 6435
+        },
+        {
+          "image": "shlwapi.dll",
+          "beside_executable": false,
+          "since_launch_ms": 6435
+        },
+        {
+          "image": "dwmapi.dll",
+          "beside_executable": false,
+          "since_launch_ms": 6436
+        },
+        {
+          "image": "propsys.dll",
+          "beside_executable": false,
+          "since_launch_ms": 6437
+        },
+        {
+          "image": "uxtheme.dll",
+          "beside_executable": false,
+          "since_launch_ms": 6437
+        },
+        {
+          "image": "UIAutomationCore.dll",
+          "beside_executable": false,
+          "since_launch_ms": 6438
+        },
+        {
+          "image": "ktmw32.dll",
+          "beside_executable": false,
+          "since_launch_ms": 6438
+        },
+        {
+          "image": "mpr.dll",
+          "beside_executable": false,
+          "since_launch_ms": 6438
+        },
+        {
+          "image": "userenv.dll",
+          "beside_executable": false,
+          "since_launch_ms": 6439
+        },
+        {
+          "image": "mfplat.dll",
+          "beside_executable": false,
+          "since_launch_ms": 6588
+        },
+        {
+          "image": "mfreadwrite.dll",
+          "beside_executable": false,
+          "since_launch_ms": 6659
+        },
+        {
+          "image": "SHCore.dll",
+          "beside_executable": false,
+          "since_launch_ms": 8294
+        },
+        {
+          "image": "cfgmgr32.dll",
+          "beside_executable": false,
+          "since_launch_ms": 8295
+        },
+        {
+          "image": "RTWorkQ.dll",
+          "beside_executable": false,
+          "since_launch_ms": 8982
+        }
+      ],
+      "bundled_graphics_loads": []
+    },
+    {
+      "start_ms": 12.337800000000001,
+      "request_sent_ms": 13.3185,
+      "case": "default-repeat",
+      "process_id": 9288,
+      "window_mapped_upper_bound_ms": 1509.06,
+      "renderer_arguments": "",
+      "normal_cancel": true,
+      "launch_unix_ms": 1794297253436,
+      "response": {
+        "accepted": false,
+        "paths": [],
+        "current_filter": null,
+        "choices": {}
+      },
+      "trace": [
+        {
+          "phase": "reading_request",
+          "elapsed_ms": 0.032,
+          "entry_unix_ms": 1794297253485
+        },
+        {
+          "phase": "request_ready",
+          "elapsed_ms": 0.225,
+          "entry_unix_ms": 1794297253485
+        },
+        {
+          "phase": "starting_wgpu",
+          "elapsed_ms": 19.169,
+          "entry_unix_ms": 1794297253485
+        },
+        {
+          "phase": "renderer_ready",
+          "elapsed_ms": 1387.142,
+          "entry_unix_ms": 1794297253485
+        },
+        {
+          "phase": "picker_ready",
+          "elapsed_ms": 1403.289,
+          "entry_unix_ms": 1794297253485
+        },
+        {
+          "phase": "first_ui_pass",
+          "elapsed_ms": 1406.592,
+          "entry_unix_ms": 1794297253485
+        }
+      ],
+      "process_launch_to_entry_wall_ms": 49,
+      "kernel_process_creation_ms": 3,
+      "images_mapped_before_entry": [
+        {
+          "image": "ottrin.exe",
+          "beside_executable": true,
+          "since_launch_ms": 13
+        },
+        {
+          "image": "ntdll.dll",
+          "beside_executable": false,
+          "since_launch_ms": 13
+        },
+        {
+          "image": "kernel32.dll",
+          "beside_executable": false,
+          "since_launch_ms": 16
+        },
+        {
+          "image": "KernelBase.dll",
+          "beside_executable": false,
+          "since_launch_ms": 17
+        },
+        {
+          "image": "user32.dll",
+          "beside_executable": false,
+          "since_launch_ms": 19
+        },
+        {
+          "image": "win32u.dll",
+          "beside_executable": false,
+          "since_launch_ms": 20
+        },
+        {
+          "image": "gdi32.dll",
+          "beside_executable": false,
+          "since_launch_ms": 20
+        },
+        {
+          "image": "gdi32full.dll",
+          "beside_executable": false,
+          "since_launch_ms": 21
+        },
+        {
+          "image": "msvcp_win.dll",
+          "beside_executable": false,
+          "since_launch_ms": 21
+        },
+        {
+          "image": "ucrtbase.dll",
+          "beside_executable": false,
+          "since_launch_ms": 22
+        },
+        {
+          "image": "imm32.dll",
+          "beside_executable": false,
+          "since_launch_ms": 22
+        },
+        {
+          "image": "ole32.dll",
+          "beside_executable": false,
+          "since_launch_ms": 22
+        },
+        {
+          "image": "combase.dll",
+          "beside_executable": false,
+          "since_launch_ms": 23
+        },
+        {
+          "image": "rpcrt4.dll",
+          "beside_executable": false,
+          "since_launch_ms": 23
+        },
+        {
+          "image": "bcryptprimitives.dll",
+          "beside_executable": false,
+          "since_launch_ms": 23
+        },
+        {
+          "image": "oleaut32.dll",
+          "beside_executable": false,
+          "since_launch_ms": 24
+        },
+        {
+          "image": "advapi32.dll",
+          "beside_executable": false,
+          "since_launch_ms": 25
+        },
+        {
+          "image": "msvcrt.dll",
+          "beside_executable": false,
+          "since_launch_ms": 25
+        },
+        {
+          "image": "sechost.dll",
+          "beside_executable": false,
+          "since_launch_ms": 27
+        },
+        {
+          "image": "shell32.dll",
+          "beside_executable": false,
+          "since_launch_ms": 28
+        },
+        {
+          "image": "dwmapi.dll",
+          "beside_executable": false,
+          "since_launch_ms": 29
+        },
+        {
+          "image": "shlwapi.dll",
+          "beside_executable": false,
+          "since_launch_ms": 29
+        },
+        {
+          "image": "mfplat.dll",
+          "beside_executable": false,
+          "since_launch_ms": 30
+        },
+        {
+          "image": "mfreadwrite.dll",
+          "beside_executable": false,
+          "since_launch_ms": 31
+        },
+        {
+          "image": "SHCore.dll",
+          "beside_executable": false,
+          "since_launch_ms": 32
+        },
+        {
+          "image": "uxtheme.dll",
+          "beside_executable": false,
+          "since_launch_ms": 32
+        },
+        {
+          "image": "ktmw32.dll",
+          "beside_executable": false,
+          "since_launch_ms": 33
+        },
+        {
+          "image": "mpr.dll",
+          "beside_executable": false,
+          "since_launch_ms": 34
+        },
+        {
+          "image": "userenv.dll",
+          "beside_executable": false,
+          "since_launch_ms": 35
+        },
+        {
+          "image": "cfgmgr32.dll",
+          "beside_executable": false,
+          "since_launch_ms": 36
+        },
+        {
+          "image": "propsys.dll",
+          "beside_executable": false,
+          "since_launch_ms": 36
+        },
+        {
+          "image": "UIAutomationCore.dll",
+          "beside_executable": false,
+          "since_launch_ms": 37
+        },
+        {
+          "image": "RTWorkQ.dll",
+          "beside_executable": false,
+          "since_launch_ms": 44
+        }
+      ],
+      "bundled_graphics_loads": []
+    },
+    {
+      "start_ms": 8.0878,
+      "request_sent_ms": 8.5318,
+      "case": "opengl-first",
+      "process_id": 2688,
+      "window_mapped_upper_bound_ms": 5882.68,
+      "renderer_arguments": "--renderer opengl",
+      "normal_cancel": true,
+      "launch_unix_ms": 1794297256014,
+      "response": {
+        "accepted": false,
+        "paths": [],
+        "current_filter": null,
+        "choices": {}
+      },
+      "trace": [
+        {
+          "phase": "reading_request",
+          "elapsed_ms": 0.036,
+          "entry_unix_ms": 1794297256048
+        },
+        {
+          "phase": "request_ready",
+          "elapsed_ms": 0.2,
+          "entry_unix_ms": 1794297256048
+        },
+        {
+          "phase": "starting_opengl",
+          "elapsed_ms": 1.837,
+          "entry_unix_ms": 1794297256048
+        },
+        {
+          "phase": "renderer_ready",
+          "elapsed_ms": 5817.478,
+          "entry_unix_ms": 1794297256048
+        },
+        {
+          "phase": "picker_ready",
+          "elapsed_ms": 5818.277,
+          "entry_unix_ms": 1794297256048
+        },
+        {
+          "phase": "first_ui_pass",
+          "elapsed_ms": 5821.456,
+          "entry_unix_ms": 1794297256048
+        }
+      ],
+      "process_launch_to_entry_wall_ms": 34,
+      "kernel_process_creation_ms": 1,
+      "images_mapped_before_entry": [
+        {
+          "image": "ottrin.exe",
+          "beside_executable": true,
+          "since_launch_ms": 8
+        },
+        {
+          "image": "ntdll.dll",
+          "beside_executable": false,
+          "since_launch_ms": 8
+        },
+        {
+          "image": "kernel32.dll",
+          "beside_executable": false,
+          "since_launch_ms": 9
+        },
+        {
+          "image": "KernelBase.dll",
+          "beside_executable": false,
+          "since_launch_ms": 10
+        },
+        {
+          "image": "user32.dll",
+          "beside_executable": false,
+          "since_launch_ms": 12
+        },
+        {
+          "image": "win32u.dll",
+          "beside_executable": false,
+          "since_launch_ms": 13
+        },
+        {
+          "image": "gdi32.dll",
+          "beside_executable": false,
+          "since_launch_ms": 13
+        },
+        {
+          "image": "gdi32full.dll",
+          "beside_executable": false,
+          "since_launch_ms": 13
+        },
+        {
+          "image": "msvcp_win.dll",
+          "beside_executable": false,
+          "since_launch_ms": 14
+        },
+        {
+          "image": "ucrtbase.dll",
+          "beside_executable": false,
+          "since_launch_ms": 14
+        },
+        {
+          "image": "imm32.dll",
+          "beside_executable": false,
+          "since_launch_ms": 14
+        },
+        {
+          "image": "ole32.dll",
+          "beside_executable": false,
+          "since_launch_ms": 14
+        },
+        {
+          "image": "combase.dll",
+          "beside_executable": false,
+          "since_launch_ms": 14
+        },
+        {
+          "image": "rpcrt4.dll",
+          "beside_executable": false,
+          "since_launch_ms": 15
+        },
+        {
+          "image": "bcryptprimitives.dll",
+          "beside_executable": false,
+          "since_launch_ms": 15
+        },
+        {
+          "image": "oleaut32.dll",
+          "beside_executable": false,
+          "since_launch_ms": 15
+        },
+        {
+          "image": "advapi32.dll",
+          "beside_executable": false,
+          "since_launch_ms": 15
+        },
+        {
+          "image": "msvcrt.dll",
+          "beside_executable": false,
+          "since_launch_ms": 16
+        },
+        {
+          "image": "sechost.dll",
+          "beside_executable": false,
+          "since_launch_ms": 16
+        },
+        {
+          "image": "shell32.dll",
+          "beside_executable": false,
+          "since_launch_ms": 16
+        },
+        {
+          "image": "shlwapi.dll",
+          "beside_executable": false,
+          "since_launch_ms": 16
+        },
+        {
+          "image": "mfplat.dll",
+          "beside_executable": false,
+          "since_launch_ms": 17
+        },
+        {
+          "image": "dwmapi.dll",
+          "beside_executable": false,
+          "since_launch_ms": 18
+        },
+        {
+          "image": "propsys.dll",
+          "beside_executable": false,
+          "since_launch_ms": 18
+        },
+        {
+          "image": "mfreadwrite.dll",
+          "beside_executable": false,
+          "since_launch_ms": 18
+        },
+        {
+          "image": "SHCore.dll",
+          "beside_executable": false,
+          "since_launch_ms": 19
+        },
+        {
+          "image": "UIAutomationCore.dll",
+          "beside_executable": false,
+          "since_launch_ms": 19
+        },
+        {
+          "image": "ktmw32.dll",
+          "beside_executable": false,
+          "since_launch_ms": 20
+        },
+        {
+          "image": "mpr.dll",
+          "beside_executable": false,
+          "since_launch_ms": 20
+        },
+        {
+          "image": "uxtheme.dll",
+          "beside_executable": false,
+          "since_launch_ms": 21
+        },
+        {
+          "image": "cfgmgr32.dll",
+          "beside_executable": false,
+          "since_launch_ms": 21
+        },
+        {
+          "image": "userenv.dll",
+          "beside_executable": false,
+          "since_launch_ms": 21
+        },
+        {
+          "image": "RTWorkQ.dll",
+          "beside_executable": false,
+          "since_launch_ms": 27
+        }
+      ],
+      "bundled_graphics_loads": [
+        {
+          "image": "opengl32.dll",
+          "since_launch_ms": 239
+        },
+        {
+          "image": "libgallium_wgl.dll",
+          "since_launch_ms": 5635
+        }
+      ]
+    },
+    {
+      "start_ms": 5.225700000000001,
+      "request_sent_ms": 5.689100000000001,
+      "case": "opengl-repeat",
+      "process_id": 2992,
+      "window_mapped_upper_bound_ms": 213.97,
+      "renderer_arguments": "--renderer opengl",
+      "normal_cancel": true,
+      "launch_unix_ms": 1794297262190,
+      "response": {
+        "accepted": false,
+        "paths": [],
+        "current_filter": null,
+        "choices": {}
+      },
+      "trace": [
+        {
+          "phase": "reading_request",
+          "elapsed_ms": 0.055,
+          "entry_unix_ms": 1794297262225
+        },
+        {
+          "phase": "request_ready",
+          "elapsed_ms": 0.239,
+          "entry_unix_ms": 1794297262225
+        },
+        {
+          "phase": "starting_opengl",
+          "elapsed_ms": 1.93,
+          "entry_unix_ms": 1794297262225
+        },
+        {
+          "phase": "renderer_ready",
+          "elapsed_ms": 158.239,
+          "entry_unix_ms": 1794297262225
+        },
+        {
+          "phase": "picker_ready",
+          "elapsed_ms": 159.056,
+          "entry_unix_ms": 1794297262225
+        },
+        {
+          "phase": "first_ui_pass",
+          "elapsed_ms": 161.672,
+          "entry_unix_ms": 1794297262225
+        }
+      ],
+      "process_launch_to_entry_wall_ms": 35,
+      "kernel_process_creation_ms": 3,
+      "images_mapped_before_entry": [
+        {
+          "image": "ottrin.exe",
+          "beside_executable": true,
+          "since_launch_ms": 6
+        },
+        {
+          "image": "ntdll.dll",
+          "beside_executable": false,
+          "since_launch_ms": 6
+        },
+        {
+          "image": "kernel32.dll",
+          "beside_executable": false,
+          "since_launch_ms": 8
+        },
+        {
+          "image": "KernelBase.dll",
+          "beside_executable": false,
+          "since_launch_ms": 8
+        },
+        {
+          "image": "user32.dll",
+          "beside_executable": false,
+          "since_launch_ms": 10
+        },
+        {
+          "image": "win32u.dll",
+          "beside_executable": false,
+          "since_launch_ms": 11
+        },
+        {
+          "image": "gdi32.dll",
+          "beside_executable": false,
+          "since_launch_ms": 11
+        },
+        {
+          "image": "gdi32full.dll",
+          "beside_executable": false,
+          "since_launch_ms": 11
+        },
+        {
+          "image": "msvcp_win.dll",
+          "beside_executable": false,
+          "since_launch_ms": 11
+        },
+        {
+          "image": "ucrtbase.dll",
+          "beside_executable": false,
+          "since_launch_ms": 11
+        },
+        {
+          "image": "imm32.dll",
+          "beside_executable": false,
+          "since_launch_ms": 12
+        },
+        {
+          "image": "ole32.dll",
+          "beside_executable": false,
+          "since_launch_ms": 13
+        },
+        {
+          "image": "combase.dll",
+          "beside_executable": false,
+          "since_launch_ms": 13
+        },
+        {
+          "image": "rpcrt4.dll",
+          "beside_executable": false,
+          "since_launch_ms": 13
+        },
+        {
+          "image": "dwmapi.dll",
+          "beside_executable": false,
+          "since_launch_ms": 13
+        },
+        {
+          "image": "mfplat.dll",
+          "beside_executable": false,
+          "since_launch_ms": 14
+        },
+        {
+          "image": "mfreadwrite.dll",
+          "beside_executable": false,
+          "since_launch_ms": 15
+        },
+        {
+          "image": "bcryptprimitives.dll",
+          "beside_executable": false,
+          "since_launch_ms": 15
+        },
+        {
+          "image": "oleaut32.dll",
+          "beside_executable": false,
+          "since_launch_ms": 16
+        },
+        {
+          "image": "advapi32.dll",
+          "beside_executable": false,
+          "since_launch_ms": 16
+        },
+        {
+          "image": "msvcrt.dll",
+          "beside_executable": false,
+          "since_launch_ms": 16
+        },
+        {
+          "image": "sechost.dll",
+          "beside_executable": false,
+          "since_launch_ms": 17
+        },
+        {
+          "image": "SHCore.dll",
+          "beside_executable": false,
+          "since_launch_ms": 17
+        },
+        {
+          "image": "shell32.dll",
+          "beside_executable": false,
+          "since_launch_ms": 17
+        },
+        {
+          "image": "shlwapi.dll",
+          "beside_executable": false,
+          "since_launch_ms": 18
+        },
+        {
+          "image": "uxtheme.dll",
+          "beside_executable": false,
+          "since_launch_ms": 18
+        },
+        {
+          "image": "ktmw32.dll",
+          "beside_executable": false,
+          "since_launch_ms": 19
+        },
+        {
+          "image": "mpr.dll",
+          "beside_executable": false,
+          "since_launch_ms": 19
+        },
+        {
+          "image": "cfgmgr32.dll",
+          "beside_executable": false,
+          "since_launch_ms": 20
+        },
+        {
+          "image": "UIAutomationCore.dll",
+          "beside_executable": false,
+          "since_launch_ms": 20
+        },
+        {
+          "image": "propsys.dll",
+          "beside_executable": false,
+          "since_launch_ms": 20
+        },
+        {
+          "image": "userenv.dll",
+          "beside_executable": false,
+          "since_launch_ms": 21
+        },
+        {
+          "image": "RTWorkQ.dll",
+          "beside_executable": false,
+          "since_launch_ms": 26
+        }
+      ],
+      "bundled_graphics_loads": [
+        {
+          "image": "opengl32.dll",
+          "since_launch_ms": 62
+        },
+        {
+          "image": "libgallium_wgl.dll",
+          "since_launch_ms": 64
+        }
+      ]
+    }
+  ],
+  "no_index": true,
+  "preferences_and_fixture_preserved": true,
+  "scope": "GNU release diagnostic executable substituted in the stable portable payload in a disposable ordinary-user software Windows VM. Default selected WGPU. Default ran first after extraction and OpenGL followed, so timings do not isolate renderer differences from OS cache warming.",
+  "kernel_trace": {
+    "configuration": {
+      "provider": "Microsoft-Windows-Kernel-Process",
+      "defender": {
+        "AMServiceEnabled": true,
+        "AntivirusEnabled": true,
+        "RealTimeProtectionEnabled": true,
+        "AMRunningMode": "Normal"
+      },
+      "keywords": [
+        {
+          "Name": "WINEVENT_KEYWORD_PROCESS",
+          "Value": 16
+        },
+        {
+          "Name": "WINEVENT_KEYWORD_IMAGE",
+          "Value": 64
+        }
+      ]
+    },
+    "trace_bytes": 3809280,
+    "raw_event_receipt_sha256": "0d4ddd832145e4bb129a37a27affe49ed2092f9907a1aaf435f97b8c8aa0163f"
+  },
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "compiler_outputs_restored": 36,
+  "retired": [
+    ".hermes/evidence/windows-picker-deferred-opengl/windows-native/RESULTS.zip",
+    ".hermes/evidence/windows-picker-deferred-opengl/windows-native/desktop-ready.png",
+    ".hermes/evidence/windows-picker-deferred-opengl/windows-native/privacy-accepted-0.png"
+  ],
+  "export_sha256": "eb79f7a0069fb931368b06f2c166fb8087d9987fea96fb7d0f2a239e1cdf4af5",
+  "diagnostic_stage_executable_removed": true,
+  "raw_event_receipt_removed_after_extracting_pre_entry_timeline": true,
+  "superseded_test_import_archive_removed": "target/x86_64-pc-windows-gnu/release/build/ottrin-app-ff6e180caeb3d536/out/libopengl32.a"
+}

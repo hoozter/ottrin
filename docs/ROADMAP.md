@@ -2250,15 +2250,25 @@ Current source, test, package and owner/external scopes stay separate.
    entry despite the picker later selecting WGPU. The executable imports
    WGL directly. Defender real-time protection was active, and the trace
    establishes the loading interval without identifying which Windows
-   subsystem consumed it. Next, remove the WGPU path's dependency on
-   loading bundled Mesa before entry while preserving OpenGL compatibility
-   and verifying both renderers on Windows. Refreshed packages remain open.
+   subsystem consumed it. Source `68b145fd` defers OpenGL imports. The
+   package gate rejects the old eager binary and accepts the new GNU
+   executable with the pinned Mesa loader. In a fresh native guest using
+   the delivered ZIP's other files, both WGPU picker processes kept
+   bundled Mesa unloaded. Both explicit OpenGL processes loaded it after
+   entry and completed cancellation normally. The first WGPU window
+   mapped at 11.31 seconds, with process creation at 6.38 seconds and
+   application entry at 9.00 seconds. The repeat mapped at 1.51 seconds.
+   The first compatibility launch still paid a 5.40-second Mesa mapping
+   interval when it needed OpenGL. Keep the remaining cold-start delay
+   open and verify the rebuilt portable and installed packages before
+   promotion.
    Broader theme and caller acceptance also remain open.
    [Delivered Windows picker resource check](../.hermes/evidence/windows-picker-current-runtime-audit/ACCEPTANCE.json).
    [Windows picker startup comparison](../.hermes/evidence/windows-picker-startup-comparison/ACCEPTANCE.json).
    [Installed Windows picker startup](../.hermes/evidence/windows-picker-installed-startup/ACCEPTANCE.json).
    [Native Windows startup phases](../.hermes/evidence/windows-picker-phase-trace/ACCEPTANCE.json).
    [Native Windows loader observation](../.hermes/evidence/windows-picker-loader-observation/ACCEPTANCE.json).
+   [Native deferred OpenGL verification](../.hermes/evidence/windows-picker-deferred-opengl/ACCEPTANCE.json).
 
    Linux folder setup `b9543fe9` keeps interrupted launcher replacements
    repairable while refusing edits outside the recorded versions. Eight
