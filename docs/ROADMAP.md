@@ -2207,11 +2207,18 @@ Current source, test, package and owner/external scopes stay separate.
    first visible window took up to 15.25 seconds in the fresh software
    OpenGL guest. The repeat took 1.04 seconds. The 30-second idle sample
    showed no measurable CPU time and an 84.4 MiB working set. The first
-   launch is too slow. Compare the default renderer against OpenGL and
-   separate process initialization, renderer setup, and first window mapping
-   before accepting startup performance. Broader theme and caller
-   acceptance also remain open.
+   launch is too slow. A second fresh VM reproduced it with default
+   renderer settings at 15.31 seconds. Windows took 5.84 seconds to return
+   from process creation. The request was sent at 5.90 seconds, leaving
+   9.42 seconds before the first observed window. A default repeat took
+   1.26 seconds and two subsequent forced OpenGL starts took 1.17 and
+   0.49 seconds. Default can select OpenGL automatically in this VM, and
+   the later starts benefited from warmed caches. Next, compare a first
+   launch from the installed NSIS against fresh portable extraction and
+   time executable entry, renderer setup and first UI update separately.
+   Broader theme and caller acceptance also remain open.
    [Delivered Windows picker resource check](../.hermes/evidence/windows-picker-current-runtime-audit/ACCEPTANCE.json).
+   [Windows picker startup comparison](../.hermes/evidence/windows-picker-startup-comparison/ACCEPTANCE.json).
 
    Linux folder setup `b9543fe9` keeps interrupted launcher replacements
    repairable while refusing edits outside the recorded versions. Eight

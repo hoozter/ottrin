@@ -189,7 +189,7 @@
     {
       "id": "U13",
       "requirement": "Must-have themed open/save picker and reversible supported default-folder integration; no unnecessary always-on picker process.",
-      "current_scope": "Current eadf713e Linux mounted AppImage and Windows native portable picker pass pointer-driven location editing in both palettes. The delivered Linux AppImage also passes repeat and concurrent open/cancel without a private index socket. Prior Linux portal/Firefox/GTK/Flatpak/Vivaldi/FileManager1 and Windows Save/default-folder receipts retain exact scopes. MSIX 36 passes Explorer folder actions. The delivered Windows portable picker passed first, repeat and concurrent cancellation without starting the index. Software OpenGL VM first window mapping took up to 15.25 seconds, repeat 1.04 seconds. Windows startup performance and broader caller and theme acceptance remain open.",
+      "current_scope": "Current eadf713e Linux mounted AppImage and Windows native portable picker pass pointer-driven location editing in both palettes. The delivered Linux AppImage also passes repeat and concurrent open/cancel without a private index socket. Prior Linux portal/Firefox/GTK/Flatpak/Vivaldi/FileManager1 and Windows Save/default-folder receipts retain exact scopes. MSIX 36 passes Explorer folder actions. The delivered Windows portable picker passed first, repeat and concurrent cancellation without starting the index. Software OpenGL VM first window mapping took up to 15.25 seconds, repeat 1.04 seconds. Windows startup performance and broader caller and theme acceptance remain open. A second fresh VM reproduced the first-window delay at 15.31 seconds with default renderer settings, including 5.84 seconds before process creation returned. A default repeat took 1.26 seconds.",
       "evidence": [
         ".hermes/evidence/current-firefox-picker/ACCEPTANCE.json",
         ".hermes/evidence/theme-selection-delivery-current/DESKTOP_INTEGRATION_ACCEPTANCE.json",
@@ -207,7 +207,8 @@
         ".hermes/evidence/picker-edit-location-current/WINDOWS_PICKER_ACCEPTANCE.json",
         ".hermes/evidence/picker-edit-location-current/runtime36-upgrade/ACCEPTANCE.json",
         ".hermes/evidence/picker-current-runtime-audit/ACCEPTANCE.json",
-        ".hermes/evidence/windows-picker-current-runtime-audit/ACCEPTANCE.json"
+        ".hermes/evidence/windows-picker-current-runtime-audit/ACCEPTANCE.json",
+        ".hermes/evidence/windows-picker-startup-comparison/ACCEPTANCE.json"
       ]
     },
     {

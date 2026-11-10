@@ -1,0 +1,94 @@
+{
+  "status": "pass",
+  "input": {
+    "source_revision": "eadf713e853ababd803fe37e6f2ea2462c60a619",
+    "files": [
+      {
+        "name": "portable.zip",
+        "sha256": "57198b5b6537e281ba71214a3bb530380b3443654885efe5f667ef702fcd3cef"
+      }
+    ],
+    "actor_sha256": "c5fc9dc1756aa5bca1df8cd8542849b12336ac1aace60fba789681d2c9f7b34f",
+    "scope": "Exact delivered portable chooser, default and forced OpenGL process-start and mapping timing."
+  },
+  "binary_sha256": "8d10842f6d7a25c1dd6d6183fb2863624d226453289886910ce8c11e60e4c13d",
+  "cases": [
+    {
+      "start_ms": 5836.777700000001,
+      "request_sent_ms": 5897.9609,
+      "case": "default-first",
+      "window_mapped_upper_bound_ms": 15313.65,
+      "response": {
+        "accepted": false,
+        "paths": [],
+        "current_filter": null,
+        "choices": {}
+      },
+      "normal_cancel": true,
+      "renderer_arguments": ""
+    },
+    {
+      "start_ms": 172.0089,
+      "request_sent_ms": 172.5926,
+      "case": "default-repeat",
+      "window_mapped_upper_bound_ms": 1257.65,
+      "response": {
+        "accepted": false,
+        "paths": [],
+        "current_filter": null,
+        "choices": {}
+      },
+      "normal_cancel": true,
+      "renderer_arguments": ""
+    },
+    {
+      "start_ms": 10.0469,
+      "request_sent_ms": 10.494900000000001,
+      "case": "opengl-first",
+      "window_mapped_upper_bound_ms": 1166.95,
+      "response": {
+        "accepted": false,
+        "paths": [],
+        "current_filter": null,
+        "choices": {}
+      },
+      "normal_cancel": true,
+      "renderer_arguments": "--renderer opengl"
+    },
+    {
+      "start_ms": 5.1872,
+      "request_sent_ms": 5.7217,
+      "case": "opengl-repeat",
+      "window_mapped_upper_bound_ms": 494.14,
+      "response": {
+        "accepted": false,
+        "paths": [],
+        "current_filter": null,
+        "choices": {}
+      },
+      "normal_cancel": true,
+      "renderer_arguments": "--renderer opengl"
+    }
+  ],
+  "no_index": true,
+  "preferences_and_fixture_preserved": true,
+  "scope": "Direct picker protocol in an ordinary interactive software Windows VM. Default mode can auto-select OpenGL on a virtual adapter. Default ran first after extraction and OpenGL followed, so timings do not isolate renderer differences from OS cache warming.",
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "compiler_outputs_restored": 36,
+  "retired": [
+    ".hermes/evidence/windows-picker-startup-comparison/windows-native/RESULTS.zip",
+    ".hermes/evidence/windows-picker-startup-comparison/windows-native/desktop-ready.png",
+    ".hermes/evidence/windows-picker-startup-comparison/windows-native/privacy-accepted-0.png",
+    ".hermes/evidence/windows-picker-startup-comparison/windows-native/privacy-accepted-1.png"
+  ],
+  "export_sha256": "b158f04227e7fac958cebb40a48f9c28e4268975ce21385991233fa598a4a6a0"
+}
