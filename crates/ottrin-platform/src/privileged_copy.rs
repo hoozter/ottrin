@@ -17,6 +17,19 @@ mod windows;
 #[cfg(target_os = "windows")]
 pub(crate) use windows::execute;
 
+/// Administrator Copy is available on Linux and in Windows desktop installs
+/// that can start the helper for an administrator without MSIX registration.
+pub fn recovery_supported() -> bool {
+    #[cfg(target_os = "linux")]
+    {
+        true
+    }
+    #[cfg(target_os = "windows")]
+    {
+        matches!(crate::windows_startup::is_packaged(), Ok(false))
+    }
+}
+
 #[cfg(target_os = "linux")]
 pub fn copy(
     platform: &DefaultPlatform,

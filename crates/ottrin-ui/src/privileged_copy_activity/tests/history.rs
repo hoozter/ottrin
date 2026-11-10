@@ -478,7 +478,7 @@ fn windows_helper_protocol_and_activity_capability_agree_without_elevation() {
     let helper =
         std::env::var_os("OTTRIN_QA_PRIV_HELPER").expect("Declared helper fixture missing");
     let version = ottrin_core::PRIVILEGED_HELPER_PROTOCOL_VERSION.to_string();
-    let supported = ottrin_core::PRIVILEGED_COPY_RECOVERY_SUPPORTED;
+    let supported = ottrin_platform::privileged_copy::recovery_supported();
     for (arguments, expected) in [
         (
             vec!["--check-protocol", version.as_str(), "--bound-local-pipe"],

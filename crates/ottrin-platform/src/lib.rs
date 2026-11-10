@@ -2180,7 +2180,7 @@ impl PlatformOps for DefaultPlatform {
             if !is_executable_available(&helper) {
                 return PrivilegedAvailability::Misconfigured("The administrator helper is missing from this package. Restore the complete portable package or reinstall Ottrin.".into());
             }
-            match helper_protocol::check(&helper, false) {
+            match helper_protocol::check(&helper, privileged_copy::recovery_supported()) {
                 Ok(_) => PrivilegedAvailability::Ready,
                 Err(message) => PrivilegedAvailability::UpdateRequired(message),
             }

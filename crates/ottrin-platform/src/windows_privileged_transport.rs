@@ -753,6 +753,11 @@ pub(crate) fn execute(
     progress: &mut dyn FnMut(u64) -> Result<(), PlatformError>,
 ) -> Result<PrivilegedResponse, PlatformError> {
     progress(0)?;
+    if copy_recovery && !crate::privileged_copy::recovery_supported() {
+        return Err(PlatformError::NotAvailable(
+            "Administrator Copy is unavailable in the Windows MSIX package.",
+        ));
+    }
     let helper = helper_protocol::check(helper, copy_recovery)
         .map_err(PlatformError::PrivilegedHelperUnavailable)?;
     let mut random = [0; 16];

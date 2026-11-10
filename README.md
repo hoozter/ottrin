@@ -93,8 +93,9 @@ Run the per-user installer, or unzip the portable package and run:
 ```
 
 Normal user-owned file operations do not require elevation. Supported administrator
-operations use the bundled helper through Windows UAC. Administrator Copy remains
-gated on its durable recovery and original-caller authority work.
+operations use the bundled helper through Windows UAC. Administrator Copy and its
+recovery actions are enabled for builds launched without MSIX package identity.
+The MSIX package shows the limitation in Settings → Services.
 
 Windows packaging is designed to use WGPU when Automatic finds no compatibility
 signal and to select a checksum-pinned Mesa 26.1.3 OpenGL compatibility runtime

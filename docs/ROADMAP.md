@@ -397,6 +397,15 @@ and [first-run timeout](../.hermes/evidence/windows-picker-keyboard-current/nati
    and temporary archives were removed. This verifies the lifecycle
    with two registered accounts. Ordinary single-user MSIX deployment
    still lacks a verified administrator Copy path.
+   The release source now checks Windows package identity for
+   administrator Copy. It enables the verified desktop route in source
+   for the EXE and portable formats and explains the MSIX limit in
+   Services. The command boundary rejects MSIX Copy and recovery
+   before helper launch. Strict Windows-target Clippy and the focused
+   Linux helper protocol and preflight cancellation tests passed.
+   Native acceptance of the new source and refreshed user packages
+   are still pending. Continue the single-user MSIX investigation
+   separately.
    [MSIX helper startup sample](../.hermes/evidence/windows-admin-copy-delivery-current/MSIX_HELPER_STARTUP_FINDING.json).
    [Loader image and symbol](../.hermes/evidence/windows-admin-copy-delivery-current/WINDOWS_LOADER_IMAGE.json).
    [Native DLL initialization failure](../.hermes/evidence/windows-admin-copy-delivery-current/MSIX_HELPER_DLL_INIT_FAILURE.json).

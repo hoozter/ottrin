@@ -11283,6 +11283,10 @@ impl OttrinApp {
             };
             let privilege_retry = outcome.should_offer_privilege_retry()
                 && !matches!(&cmd, FileCommand::Rename { .. });
+            #[cfg(target_os = "windows")]
+            let privilege_retry = privilege_retry
+                && (!matches!(&cmd, FileCommand::Copy { .. })
+                    || ottrin_platform::privileged_copy::recovery_supported());
             let (error, warning, retry, completed_sources) = match outcome {
                 FileOpOutcome::Completed => (None, None, None, completed_source_count),
                 FileOpOutcome::CompletedWithWarning { message, .. } => {
@@ -14581,7 +14585,7 @@ impl OttrinApp {
         let c = self.colors;
         smart_panel_header(ui, &c, SidebarSection::Activity);
         #[cfg(any(target_os = "linux", target_os = "windows"))]
-        if ottrin_core::PRIVILEGED_COPY_RECOVERY_SUPPORTED {
+        if ottrin_platform::privileged_copy::recovery_supported() {
             self.render_privileged_copy_history(ui);
         }
         ui.horizontal_wrapped(|ui| {
@@ -21009,6 +21013,10 @@ impl OttrinApp {
                 PrivilegedAvailability::Unsupported(message) => Self::render_service_status(ui, message, c.text_muted),
             }
             settings_description(ui, c, if cfg!(target_os="windows"){"The bundled helper uses Windows’ administrator prompt when a protected file operation needs elevation."}else{"Lets Ottrin ask for administrator permission to work with protected files."});
+            #[cfg(target_os = "windows")]
+            if !ottrin_platform::privileged_copy::recovery_supported() {
+                settings_description(ui, c, "Administrator Copy is unavailable in the MSIX package. The Windows desktop installer supports it.");
+            }
             #[cfg(target_os = "linux")]
             if ui.add(egui::Button::new(match self.privileged_availability {
                 PrivilegedAvailability::Ready => "Reinstall helper (optional)",
