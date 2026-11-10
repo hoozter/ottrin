@@ -385,8 +385,12 @@ and [first-run timeout](../.hermes/evidence/windows-picker-keyboard-current/nati
    Local AppData from the live packaged caller token with
    `SHGetKnownFolderPath`. It returned the same path as the actor's
    environment and the journal was still absent there after Undo.
-   The next comparison needs an independent disk observation of the
-   caller and administrator package storage before and after cleanup.
+   An independent SYSTEM scan found no journal in accessible roots
+   and received access denied only at the standard caller's package
+   LocalCache State directory after Copy and Undo. The administrator's
+   scanned roots had no errors or journal matches. Inspect that caller
+   directory with a read-only backup-mode listing or an authorized
+   caller-context observation before and after authenticated cleanup.
    The journal location, normal Undo exit and retained-data cleanup
    remain unverified. This registration test is diagnostic. Ordinary
    single-user MSIX deployment still lacks a verified administrator
@@ -397,6 +401,7 @@ and [first-run timeout](../.hermes/evidence/windows-picker-keyboard-current/nati
    [Loader trace result](../.hermes/evidence/windows-admin-copy-delivery-current/MSIX_HELPER_LOADER_TRACE.json).
    [Alternate administrator registration comparison](../.hermes/evidence/windows-admin-copy-delivery-current/MSIX_HELPER_ADMIN_REGISTRATION_COMPARISON.json).
    [Packaged caller journal path comparison](../.hermes/evidence/windows-admin-copy-delivery-current/MSIX_HELPER_CALLER_JOURNAL_LOOKUP.json).
+   [SYSTEM journal disk scan](../.hermes/evidence/windows-admin-copy-delivery-current/MSIX_HELPER_JOURNAL_DISK_SCAN.json).
    [MSIX 33 assembly](../.hermes/evidence/windows-admin-copy-delivery-current/ASSEMBLY_ACCEPTANCE.json).
    [Fresh deployment](../.hermes/evidence/windows-admin-copy-delivery-current/runtime33-fresh/ACCEPTANCE.json),
    [enabled upgrade](../.hermes/evidence/windows-admin-copy-delivery-current/runtime33-upgrade/ACCEPTANCE.json)

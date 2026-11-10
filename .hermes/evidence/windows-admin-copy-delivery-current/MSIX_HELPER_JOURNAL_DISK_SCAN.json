@@ -1,0 +1,122 @@
+{
+  "status": "SYSTEM disk scan encountered inaccessible caller package State after Copy and Undo",
+  "source_revision": "c4c2f4beb0a859cadae68423bfaad2e56996a4e6",
+  "package_sha256": "ff98d685a6113ba1177c938fb7ce51f95e21c23a15e9b457dc9f91d258e354da",
+  "observer_sid": "S-1-5-18",
+  "phases": [
+    {
+      "phase": "before_copy",
+      "target_present": false,
+      "source_sha256": null,
+      "profiles": [
+        {
+          "account": "OttrinQaCaller",
+          "account_sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+          "journals": [],
+          "errors": [],
+          "roots": [
+            "C:\\Users\\OttrinQaCaller\\AppData\\Local\\Ottrin",
+            "C:\\Users\\OttrinQaCaller\\AppData\\Roaming\\Ottrin",
+            "C:\\Users\\OttrinQaCaller\\AppData\\Local\\Packages\\Ottrin.Development_vs01n017nxmbr"
+          ]
+        },
+        {
+          "account": "OttrinQaAdmin",
+          "account_sid": "S-1-5-21-3183210791-1673105385-3262580894-1032",
+          "journals": [],
+          "errors": [],
+          "roots": [
+            "C:\\Users\\OttrinQaAdmin\\AppData\\Local\\Ottrin",
+            "C:\\Users\\OttrinQaAdmin\\AppData\\Roaming\\Ottrin",
+            "C:\\Users\\OttrinQaAdmin\\AppData\\Local\\Packages\\Ottrin.Development_vs01n017nxmbr"
+          ]
+        }
+      ]
+    },
+    {
+      "phase": "after_copy",
+      "target_present": true,
+      "source_sha256": "3fc5d485b7cbea0501dd61db76c43ff6dadea69e25a93ff970da52a3ec597073",
+      "profiles": [
+        {
+          "account": "OttrinQaCaller",
+          "account_sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+          "journals": [],
+          "errors": [
+            {
+              "root": "C:\\Users\\OttrinQaCaller\\AppData\\Local\\Packages\\Ottrin.Development_vs01n017nxmbr",
+              "operation": "enumerate",
+              "message": "Access to the path 'C:\\Users\\OttrinQaCaller\\AppData\\Local\\Packages\\Ottrin.Development_vs01n017nxmbr\\LocalCache\\Local\\ottrin\\State' is denied."
+            }
+          ],
+          "roots": [
+            "C:\\Users\\OttrinQaCaller\\AppData\\Local\\Ottrin",
+            "C:\\Users\\OttrinQaCaller\\AppData\\Roaming\\Ottrin",
+            "C:\\Users\\OttrinQaCaller\\AppData\\Local\\Packages\\Ottrin.Development_vs01n017nxmbr"
+          ]
+        },
+        {
+          "account": "OttrinQaAdmin",
+          "account_sid": "S-1-5-21-3183210791-1673105385-3262580894-1032",
+          "journals": [],
+          "errors": [],
+          "roots": [
+            "C:\\Users\\OttrinQaAdmin\\AppData\\Local\\Ottrin",
+            "C:\\Users\\OttrinQaAdmin\\AppData\\Roaming\\Ottrin",
+            "C:\\Users\\OttrinQaAdmin\\AppData\\Local\\Packages\\Ottrin.Development_vs01n017nxmbr"
+          ]
+        }
+      ]
+    },
+    {
+      "phase": "after_undo",
+      "target_present": false,
+      "source_sha256": "3fc5d485b7cbea0501dd61db76c43ff6dadea69e25a93ff970da52a3ec597073",
+      "profiles": [
+        {
+          "account": "OttrinQaCaller",
+          "account_sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+          "journals": [],
+          "errors": [
+            {
+              "root": "C:\\Users\\OttrinQaCaller\\AppData\\Local\\Packages\\Ottrin.Development_vs01n017nxmbr",
+              "operation": "enumerate",
+              "message": "Access to the path 'C:\\Users\\OttrinQaCaller\\AppData\\Local\\Packages\\Ottrin.Development_vs01n017nxmbr\\LocalCache\\Local\\ottrin\\State' is denied."
+            }
+          ],
+          "roots": [
+            "C:\\Users\\OttrinQaCaller\\AppData\\Local\\Ottrin",
+            "C:\\Users\\OttrinQaCaller\\AppData\\Roaming\\Ottrin",
+            "C:\\Users\\OttrinQaCaller\\AppData\\Local\\Packages\\Ottrin.Development_vs01n017nxmbr"
+          ]
+        },
+        {
+          "account": "OttrinQaAdmin",
+          "account_sid": "S-1-5-21-3183210791-1673105385-3262580894-1032",
+          "journals": [],
+          "errors": [],
+          "roots": [
+            "C:\\Users\\OttrinQaAdmin\\AppData\\Local\\Ottrin",
+            "C:\\Users\\OttrinQaAdmin\\AppData\\Roaming\\Ottrin",
+            "C:\\Users\\OttrinQaAdmin\\AppData\\Local\\Packages\\Ottrin.Development_vs01n017nxmbr"
+          ]
+        }
+      ]
+    }
+  ],
+  "scope": "This scan records one access boundary, not the physical journal location or ownership. The administrator roots scanned without error contained no journal. The Undo fixture stopped before retained-data cleanup.",
+  "cleanup": {
+    "domain": "ottrin-init-helper-pipe-qa",
+    "uuid": "ab5ec822-5134-4305-a588-3d0b35646be9",
+    "volume": "ottrin-init-helper-pipe-qa.qcow2",
+    "status": "pass",
+    "domain_removed": true,
+    "overlay_removed": true,
+    "protected_definitions_states_and_backing_unchanged": true,
+    "both_restore_stages_removed": true,
+    "restored_executables_per_run": [
+      25,
+      25
+    ]
+  }
+}
