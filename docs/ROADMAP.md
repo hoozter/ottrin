@@ -2150,7 +2150,18 @@ Current source, test, package and owner/external scopes stay separate.
    hidden action before the fix, then clicked the visible button at
    680 × 480 with 135% theme text in Dark and Light. All 32 picker
    and embedded picker tests and strict Windows-target UI lint passed.
-   This checkpoint is source-verified and awaits packaging.
+   All four Linux formats passed exact content checks. The mounted
+   AppImage passed a physical click on Edit location and returned the
+   exact typed folder in Dark and Light at 150% X11 scaling. Both
+   private profiles were removed. An isolated atomic replacement
+   kept the old window usable and opened the new binary on the next
+   launch. The staged index reopened the previous database with the
+   same inode, passed watcher mutations and restart, and averaged
+   0.067% of one core over 60 idle seconds. Linux promotion awaits
+   the hosted matrix, and Windows packaging remains in progress.
+   [Mounted Dark picker](../.hermes/evidence/picker-edit-location-current/linux-dark/ACCEPTANCE.json).
+   [Mounted Light picker](../.hermes/evidence/picker-edit-location-current/linux-light/ACCEPTANCE.json).
+   [Mounted daemon transition](../.hermes/evidence/picker-edit-location-current/LINUX_DAEMON_RUNTIME.json).
 
    Linux folder setup `b9543fe9` keeps interrupted launcher replacements
    repairable while refusing edits outside the recorded versions. Eight

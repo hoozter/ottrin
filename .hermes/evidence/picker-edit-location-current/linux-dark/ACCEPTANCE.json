@@ -1,0 +1,43 @@
+{
+  "status": "pass",
+  "theme": "Dark",
+  "x11_scale": 1.5,
+  "source_revision": "eadf713e853ababd803fe37e6f2ea2462c60a619",
+  "appimage_sha256": "a0dc4e8c4de29f3d760f7f5af09030fbf1ec7c29bdea2d86fa2c8edb33d54c12",
+  "edit_button": [
+    116,
+    109
+  ],
+  "pointer_location_edit": true,
+  "returned_exact_folder": true,
+  "main_config_and_original_preserved": true,
+  "normal_exit": true,
+  "cleanup": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-3t4tr_54",
+    "owned_processes_reaped": [
+      {
+        "pid": 3535397,
+        "exit": 0
+      },
+      {
+        "pid": 3535400,
+        "exit": 0
+      },
+      {
+        "pid": 3535401,
+        "exit": 15
+      },
+      {
+        "pid": 3535489,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 4
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  }
+}
