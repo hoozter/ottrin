@@ -1018,6 +1018,18 @@ impl PickerDialog {
                                 });
                             }
                         } else {
+                            if ui
+                                .add(
+                                    egui::Button::new(MI_EDIT)
+                                        .themed(&colors)
+                                        .accessible_name("Edit location"),
+                                )
+                                .on_hover_text("Edit location (Ctrl+L)")
+                                .clicked()
+                            {
+                                self.editing_location = true;
+                                self.focus_location = true;
+                            }
                             let width = (ui.available_width() * 0.62).max(120.0);
                             ScrollArea::horizontal()
                                 .id_salt("picker-breadcrumbs")
@@ -1045,14 +1057,6 @@ impl PickerDialog {
                                             {
                                                 self.navigate(crumb.target);
                                             }
-                                        }
-                                        if ui
-                                            .add(egui::Button::new(MI_EDIT).themed(&colors).accessible_name("Edit location"))
-                                            .on_hover_text("Edit location (Ctrl+L)")
-                                            .clicked()
-                                        {
-                                            self.editing_location = true;
-                                            self.focus_location = true;
                                         }
                                     });
                                 });
@@ -2690,6 +2694,37 @@ mod tests {
         assert!(!app.dialog.preview.as_ref().unwrap().has_image());
         assert_eq!(std::fs::read(path).unwrap(), b"Readable chooser text");
     }
+    #[test]
+    fn edit_location_is_clickable_when_breadcrumbs_overflow() {
+        let root = tempfile::tempdir().unwrap();
+        let mut directory = root.path().to_path_buf();
+        for index in 0..6 {
+            directory.push(format!("Long folder name {index}"));
+        }
+        std::fs::create_dir_all(&directory).unwrap();
+
+        for dark in [false, true] {
+            let ctx = Context::default();
+            let size = Vec2::new(680.0, 480.0);
+            let mut app = host(
+                &ctx,
+                PickerRequest {
+                    initial_directory: Some(directory.clone()),
+                    ..Default::default()
+                },
+                dark,
+                1.35,
+            );
+            frame(&mut app, &ctx, size, 0.0, vec![]);
+            let output = frame(&mut app, &ctx, size, 0.1, vec![]);
+            let edit = text_center(&output, MI_EDIT)
+                .expect("Edit location must be visible without scrolling breadcrumbs");
+            click(&mut app, &ctx, size, 0.2, edit);
+            assert!(app.dialog.editing_location);
+            assert_eq!(app.dialog.directory, directory);
+        }
+    }
+
     #[test]
     fn location_shortcut_replaces_the_path_on_repeated_navigation() {
         let root = tempfile::tempdir().unwrap();

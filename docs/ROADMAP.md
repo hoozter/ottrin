@@ -2140,8 +2140,17 @@ Current source, test, package and owner/external scopes stay separate.
    started no index and wrote no main configuration. All 550 active Linux
    UI tests, strict Linux/Windows-target lint and formatting passed.
    [Native Save acceptance](../.hermes/evidence/picker-overwrite-identity-current/ACCEPTANCE.json).
-   The staged mounted Linux portal and native Windows model checks are
-   recorded above. Installed Windows UI acceptance remains open.
+   The mounted Linux portal, native Windows model and installed NSIS
+   Save checks are recorded above. The installed receipt verifies the
+   same-name replacement confirmation in both palettes at its exact
+   package revision.
+
+   The picker keeps Edit location beside Parent folder when a deep
+   breadcrumb path scrolls. The rendered regression reproduced the
+   hidden action before the fix, then clicked the visible button at
+   680 × 480 with 135% theme text in Dark and Light. All 32 picker
+   and embedded picker tests and strict Windows-target UI lint passed.
+   This checkpoint is source-verified and awaits packaging.
 
    Linux folder setup `b9543fe9` keeps interrupted launcher replacements
    repairable while refusing edits outside the recorded versions. Eight
