@@ -1,0 +1,78 @@
+{
+  "status": "pass",
+  "input": {
+    "source_revision": "eadf713e853ababd803fe37e6f2ea2462c60a619",
+    "files": [
+      {
+        "name": "portable.zip",
+        "sha256": "57198b5b6537e281ba71214a3bb530380b3443654885efe5f667ef702fcd3cef"
+      }
+    ],
+    "actor_sha256": "2849b9432932b8128d2d0dae0077ed3ad58cb7f4f5966619adfa2e643322225a",
+    "scope": "Exact staged portable chooser, ordinary-user pointer-driven location editing in Dark and Light."
+  },
+  "cases": [
+    {
+      "response": {
+        "accepted": true,
+        "paths": [
+          {
+            "encoding": "windows-utf16-le",
+            "units_hex": "0043003a005c00550073006500720073005c004f0054004d00530049003800370064003200610034006500330036003700370064005c004f0074007400720069006e004f0077006e0065006400530065006c0065006300740069006f006e005c006e00650077002d006c006f0063006100740069006f006e002d00700072006f006f0066"
+          }
+        ],
+        "current_filter": null,
+        "choices": {}
+      },
+      "pointer_location_edit": true,
+      "expected_path": "C:\\Users\\OTMSI87d2a4e3677d\\OttrinOwnedSelection\\new-location-proof",
+      "binary_sha256": "8d10842f6d7a25c1dd6d6183fb2863624d226453289886910ce8c11e60e4c13d",
+      "case": "location-dark",
+      "exit": 0,
+      "status": "pass"
+    },
+    {
+      "response": {
+        "accepted": true,
+        "paths": [
+          {
+            "encoding": "windows-utf16-le",
+            "units_hex": "0043003a005c00550073006500720073005c004f0054004d00530049003800370064003200610034006500330036003700370064005c004f0074007400720069006e004f0077006e0065006400530065006c0065006300740069006f006e005c006e00650077002d006c006f0063006100740069006f006e002d00700072006f006f0066"
+          }
+        ],
+        "current_filter": null,
+        "choices": {}
+      },
+      "pointer_location_edit": true,
+      "expected_path": "C:\\Users\\OTMSI87d2a4e3677d\\OttrinOwnedSelection\\new-location-proof",
+      "binary_sha256": "8d10842f6d7a25c1dd6d6183fb2863624d226453289886910ce8c11e60e4c13d",
+      "case": "location-light",
+      "exit": 0,
+      "status": "pass"
+    }
+  ],
+  "no_index": true,
+  "preferences_and_fixture_preserved": true,
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "compiler_outputs_restored": 36,
+  "retired": [
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/picker-edit-location-current/windows-native/RESULTS.zip",
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/picker-edit-location-current/windows-native/desktop-ready.png",
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/picker-edit-location-current/windows-native/privacy-accepted-0.png",
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/picker-edit-location-current/windows-native/privacy-accepted-1.png"
+  ],
+  "export_sha256": "ee38d62e924939aff2a2ecf9719c99735967f4c8f135fb7c32410ef824543287",
+  "screenshots": {
+    "location-dark-edited.png": "738fd29da2572bee82a27d9d7193243c6f6d5393e38fa8960b37e77c1ae565ae",
+    "location-light-edited.png": "2172ae6fea450baaa145b5953eb3f1c3a1b914513f3432f30e7bf39cfebaf15f"
+  }
+}

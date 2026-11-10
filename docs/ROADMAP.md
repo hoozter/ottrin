@@ -2158,10 +2158,17 @@ Current source, test, package and owner/external scopes stay separate.
    launch. The staged index reopened the previous database with the
    same inode, passed watcher mutations and restart, and averaged
    0.067% of one core over 60 idle seconds. Linux promotion awaits
-   the hosted matrix, and Windows packaging remains in progress.
+   the hosted matrix. The Windows ZIP and NSIS contain the same 59
+   payload files. The exact portable picker passed a physical click
+   on Edit location in Dark and Light and returned the exact typed
+   UTF-16 folder. No index started. The chooser preserved preferences
+   and fixture files. The guest, its disks, the private desktop and
+   portable extraction were removed. Windows promotion awaits MSIX
+   verification and the hosted matrix.
    [Mounted Dark picker](../.hermes/evidence/picker-edit-location-current/linux-dark/ACCEPTANCE.json).
    [Mounted Light picker](../.hermes/evidence/picker-edit-location-current/linux-light/ACCEPTANCE.json).
    [Mounted daemon transition](../.hermes/evidence/picker-edit-location-current/LINUX_DAEMON_RUNTIME.json).
+   [Native Windows picker](../.hermes/evidence/picker-edit-location-current/WINDOWS_PICKER_ACCEPTANCE.json).
 
    Linux folder setup `b9543fe9` keeps interrupted launcher replacements
    repairable while refusing edits outside the recorded versions. Eight
