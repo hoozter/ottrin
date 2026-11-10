@@ -163,8 +163,17 @@ previews enabled.
 An eight-worker test using the staged PDFium library also terminated
 inside the native runtime before the fix. Serializing PDFium initialization,
 rendering and document teardown passed the same test and the other six PDF
-checks. PNG encoding remains outside the lock. Packaged desktop acceptance
-of the fix is pending.
+checks. PNG encoding remains outside the lock.
+
+All four Linux packages from `974b5dee` passed checksum and content
+verification. The exact staged AppImage and portable archive then each
+passed 27 desktop checks. Quick Inspector opened the image and both PDFs
+in the same process and continued through the remaining preview and file
+operations. Fixture integrity passed. Both private profiles and the
+portable extraction were removed. Stable delivery awaits the remaining
+replacement, theme and hosted checks.
+[AppImage desktop receipt](../.hermes/evidence/release-audit-current/linux-974b5dee-appimage/CONTROL.json)
+and [portable desktop receipt](../.hermes/evidence/release-audit-current/linux-974b5dee-portable/CONTROL.json).
 
 Windows portable and NSIS builds enable administrator Copy. The installed
 Copy and Undo lifecycle was verified on `49748824`. The current `b545bd2e`
