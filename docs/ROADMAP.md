@@ -115,6 +115,18 @@ Dark and Light. All six numeric controls now have a scoped pixel
 check on this AppImage. Additional consumers and color controls
 retain separate acceptance scopes.
 [Window and file label receipt](../.hermes/evidence/linux-theme-component-delivery/RENDERED_WINDOW_AND_LABELS.json).
+Native hex edits also changed the sampled Title bar, Toolbar + tabs,
+and Content background independently in Dark and Light. The active
+tab matched the production toolbar/title blend and stayed unchanged
+when the canvas color changed. Restore and Cancel passed.
+[Chrome color receipt](../.hermes/evidence/linux-theme-component-delivery/RENDERED_CHROME_COLORS.json).
+
+The staged Windows `d7726c9b` installer passed UI Automation
+activation and selection readback for Theme component in both
+palettes. Button corners accepted 14 px and restored its initial
+value. Cancel, picker regressions, uninstall and teardown passed.
+Development MSIX 40 assembly and upgrade retain separate gates.
+[Windows theme selector receipt](../.hermes/evidence/windows-theme-component-candidate/ACCEPTANCE.json).
 
 Windows portable and NSIS builds enable administrator Copy. The installed
 Copy and Undo lifecycle was verified on `49748824`. The current `b545bd2e`
