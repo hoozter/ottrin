@@ -107,6 +107,14 @@ changing border pixels. Window border thickness increased the sampled
 edge coverage while retaining the border color and glyph dimensions.
 Both properties restored their original measurements in both palettes.
 [Text and border receipt](../.hermes/evidence/linux-theme-component-delivery/RENDERED_TEXT_AND_BORDER.json).
+Window corners changed the mounted editor's sampled corner without
+changing its straight edge. Neutral text blend shifted the preview's
+image filename toward neutral while the plain-text filename remained
+unchanged. Both properties restored their starting measurements in
+Dark and Light. All six numeric controls now have a scoped pixel
+check on this AppImage. Additional consumers and color controls
+retain separate acceptance scopes.
+[Window and file label receipt](../.hermes/evidence/linux-theme-component-delivery/RENDERED_WINDOW_AND_LABELS.json).
 
 Windows portable and NSIS builds enable administrator Copy. The installed
 Copy and Undo lifecycle was verified on `49748824`. The current `b545bd2e`
