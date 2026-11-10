@@ -2299,6 +2299,16 @@ Current source, test, package and owner/external scopes stay separate.
    serialized across internal and standalone pickers, so closing an
    older dialog no longer restores stale grid, hidden-file or preview
    options. The last closed dialog still supplies the remembered folder.
+   The `f62ec5e4` Linux AppImage, portable archive, DEB and RPM are
+   staged and passed content verification. Three mounted AppImage
+   picker processes preserved independent grid and hidden-file changes
+   when the untouched picker closed last. Atomic replacement preserved
+   the open window in the private fixture and its next launch used the
+   new binary. The staged daemon, privileged helper and HTML renderer
+   match the delivered binaries by hash. Promotion preflight passed
+   without mutating the running service. Hosted Windows verification
+   remains pending.
+   [Mounted picker preference check](../.hermes/evidence/linux-picker-preferences-delivery/mounted-overlap/ACCEPTANCE.json).
 
    Linux folder setup `b9543fe9` keeps interrupted launcher replacements
    repairable while refusing edits outside the recorded versions. Eight

@@ -1,0 +1,47 @@
+{
+  "status": "pass",
+  "source_revision": "f62ec5e4319514e699112a3442da630747cd2839",
+  "appimage_sha256": "779558485907c1c14eb216833a28f0194764275eca4905a32d1f0ee9956c49e4",
+  "app_binary_sha256": "e49f558ccbb825cebc1ad3fa06ecf6573b357920a7322070deaa470d8e0eb5fc",
+  "three_overlapping_owned_processes": true,
+  "all_cancelled_normally": true,
+  "retained_grid_and_hidden": true,
+  "untouched_dialog_closed_last": true,
+  "configuration_and_fixture_preserved": true,
+  "cleanup": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-28gn9re4",
+    "owned_processes_reaped": [
+      {
+        "pid": 3711873,
+        "exit": 0
+      },
+      {
+        "pid": 3711876,
+        "exit": 0
+      },
+      {
+        "pid": 3711877,
+        "exit": 15
+      },
+      {
+        "pid": 3711938,
+        "exit": 0
+      },
+      {
+        "pid": 3712007,
+        "exit": 0
+      },
+      {
+        "pid": 3712060,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 4
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  }
+}
