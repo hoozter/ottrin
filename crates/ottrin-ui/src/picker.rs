@@ -1256,10 +1256,11 @@ impl PickerDialog {
                         } else {
                             visible.len()
                         };
+                        let list_scale = config.list_view_scale.clamp(0.75, 1.85);
                         let row_height = if self.grid {
                             grid_metrics.size.y
                         } else {
-                            (25.0 * colors.font_scale).round() + if self.indexed { ui.text_style_height(&egui::TextStyle::Small) + ui.spacing().item_spacing.y } else { 0.0 }
+                            file_row::file_row_height(list_scale, &colors) + if self.indexed { ui.text_style_height(&egui::TextStyle::Small) + ui.spacing().item_spacing.y } else { 0.0 }
                         };
                         ScrollArea::vertical()
                             .id_salt("picker-files")
@@ -1326,7 +1327,7 @@ impl PickerDialog {
                                             file_row::FileRowLayout {
                                                 index,
                                                 width: ui.available_width(),
-                                                scale: 1.0,
+                                                scale: list_scale,
                                             },
                                             &colors,
                                             config,
@@ -1944,6 +1945,45 @@ mod tests {
             std::fs::read(root.path().join("alpha.txt")).unwrap(),
             b"original"
         );
+    }
+
+    #[test]
+    fn picker_list_density_tracks_the_saved_list_scale() {
+        let root = tempfile::tempdir().unwrap();
+        for name in ["alpha.txt", "beta.txt"] {
+            std::fs::write(root.path().join(name), b"fixture").unwrap();
+        }
+        let ctx = Context::default();
+        let mut app = host(
+            &ctx,
+            PickerRequest {
+                initial_directory: Some(root.path().to_path_buf()),
+                ..Default::default()
+            },
+            true,
+            1.35,
+        );
+        let size = Vec2::new(680.0, 480.0);
+        let pitch = |output: &egui::FullOutput| {
+            text_center(output, "beta.txt").unwrap().y - text_center(output, "alpha.txt").unwrap().y
+        };
+        app.config.list_view_scale = 0.9;
+        frame(&mut app, &ctx, size, 0.0, vec![]);
+        let compact = frame(&mut app, &ctx, size, 0.1, vec![]);
+        app.config.list_view_scale = 1.35;
+        let large = frame(&mut app, &ctx, size, 0.2, vec![]);
+        let expected = file_row::file_row_height(1.35, &app.colors)
+            - file_row::file_row_height(0.9, &app.colors);
+        assert!((pitch(&large) - pitch(&compact) - expected).abs() < 1.0);
+        assert!(text_center(&large, "Cancel").is_some());
+        click(
+            &mut app,
+            &ctx,
+            size,
+            0.3,
+            text_center(&large, "beta.txt").unwrap(),
+        );
+        assert_eq!(app.dialog.selected, [root.path().join("beta.txt")]);
     }
 
     #[test]

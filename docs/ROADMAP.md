@@ -2338,6 +2338,13 @@ Current source, test, package and owner/external scopes stay separate.
    uses its own setting. This covers rendered UI shapes. Installed
    window theme checks and broader theme-property coverage remain open.
 
+   The picker now follows the saved List view scale, just as its Grid
+   view follows the saved Grid scale. Its virtual list and painted
+   rows use the same height calculation. A rendered regression
+   checks the density change at the minimum picker size with 135%
+   theme text, keeps Cancel visible and selects the intended file
+   by pointer at the larger density. Package refresh remains open.
+
    Linux folder setup `b9543fe9` keeps interrupted launcher replacements
    repairable while refusing edits outside the recorded versions. Eight
    folder tests and strict platform Clippy pass. A private unprivileged CLI

@@ -12,6 +12,10 @@ pub(crate) struct FileRowLayout {
     pub scale: f32,
 }
 
+pub(crate) fn file_row_height(scale: f32, colors: &Colors) -> f32 {
+    (25.0 * scale.clamp(0.9, 1.35) * colors.font_scale).round()
+}
+
 pub(crate) fn render_file_row(
     ui: &mut egui::Ui,
     entry: &FileEntry,
@@ -28,7 +32,7 @@ pub(crate) fn render_file_row(
     let selected = state.selected;
     let is_active_col = state.focused;
     let opened = state.opened;
-    let row_h = (25.0 * scale.clamp(0.9, 1.35) * c.font_scale).round();
+    let row_h = file_row_height(scale, c);
     let icon_size = (16.0 * scale.sqrt()).max(14.0);
     let text_size = (13.0 * scale.sqrt()).max(11.0) * c.font_scale;
     let row_rect = Rect::from_min_size(ui.cursor().min, Vec2::new(row_width.max(1.0), row_h));
