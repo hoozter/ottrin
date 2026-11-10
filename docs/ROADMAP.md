@@ -9,14 +9,14 @@ not complete a broader native, platform or user-acceptance requirement.
 | Platform | Launchable locally | Next delivery |
 | --- | --- | --- |
 | Linux | `eadf713e` AppImage, portable archive, DEB and RPM in `dist/packages/`. [Exact package receipt](../dist/packages/LINUX_PACKAGES_ACCEPTANCE.json). | Promoted after mounted Dark and Light picker checks, an old-to-new index transition and all four [hosted jobs](https://github.com/hoozter/ottrin/actions/runs/42750682313). |
-| Windows | `eadf713e` portable ZIP, NSIS and development MSIX 36 in `dist/windows-candidate/`. [Exact package receipt](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json). | Promoted after native Dark and Light picker checks, matching NSIS payload, MSIX 35-to-36 upgrade and sign-in, and all four [hosted jobs](https://github.com/hoozter/ottrin/actions/runs/42750682313). |
+| Windows | `68b145fd` portable ZIP, NSIS and development MSIX 37 in `dist/windows-candidate/`. [Exact package receipt](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json). | Promoted after native WGPU and OpenGL picker checks in the ZIP and installed EXE, MSIX 36-to-37 upgrade and sign-in, and all four [hosted jobs](https://github.com/hoozter/ottrin/actions/runs/42771072382). |
 
 The [ordered work](#current-ordered-work) tracks the remaining software
 and package acceptance. The [owner and external waiting list](#ownerexternal-waiting-list)
 records what depends on input, signing, devices or personal acceptance.
 
 Windows portable and NSIS builds enable administrator Copy. The installed
-Copy and Undo lifecycle was verified on `49748824`. The current `eadf713e`
+Copy and Undo lifecycle was verified on `49748824`. The current `68b145fd`
 package receipt carries that earlier acceptance separately from its own
 picker and upgrade checks. The development MSIX leaves administrator Copy
 unavailable in normal single-user deployment and preserves the existing
@@ -2268,7 +2268,16 @@ Current source, test, package and owner/external scopes stay separate.
    and the installed WGPU window in 366 ms after setup. The host
    observation timeout interrupted the kernel trace export, but the
    teardown archive contained the verified terminal app result.
-   MSIX assembly, upgrade acceptance and promotion remain open.
+   Native MakeAppx assembled development MSIX 37 and verified all 59
+   files. An actual 36-to-37 upgrade kept the existing index database
+   and preferences, started the index at sign-in, exercised Explorer
+   background, multiple-folder and drive commands, and removed the
+   package, task and COM registrations. The exact bundled daemon averaged
+   0.10% of one CPU core during a 30-second idle sample in the separate
+   1,000-file assembly fixture. All four hosted checks passed and the
+   three packages were promoted together. Promotion preserved the Linux
+   package set and held MSI, and removed the consumed stage and old
+   Windows packages. Portable cold startup remains open.
    Broader theme and caller acceptance also remain open.
    [Delivered Windows picker resource check](../.hermes/evidence/windows-picker-current-runtime-audit/ACCEPTANCE.json).
    [Windows picker startup comparison](../.hermes/evidence/windows-picker-startup-comparison/ACCEPTANCE.json).
@@ -2277,6 +2286,9 @@ Current source, test, package and owner/external scopes stay separate.
    [Native Windows loader observation](../.hermes/evidence/windows-picker-loader-observation/ACCEPTANCE.json).
    [Native deferred OpenGL verification](../.hermes/evidence/windows-picker-deferred-opengl/ACCEPTANCE.json).
    [Staged Windows ZIP and NSIS verification](../.hermes/evidence/windows-deferred-mesa-delivery/PACKAGED_RENDERERS.json).
+   [MSIX 37 assembly](../.hermes/evidence/windows-deferred-mesa-delivery/ASSEMBLY_ACCEPTANCE.json),
+   [native MSIX upgrade](../.hermes/evidence/windows-deferred-mesa-delivery/runtime37-upgrade/ACCEPTANCE.json)
+   and [Windows package delivery](../.hermes/evidence/windows-deferred-mesa-delivery/WINDOWS_DELIVERY.json).
 
    Linux folder setup `b9543fe9` keeps interrupted launcher replacements
    repairable while refusing edits outside the recorded versions. Eight
