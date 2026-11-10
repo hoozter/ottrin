@@ -102,6 +102,11 @@ its original shape. Button corners rounded Cancel while the input
 retained its original shape. Both named Restore actions returned the
 sampled controls to their starting shapes.
 [Geometry isolation receipt](../.hermes/evidence/linux-theme-component-delivery/RENDERED_GEOMETRY_ISOLATION.json).
+Text size increased the sampled Theme name glyph bounds without
+changing border pixels. Window border thickness increased the sampled
+edge coverage while retaining the border color and glyph dimensions.
+Both properties restored their original measurements in both palettes.
+[Text and border receipt](../.hermes/evidence/linux-theme-component-delivery/RENDERED_TEXT_AND_BORDER.json).
 
 Windows portable and NSIS builds enable administrator Copy. The installed
 Copy and Undo lifecycle was verified on `49748824`. The current `b545bd2e`
