@@ -1,0 +1,192 @@
+{
+  "status": "pass native overlapping portable and installed picker preferences",
+  "input": {
+    "source_revision": "f62ec5e4319514e699112a3442da630747cd2839",
+    "files": [
+      {
+        "name": "portable.zip",
+        "sha256": "51b7c70379be7b807f9beec38b5584f482067342aae6ff1a183f9d6dff5076dd"
+      },
+      {
+        "name": "current-setup.exe",
+        "sha256": "efa743593a6954cea67189cfd727f46ca013125a3565a75813b0849050a6d40a"
+      }
+    ],
+    "actor_sha256": "feb915e53ef158413be92ce9546bb7f1e15a42c96a1453bf2583ad82416e1721",
+    "scope": "Exact staged portable and NSIS picker preferences across overlapping windows."
+  },
+  "artifact_hashes": {
+    "Ottrin-0.1.0-windows-x64-setup.exe": "efa743593a6954cea67189cfd727f46ca013125a3565a75813b0849050a6d40a",
+    "Ottrin-0.1.0-windows-x64-portable.zip": "51b7c70379be7b807f9beec38b5584f482067342aae6ff1a183f9d6dff5076dd"
+  },
+  "installed_uninstall_passed": true,
+  "binary_sha256": "afd1e1d8438aa8fc87950fa58e5572e771d0b2e132a25761e9467e23671bd92a",
+  "cases": [
+    {
+      "start_ms": 10.348700000000001,
+      "request_sent_ms": 10.8565,
+      "case": "portable-grid",
+      "process_id": 5408,
+      "window_mapped_upper_bound_ms": 1580.25,
+      "renderer_arguments": "",
+      "normal_cancel": true,
+      "launch_unix_ms": 1794304682664,
+      "response": {
+        "accepted": false,
+        "paths": [],
+        "current_filter": null,
+        "choices": {}
+      },
+      "trace": [
+        {
+          "phase": "reading_request",
+          "elapsed_ms": 0.015,
+          "entry_unix_ms": 1794304682727
+        },
+        {
+          "phase": "request_ready",
+          "elapsed_ms": 0.123,
+          "entry_unix_ms": 1794304682727
+        },
+        {
+          "phase": "starting_wgpu",
+          "elapsed_ms": 2.399,
+          "entry_unix_ms": 1794304682727
+        },
+        {
+          "phase": "renderer_ready",
+          "elapsed_ms": 209.257,
+          "entry_unix_ms": 1794304682727
+        },
+        {
+          "phase": "picker_ready",
+          "elapsed_ms": 209.733,
+          "entry_unix_ms": 1794304682727
+        },
+        {
+          "phase": "first_ui_pass",
+          "elapsed_ms": 212.221,
+          "entry_unix_ms": 1794304682727
+        }
+      ]
+    },
+    {
+      "start_ms": 1099.4059,
+      "request_sent_ms": 1100.2855,
+      "case": "installed-hidden",
+      "process_id": 4120,
+      "window_mapped_upper_bound_ms": 3054.66,
+      "renderer_arguments": "",
+      "normal_cancel": true,
+      "launch_unix_ms": 1794304684245,
+      "response": {
+        "accepted": false,
+        "paths": [],
+        "current_filter": null,
+        "choices": {}
+      },
+      "trace": [
+        {
+          "phase": "reading_request",
+          "elapsed_ms": 2.954,
+          "entry_unix_ms": 1794304685565
+        },
+        {
+          "phase": "request_ready",
+          "elapsed_ms": 12.113,
+          "entry_unix_ms": 1794304685565
+        },
+        {
+          "phase": "starting_wgpu",
+          "elapsed_ms": 37.982,
+          "entry_unix_ms": 1794304685565
+        },
+        {
+          "phase": "renderer_ready",
+          "elapsed_ms": 1037.839,
+          "entry_unix_ms": 1794304685565
+        },
+        {
+          "phase": "picker_ready",
+          "elapsed_ms": 1088.262,
+          "entry_unix_ms": 1794304685565
+        },
+        {
+          "phase": "first_ui_pass",
+          "elapsed_ms": 1173.929,
+          "entry_unix_ms": 1794304685565
+        }
+      ]
+    },
+    {
+      "start_ms": 5122.3523000000005,
+      "request_sent_ms": 5161.9521,
+      "case": "portable-untouched",
+      "process_id": 9536,
+      "window_mapped_upper_bound_ms": 6993.69,
+      "renderer_arguments": "",
+      "normal_cancel": true,
+      "launch_unix_ms": 1794304675622,
+      "response": {
+        "accepted": false,
+        "paths": [],
+        "current_filter": null,
+        "choices": {}
+      },
+      "trace": [
+        {
+          "phase": "reading_request",
+          "elapsed_ms": 0.029,
+          "entry_unix_ms": 1794304680806
+        },
+        {
+          "phase": "request_ready",
+          "elapsed_ms": 0.219,
+          "entry_unix_ms": 1794304680806
+        },
+        {
+          "phase": "starting_wgpu",
+          "elapsed_ms": 1.968,
+          "entry_unix_ms": 1794304680806
+        },
+        {
+          "phase": "renderer_ready",
+          "elapsed_ms": 365.543,
+          "entry_unix_ms": 1794304680806
+        },
+        {
+          "phase": "picker_ready",
+          "elapsed_ms": 366.024,
+          "entry_unix_ms": 1794304680806
+        },
+        {
+          "phase": "first_ui_pass",
+          "elapsed_ms": 368.402,
+          "entry_unix_ms": 1794304680806
+        }
+      ]
+    }
+  ],
+  "grid_and_hidden_preserved": true,
+  "no_index": true,
+  "preferences_and_fixture_preserved": true,
+  "scope": "Exact staged ZIP and NSIS in a disposable ordinary-user Windows VM. Three overlapping default pickers preserved independent view settings and cancelled normally.",
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "compiler_outputs_restored": 36,
+  "retired": [
+    ".hermes/evidence/windows-picker-preferences-delivery/windows-native/RESULTS.zip",
+    ".hermes/evidence/windows-picker-preferences-delivery/windows-native/desktop-ready.png",
+    ".hermes/evidence/windows-picker-preferences-delivery/windows-native/privacy-accepted-0.png",
+    ".hermes/evidence/windows-picker-preferences-delivery/windows-native/privacy-accepted-1.png"
+  ],
+  "export_sha256": "4cb7a728b4cd1025531c0160cfd91fd5956aa65d1eafcda7ae0a2f7906801682"
+}

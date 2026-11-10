@@ -1,0 +1,9 @@
+{
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-admin-copy-delivery-stage",
+  "restored_by_hash": {
+    "Ottrin-0.1.0-windows-x64-setup.exe": "9dca62ae4a6a723f459a2906ef16ef67ba58d7cb4062d7d4516d1caaa160f4e0",
+    "Ottrin-0.1.0-windows-x64-portable.zip": "1d2ffccb7590dd462a325e63b75b4cd3226194fa4b1f8346d6b64ef9b3eb707f",
+    "Ottrin-0.1.0-windows-x64-development.msix": "ff98d685a6113ba1177c938fb7ce51f95e21c23a15e9b457dc9f91d258e354da"
+  },
+  "temporary_copies_removed": true
+}

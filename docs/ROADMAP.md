@@ -2313,11 +2313,16 @@ Current source, test, package and owner/external scopes stay separate.
    [Linux package delivery](../.hermes/evidence/linux-picker-preferences-delivery/PROMOTION.json).
    The matching Windows ZIP and NSIS from `f62ec5e4` are also staged.
    The archives match across 59 payload files and pass the deferred
-   OpenGL loader check. Native overlapping picker acceptance, MSIX
-   assembly and promotion remain pending. The superseded private
+   OpenGL loader check. The staged ZIP and installed EXE passed the
+   native three-window overlap check. Changing Grid in a portable
+   picker and Show hidden files in an installed picker preserved both
+   settings after the untouched portable picker closed last. All
+   three cancelled normally and uninstall passed. MSIX assembly and
+   promotion remain pending. The superseded private
    `4c88e968` menu test packages were removed after the ownership and
    consumer checks. Their historical receipts remain available.
    [Staged Windows package contents](../.hermes/evidence/windows-picker-preferences-delivery/HOST_PAYLOAD.json).
+   [Native Windows picker preference check](../.hermes/evidence/windows-picker-preferences-delivery/ACCEPTANCE.json).
 
    Linux folder setup `b9543fe9` keeps interrupted launcher replacements
    repairable while refusing edits outside the recorded versions. Eight
