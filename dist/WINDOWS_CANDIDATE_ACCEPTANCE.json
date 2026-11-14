@@ -1,10 +1,9 @@
 {
-  "status": "pass scoped Windows picker density, installed theme and MSIX upgrade",
+  "status": "Work-test setup passed native install, preview, index and rename. ZIP and development MSIX retain their earlier scoped acceptance.",
   "source_commit": "b545bd2efa96621783a95c16004f5aef18eeee22",
   "working_tree_at_build": "clean",
   "candidate": "/home/campbell/Projects/Ottrin/dist/windows-candidate",
   "artifacts": {
-    "Ottrin-0.1.0-windows-x64-setup.exe": "9acfffc3aa059365919f13b856b7de408e060a144d5de15be9e4bf2eb99e377b",
     "Ottrin-0.1.0-windows-x64-portable.zip": "cb4f8f53d20780b5d193a781054a1fc2d173847bb4c209829adcd4dc991b85f7",
     "Ottrin-0.1.0-windows-x64-development.msix": "1865b81227afa0f8c2e415f20cbc50bc5920fd249651a03130d42c67961cfb36"
   },
@@ -33,7 +32,8 @@
     "Software Windows guest; physical GPU, Store, signing and human acceptance remain separate.",
     "Earlier theme, Save, administrator Copy, NSIS lifecycle and default-folder receipts retain their original package scopes.",
     "MSIX exposes Explorer folder actions and preserves the default folder app.",
-    "Administrator Copy is available in desktop builds. Single-user MSIX administrator Copy and ordinary MSI rollback remain held."
+    "Administrator Copy is available in desktop builds. Single-user MSIX administrator Copy and ordinary MSI rollback remain held.",
+    "The work-test setup has its own source and checksum. The other acceptance fields apply to the earlier b545bd2e cohort."
   ],
   "previous_native_upgrade": ".hermes/evidence/theme-editor-pointer-fix-current/nsis31-lifecycle-headroom/ACCEPTANCE.json",
   "native_default_capability": ".hermes/evidence/windows-picker-keyboard-current/native-default/ACCEPTANCE.json",
@@ -50,5 +50,64 @@
   "native_picker_location": ".hermes/evidence/picker-edit-location-current/WINDOWS_PICKER_ACCEPTANCE.json",
   "native_picker_renderers": ".hermes/evidence/windows-deferred-mesa-delivery/PACKAGED_RENDERERS.json",
   "native_picker_preferences": ".hermes/evidence/windows-picker-density-candidate/ACCEPTANCE.json",
-  "native_picker_density_and_installed_theme": ".hermes/evidence/windows-picker-density-candidate/ACCEPTANCE.json"
+  "native_picker_density_and_installed_theme": ".hermes/evidence/windows-picker-density-candidate/ACCEPTANCE.json",
+  "setup_exe": {
+    "source_commit": "974b5dee28193206eda9561cbb0bd546ff266c73",
+    "artifact": "Ottrin-0.1.0-windows-x64-setup.exe",
+    "sha256": "b2655269f41154e1f2a2a5b08ca69584ebee1dd16bf0c466f1c53b6188c761f3",
+    "replaces_sha256": "9acfffc3aa059365919f13b856b7de408e060a144d5de15be9e4bf2eb99e377b",
+    "install_method": "Fresh per-user silent NSIS install in an ordinary interactive account",
+    "windows": {
+      "caption": "Microsoft Windows 11 Enterprise Evaluation",
+      "build": "26300"
+    },
+    "payload_files_verified": 59,
+    "installed_binary_sha256": "8735dfa18a0b647195b68c1d72fe5cd5396c97bef03a30b99c39ebc257c4066e",
+    "preview": {
+      "same_process": true,
+      "normal_exit": true,
+      "unchanged": true,
+      "files": [
+        "preview-image.png",
+        "preview.pdf",
+        "preview-second.pdf"
+      ]
+    },
+    "rendered_preview_screenshots": {
+      ".hermes/evidence/windows-pdf-concurrency-candidate/work-setup-native/preview-image.png.png": "2e48b39f90a747afef69586b987a2721e34c5e174ae94a2adc75a8e5c8bde7eb",
+      ".hermes/evidence/windows-pdf-concurrency-candidate/work-setup-native/preview.pdf.png": "b4ff346e6f894c2b6bb5ff997c0b55e6dca0d450de59fdaa2889a336caf2193f",
+      ".hermes/evidence/windows-pdf-concurrency-candidate/work-setup-native/preview-second.pdf.png": "bb8d46a3506b03313a90e52306f442f678754e6ac4b112d984d9fc2332d3692a"
+    },
+    "index_before_rename": {
+      "query": "beforeindex",
+      "total": 1,
+      "watched_roots": 1,
+      "indexed_items": 1,
+      "ready": true
+    },
+    "index_after_rename": {
+      "query": "afterrename",
+      "total": 1,
+      "watched_roots": 1,
+      "indexed_items": 1,
+      "ready": true
+    },
+    "old_name_removed_from_index": true,
+    "rename": {
+      "target": "afterrename.txt",
+      "sha256": "06ef5892a96037b4eaac8d9b3dd5ee8765933a1f199b36cea53d2a163e091ae0",
+      "source": "beforeindex.txt",
+      "normal_exit": true
+    },
+    "index_stopped_and_uninstalled": true,
+    "guest_receipt": ".hermes/evidence/windows-pdf-concurrency-candidate/work-setup-native/GUEST_RESULT.json",
+    "build_receipt": ".hermes/evidence/windows-pdf-concurrency-candidate/HOST_PAYLOAD.json",
+    "cleanup": {
+      "disposable_guest_and_volumes_removed": true,
+      "viewer_profile_removed": true,
+      "compiler_outputs_restored_by_sha256": 37,
+      "compression_stage_removed": true,
+      "temporary_package_stage_removed": true
+    }
+  }
 }

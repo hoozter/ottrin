@@ -1,0 +1,8 @@
+23G	target/debug/deps
+25G	target/debug/incremental
+25G	target/x86_64-pc-windows-gnu/debug/deps
+49G	target/x86_64-pc-windows-gnu/debug/incremental
+4.3G	target/x86_64-pc-windows-gnu/release/deps
+11M	.hermes/staging
+573M	.hermes/packaging-tmp
+728K	.hermes/evidence/windows-pdf-concurrency-candidate

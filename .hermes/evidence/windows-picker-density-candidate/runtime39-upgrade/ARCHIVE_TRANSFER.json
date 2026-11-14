@@ -1,0 +1,8 @@
+{
+  "status": "pass chunked verified owned output",
+  "guest_path": "C:\\OttrinOwnedMsixRuntimeResults.zip",
+  "bytes": 2051705,
+  "sha256": "2fd925e385a9f5a4a5d0606042a8360b5d4bb5fd0e690cc7f1e59cde70d4b5bf",
+  "chunk_bytes": 65536,
+  "uncertain_read_recovery": "Seek to exact original offset before retry; no process restart"
+}

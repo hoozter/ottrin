@@ -1,13 +1,17 @@
 {
-  "status": "pass scoped Linux picker List density delivery",
-  "source_revision": "b545bd2efa96621783a95c16004f5aef18eeee22",
-  "artifacts": {
-    "ottrin-0.1.0-1.x86_64.rpm": "7ab3adb7028af1976de5d6f1861b6b6a8722778977c0dc4998af9c671f6aa117",
-    "Ottrin-0.1.0-x86_64.AppImage": "d485bbd74009a6c3f35facb7371b7cf9fd6ef1433e2abd014be0a0a27164d66e",
-    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "01d811fd01a7caaf0c7b7afa53ac658f83ad945c1c549eea25b98b19017344bd",
-    "ottrin_0.1.0_amd64.deb": "00749e836be1121b77aec7c6cbcb7f0995c89281230a57a3753a24ec2dc72e14"
+  "status": "Local shortcut AppImage and separately verified PDF-fix native and portable packages",
+  "desktop_workflows": {
+    "appimage": ".hermes/evidence/release-audit-current/linux-974b5dee-appimage/CONTROL.json",
+    "portable": ".hermes/evidence/release-audit-current/linux-974b5dee-portable/CONTROL.json"
   },
-  "evidence": ".hermes/evidence/linux-picker-density-delivery",
+  "source_revision": "974b5dee28193206eda9561cbb0bd546ff266c73",
+  "artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "6b73cd82cb4c13a2ffdb3c6dc42d0ca6f2046e51bd3db35b48e5bce7b6ecc65b",
+    "Ottrin-0.1.0-x86_64.AppImage": "1d5e88e51e8d40ff91280b9228ea8fac61277b6fa7c17d219cfbbf4f8e674101",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "1a6cfda179eacdd3ff3e7298414107c1db51fe888e3b5d8ff8290c1f03724288",
+    "ottrin_0.1.0_amd64.deb": "eabf71ec9c279600b4a34c594cb9ceaa911313a19ff7bb6377d99ad817a7cbd4"
+  },
+  "evidence": ".hermes/evidence/linux-pdf-concurrency-delivery",
   "checks": [
     "production portable/AppImage runtime closure and playback checks",
     "production native payload, dependencies, policy, hooks and code identity blocks",
@@ -17,30 +21,35 @@
     "actual AppImage and RPM index daemon namespace/ownership refusal checks"
   ],
   "runtime_sha256": {
-    "application": "e86efc95e0381b4e1f56edb917f54734d192ea3a9c6076117530251ef36c9ebc",
+    "application": "d1c7422fa22b886534ab8f7a86ea1300831bdc672605724f9f9282c2d2835ff7",
     "index_daemon": "c9a831be475532b338c2ded7a637c830f6d78ee23d261cb7082125ad19a90c31",
     "privileged_helper": "f123b93368d7919067bdcfe6f295c079fc1d000c38fdb2f3f493c465bd0f932f",
     "html_renderer": "f6a4ebe343c58ad3f06398c81574aa44d2b1afcfd7486e9e180c9368efefcbed"
   },
   "hosted_source": {
-    "run": 42790815680,
-    "tested_source_revision": "b545bd2efa96621783a95c16004f5aef18eeee22",
+    "run": 42817214337,
+    "tested_source_revision": "974b5dee28193206eda9561cbb0bd546ff266c73",
     "non_runtime_diff": [],
-    "all_four_jobs_success": true
+    "linux_jobs": {
+      "verify (ubuntu-latest)": "success",
+      "search-performance (ubuntu-latest)": "success"
+    }
   },
-  "source_scope": ".hermes/evidence/linux-picker-density-delivery/BUILD_SOURCE.json",
-  "mounted_picker_density": ".hermes/evidence/linux-picker-density-delivery/mounted-density/ACCEPTANCE.json",
+  "source_scope": ".hermes/evidence/linux-pdf-concurrency-delivery/BUILD_SOURCE.json",
+  "mounted_theme_component": ".hermes/evidence/linux-pdf-concurrency-delivery/THEME_COMPONENT_ACCEPTANCE.json",
   "current_helper_read_only": [
-    ".hermes/evidence/linux-picker-density-delivery/LINUX_HELPER_RUNTIME.json"
+    ".hermes/evidence/linux-pdf-concurrency-delivery/LINUX_HELPER_RUNTIME.json"
   ],
   "previous_cohort": {
-    "source_revision": "f62ec5e4319514e699112a3442da630747cd2839",
-    "receipt": ".hermes/evidence/linux-picker-density-delivery/PREVIOUS_LINUX_PACKAGES_ACCEPTANCE.json"
+    "source_revision": "b545bd2efa96621783a95c16004f5aef18eeee22",
+    "receipt": ".hermes/evidence/linux-pdf-concurrency-delivery/PREVIOUS_LINUX_PACKAGES_ACCEPTANCE.json"
   },
   "limits": [
-    "Mounted Dark X11 checks cover two saved List densities, exact file selection and preservation of main settings and fixture bytes.",
+    "The AppImage was updated separately. Its provenance and scoped desktop check are in appimage_acceptance. The source_revision, hosted CI, runtime hashes and prior desktop evidence refer to the previous cohort; they still describe the unchanged native and portable artifacts.",
+    "Mounted X11 checks cover the named component selector and six numeric fields in Dark 100% and Light 150%, including typing, restore and Cancel.",
     "Other portal, theme and native distro receipts retain their recorded package scopes.",
     "Daemon, helper and HTML renderer bytes match the previous cohort.",
-    "Packaged manuals are build-time snapshots at b545bd2e; repository metadata records later delivery."
-  ]
+    "Packaged manuals are build-time snapshots at 974b5dee; repository metadata records later delivery."
+  ],
+  "appimage_acceptance": ".hermes/evidence/linux-shortcuts-appimage/ACCEPTANCE.json"
 }

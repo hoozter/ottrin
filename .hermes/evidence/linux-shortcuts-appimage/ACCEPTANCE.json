@@ -1,0 +1,9 @@
+{
+  "artifact": "Ottrin-0.1.0-x86_64.AppImage",
+  "revision": "45cd6a37fa32c4c2e2d801550c7fa1b2c75724f0",
+  "sha256": "1d5e88e51e8d40ff91280b9228ea8fac61277b6fa7c17d219cfbbf4f8e674101",
+  "built_from_tracked_clean_source": false,
+  "status": "passed",
+  "scope": "Mounted X11 AppImage, right-click move/rename/remove, restart and directory preservation",
+  "profile_removed": true
+}

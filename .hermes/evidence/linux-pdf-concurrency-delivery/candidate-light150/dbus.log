@@ -1,0 +1,28 @@
+dbus-daemon[3980358]: [session uid=1000 pid=3980358] Activating service name='org.freedesktop.portal.Desktop' requested by ':1.0' (uid=1000 pid=3980359 comm="kwin_x11 --replace" label="unconfined")
+dbus-daemon[3980358]: [session uid=1000 pid=3980358] Activating service name='org.freedesktop.portal.Documents' requested by ':1.1' (uid=1000 pid=3980362 comm="/usr/libexec/xdg-desktop-portal" label="unconfined")
+dbus-daemon[3980358]: [session uid=1000 pid=3980358] Activating service name='org.freedesktop.impl.portal.PermissionStore' requested by ':1.2' (uid=1000 pid=3980369 comm="/usr/libexec/xdg-document-portal" label="unconfined")
+dbus-daemon[3980358]: [session uid=1000 pid=3980358] Successfully activated service 'org.freedesktop.impl.portal.PermissionStore'
+dbus-daemon[3980358]: [session uid=1000 pid=3980358] Successfully activated service 'org.freedesktop.portal.Documents'
+Ignoring invalid max threads value 4294967295 > max (100000).
+
+(/usr/libexec/xdg-desktop-portal:3980362): xdg-desktop-portal-WARNING **: 13:52:43.273: Choosing gtk.portal for org.freedesktop.impl.portal.Lockdown as a last-resort fallback
+
+(/usr/libexec/xdg-desktop-portal:3980362): xdg-desktop-portal-WARNING **: 13:52:43.274: The preferred method to match portal implementations to desktop environments is to use the portals.conf(5) configuration file
+dbus-daemon[3980358]: [session uid=1000 pid=3980358] Activating service name='org.freedesktop.impl.portal.desktop.gtk' requested by ':1.1' (uid=1000 pid=3980362 comm="/usr/libexec/xdg-desktop-portal" label="unconfined")
+dbus-daemon[3980358]: [session uid=1000 pid=3980358] Successfully activated service 'org.freedesktop.impl.portal.desktop.gtk'
+dbus-daemon[3980358]: [session uid=1000 pid=3980358] Activating service name='org.freedesktop.impl.portal.desktop.kde' requested by ':1.1' (uid=1000 pid=3980362 comm="/usr/libexec/xdg-desktop-portal" label="unconfined")
+dbus-daemon[3980358]: [session uid=1000 pid=3980358] Successfully activated service 'org.freedesktop.impl.portal.desktop.kde'
+dbus-daemon[3980358]: [session uid=1000 pid=3980358] Activating service name='org.kde.KSplash' requested by ':1.0' (uid=1000 pid=3980359 comm="kwin_x11 --replace" label="unconfined")
+
+(/usr/libexec/xdg-desktop-portal:3980362): xdg-desktop-portal-WARNING **: 13:52:43.607: Failed connect to PipeWire: Couldn't connect to PipeWire
+dbus-daemon[3980358]: [session uid=1000 pid=3980358] Activating service name='org.freedesktop.impl.portal.desktop.kwallet' requested by ':1.1' (uid=1000 pid=3980362 comm="/usr/libexec/xdg-desktop-portal" label="unconfined")
+dbus-daemon[3980358]: [session uid=1000 pid=3980358] Successfully activated service 'org.freedesktop.impl.portal.desktop.kwallet'
+dbus-daemon[3980358]: [session uid=1000 pid=3980358] Successfully activated service 'org.freedesktop.portal.Desktop'
+dbus-daemon[3980358]: [session uid=1000 pid=3980358] Activating service name='ca.desrt.dconf' requested by ':1.11' (uid=1000 pid=3980418 comm="gsettings set org.gnome.desktop.interface toolkit-" label="unconfined")
+dbus-daemon[3980358]: [session uid=1000 pid=3980358] Successfully activated service 'ca.desrt.dconf'
+dbus-daemon[3980358]: [session uid=1000 pid=3980358] Activating service name='org.a11y.Bus' requested by ':1.13' (uid=1000 pid=3980428 comm="/usr/bin/python3 /home/campbell/Projects/Ottrin/.h" label="unconfined")
+dbus-daemon[3980358]: [session uid=1000 pid=3980358] Successfully activated service 'org.a11y.Bus'
+dbus-daemon[3980444]: Activating service name='org.a11y.atspi.Registry' requested by ':1.0' (uid=1000 pid=3980428 comm="/usr/bin/python3 /home/campbell/Projects/Ottrin/.h" label="unconfined")
+dbus-daemon[3980444]: Successfully activated service 'org.a11y.atspi.Registry'
+dbus-daemon[3980358]: [session uid=1000 pid=3980358] Activating service name='org.freedesktop.systemd1' requested by ':1.17' (uid=1000 pid=3980495 comm="/usr/bin/systemd-run --user --wait --collect --pip" label="unconfined")
+dbus-daemon[3980358]: [session uid=1000 pid=3980358] Activated service 'org.freedesktop.systemd1' failed: Process org.freedesktop.systemd1 exited with status 1

@@ -1,0 +1,153 @@
+
+==> Building Linux portable tarball
+   Compiling ottrin-preview v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-preview)
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+   Compiling ottrin-app v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-app)
+    Finished `release` profile [optimized] target(s) in 7m 34s
+   Compiling ottrin-preview v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-preview)
+    Finished `release` profile [optimized] target(s) in 50.21s
+   Compiling ottrin-preview v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-preview)
+    Finished `release` profile [optimized] target(s) in 1m 43s
+/tmp/tmp.kP9bXf6Jgm/pdfium.tgz: OK
+/tmp/tmp.XtygXHFBK7/archive: OK
+/tmp/tmp.XtygXHFBK7/extract/ripgrep-15.2.0-x86_64-unknown-linux-musl/rg: OK
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-pdf-concurrency-stage/.build-all.KFvg5N/linux/Ottrin-0.1.0-linux-x86_64-portable.tar.gz
+
+==> Building Linux AppImage
+    Finished `release` profile [optimized] target(s) in 0.67s
+    Finished `release` profile [optimized] target(s) in 0.28s
+    Finished `release` profile [optimized] target(s) in 0.28s
+/tmp/tmp.3w5YKQwzW2/pdfium.tgz: OK
+/tmp/tmp.7xXRh0JT9X/archive: OK
+/tmp/tmp.7xXRh0JT9X/extract/ripgrep-15.2.0-x86_64-unknown-linux-musl/rg: OK
+/home/campbell/Projects/Ottrin/dist/appimagetool-x86_64.AppImage: OK
+
+✔ Validation was successful: pedantic: 1
+appimagetool, continuous build (commit 5735cc5), build <local dev build> built on 2023-03-08 22:52:04 UTC
+Using architecture x86_64
+Deleting pre-existing .DirIcon
+Creating .DirIcon symlink based on information from desktop file
+Generating squashfs...
+Parallel mksquashfs: Using 16 processors
+Creating 4.0 filesystem on /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-pdf-concurrency-stage/.build-all.KFvg5N/linux/.appimage.66rPsd/Ottrin-0.1.0-x86_64.AppImage, block size 131072.
+[===============================================================/] 682/682 100%
+
+Exportable Squashfs 4.0 filesystem, gzip compressed, data block size 131072
+	compressed data, compressed metadata, compressed fragments,
+	compressed xattrs, compressed ids
+	duplicates are removed
+Filesystem size 32236.17 Kbytes (31.48 Mbytes)
+	42.49% of uncompressed filesystem size (75862.15 Kbytes)
+Inode table size 3271 bytes (3.19 Kbytes)
+	47.43% of uncompressed inode table size (6896 bytes)
+Directory table size 1715 bytes (1.67 Kbytes)
+	50.16% of uncompressed directory table size (3419 bytes)
+Number of duplicate files found 7
+Number of inodes 141
+Number of files 112
+Number of fragments 15
+Number of symbolic links  1
+Number of device nodes 0
+Number of fifo nodes 0
+Number of socket nodes 0
+Number of directories 28
+Number of ids (unique uids + gids) 1
+Number of uids 1
+	root (0)
+Number of gids 1
+	root (0)
+Embedding ELF...
+Marking the AppImage as executable...
+Embedding MD5 digest
+Success
+
+Please consider submitting your AppImage to AppImageHub, the crowd-sourced
+central directory of available AppImages, by opening a pull request
+at https://github.com/AppImage/appimage.github.io
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-pdf-concurrency-stage/.build-all.KFvg5N/linux/.appimage.66rPsd/AppDir should be packaged as /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-pdf-concurrency-stage/.build-all.KFvg5N/linux/.appimage.66rPsd/Ottrin-0.1.0-x86_64.AppImage
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-pdf-concurrency-stage/.build-all.KFvg5N/linux/Ottrin-0.1.0-x86_64.AppImage
+
+==> Building native Debian package
+/tmp/tmp.9zibSLyNYs/pdfium.tgz: OK
+/tmp/tmp.XYv6YG9RDz/archive: OK
+/tmp/tmp.XYv6YG9RDz/extract/ripgrep-15.2.0-x86_64-unknown-linux-musl/rg: OK
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-pdf-concurrency-stage/.build-all.KFvg5N/linux/.deb.1im3Ut/package
+dpkg-deb: building package 'ottrin' in '/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-pdf-concurrency-stage/.build-all.KFvg5N/linux/.deb.1im3Ut/ottrin_0.1.0_amd64.deb'.
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-pdf-concurrency-stage/.build-all.KFvg5N/linux/ottrin_0.1.0_amd64.deb
+
+==> Building native RPM package
+/tmp/tmp.1kOK4C4ip6/pdfium.tgz: OK
+/tmp/tmp.cu6noWMrW9/archive: OK
+/tmp/tmp.cu6noWMrW9/extract/ripgrep-15.2.0-x86_64-unknown-linux-musl/rg: OK
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-pdf-concurrency-stage/.build-all.KFvg5N/linux/.rpm.MIz1Lh/rpmbuild/SOURCES/stage
+Executing(%prep): /bin/sh -e /var/tmp/rpm-tmp.reQWZc
++ umask 022
++ cd /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-pdf-concurrency-stage/.build-all.KFvg5N/linux/.rpm.MIz1Lh/rpmbuild/BUILD
++ RPM_EC=0
++ jobs -p
++ exit 0
+Executing(%build): /bin/sh -e /var/tmp/rpm-tmp.JdkGz4
++ umask 022
++ cd /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-pdf-concurrency-stage/.build-all.KFvg5N/linux/.rpm.MIz1Lh/rpmbuild/BUILD
++ RPM_EC=0
++ jobs -p
++ exit 0
+Executing(%install): /bin/sh -e /var/tmp/rpm-tmp.cqXdbw
++ umask 022
++ cd /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-pdf-concurrency-stage/.build-all.KFvg5N/linux/.rpm.MIz1Lh/rpmbuild/BUILD
++ /bin/rm -rf /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-pdf-concurrency-stage/.build-all.KFvg5N/linux/.rpm.MIz1Lh/rpmbuild/BUILDROOT/ottrin-0.1.0-1.x86_64
++ /bin/mkdir -p /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-pdf-concurrency-stage/.build-all.KFvg5N/linux/.rpm.MIz1Lh/rpmbuild/BUILDROOT
++ /bin/mkdir /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-pdf-concurrency-stage/.build-all.KFvg5N/linux/.rpm.MIz1Lh/rpmbuild/BUILDROOT/ottrin-0.1.0-1.x86_64
++ mkdir -p /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-pdf-concurrency-stage/.build-all.KFvg5N/linux/.rpm.MIz1Lh/rpmbuild/BUILDROOT/ottrin-0.1.0-1.x86_64
++ cp -a /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-pdf-concurrency-stage/.build-all.KFvg5N/linux/.rpm.MIz1Lh/rpmbuild/SOURCES/stage/. /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-pdf-concurrency-stage/.build-all.KFvg5N/linux/.rpm.MIz1Lh/rpmbuild/BUILDROOT/ottrin-0.1.0-1.x86_64/
++ /home/campbell/Projects/Ottrin/.hermes/tools/rpm/usr/lib/rpm/brp-compress /usr
++ /home/campbell/Projects/Ottrin/.hermes/tools/rpm/usr/lib/rpm/brp-elfperms
++ /home/campbell/Projects/Ottrin/.hermes/tools/rpm/usr/lib/rpm/brp-strip /usr/bin/strip
++ /home/campbell/Projects/Ottrin/.hermes/tools/rpm/usr/lib/rpm/brp-strip-static-archive /usr/bin/strip
++ /home/campbell/Projects/Ottrin/.hermes/tools/rpm/usr/lib/rpm/brp-strip-comment-note /usr/bin/strip /usr/bin/objdump
++ /home/campbell/Projects/Ottrin/.hermes/tools/rpm/usr/lib/rpm/brp-remove-la-files
+Processing files: ottrin-0.1.0-1.x86_64
+warning: Missing build-id in /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-pdf-concurrency-stage/.build-all.KFvg5N/linux/.rpm.MIz1Lh/rpmbuild/BUILDROOT/ottrin-0.1.0-1.x86_64/usr/libexec/ottrin/rg
+Provides: application() application(org.ottrin.Ottrin.desktop) libpdfium.so()(64bit) metainfo() metainfo(org.ottrin.Ottrin.appdata.xml) ottrin = 0.1.0-1 ottrin(x86-64) = 0.1.0-1
+Requires(interp): /bin/sh /bin/sh
+Requires(rpmlib): rpmlib(CompressedFileNames) <= 3.0.4-1 rpmlib(FileDigests) <= 4.6.0-1 rpmlib(PayloadFilesHavePrefix) <= 4.0-1
+Requires(preun): /bin/sh
+Requires(posttrans): /bin/sh
+Requires: /bin/sh ld-linux-x86-64.so.2()(64bit) ld-linux-x86-64.so.2(GLIBC_2.3)(64bit) libc.so.6()(64bit) libc.so.6(GLIBC_2.10)(64bit) libc.so.6(GLIBC_2.11)(64bit) libc.so.6(GLIBC_2.14)(64bit) libc.so.6(GLIBC_2.15)(64bit) libc.so.6(GLIBC_2.16)(64bit) libc.so.6(GLIBC_2.17)(64bit) libc.so.6(GLIBC_2.18)(64bit) libc.so.6(GLIBC_2.2.5)(64bit) libc.so.6(GLIBC_2.25)(64bit) libc.so.6(GLIBC_2.27)(64bit) libc.so.6(GLIBC_2.28)(64bit) libc.so.6(GLIBC_2.29)(64bit) libc.so.6(GLIBC_2.3)(64bit) libc.so.6(GLIBC_2.3.2)(64bit) libc.so.6(GLIBC_2.3.4)(64bit) libc.so.6(GLIBC_2.30)(64bit) libc.so.6(GLIBC_2.32)(64bit) libc.so.6(GLIBC_2.33)(64bit) libc.so.6(GLIBC_2.34)(64bit) libc.so.6(GLIBC_2.39)(64bit) libc.so.6(GLIBC_2.4)(64bit) libc.so.6(GLIBC_2.5)(64bit) libc.so.6(GLIBC_2.7)(64bit) libc.so.6(GLIBC_2.9)(64bit) libfontconfig.so.1()(64bit) libgcc_s.so.1()(64bit) libgcc_s.so.1(GCC_3.0)(64bit) libgcc_s.so.1(GCC_3.3)(64bit) libgcc_s.so.1(GCC_4.2.0)(64bit) libgio-2.0.so.0()(64bit) libglib-2.0.so.0()(64bit) libgobject-2.0.so.0()(64bit) libgstapp-1.0.so.0()(64bit) libgstbase-1.0.so.0()(64bit) libgstreamer-1.0.so.0()(64bit) libm.so.6()(64bit) libm.so.6(GLIBC_2.2.5)(64bit) libm.so.6(GLIBC_2.27)(64bit) libm.so.6(GLIBC_2.29)(64bit) libm.so.6(GLIBC_2.35)(64bit) libpthread.so.0()(64bit) libpthread.so.0(GLIBC_2.2.5)(64bit) libpthread.so.0(GLIBC_2.3.2)(64bit) rtld(GNU_HASH)
+Checking for unpackaged file(s): /home/campbell/Projects/Ottrin/.hermes/tools/rpm/usr/lib/rpm/check-files /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-pdf-concurrency-stage/.build-all.KFvg5N/linux/.rpm.MIz1Lh/rpmbuild/BUILDROOT/ottrin-0.1.0-1.x86_64
+Wrote: /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-pdf-concurrency-stage/.build-all.KFvg5N/linux/.rpm.MIz1Lh/rpmbuild/RPMS/x86_64/ottrin-0.1.0-1.x86_64.rpm
+Executing(%clean): /bin/sh -e /var/tmp/rpm-tmp.NL4YUy
++ umask 022
++ cd /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-pdf-concurrency-stage/.build-all.KFvg5N/linux/.rpm.MIz1Lh/rpmbuild/BUILD
++ /bin/rm -rf /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-pdf-concurrency-stage/.build-all.KFvg5N/linux/.rpm.MIz1Lh/rpmbuild/BUILDROOT/ottrin-0.1.0-1.x86_64
++ RPM_EC=0
++ jobs -p
++ exit 0
+Executing(rmbuild): /bin/sh -e /var/tmp/rpm-tmp.nJ5oC5
++ umask 022
++ cd /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-pdf-concurrency-stage/.build-all.KFvg5N/linux/.rpm.MIz1Lh/rpmbuild/BUILD
++ RPM_EC=0
++ jobs -p
++ exit 0
+    Missing build-id in /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-pdf-concurrency-stage/.build-all.KFvg5N/linux/.rpm.MIz1Lh/rpmbuild/BUILDROOT/ottrin-0.1.0-1.x86_64/usr/libexec/ottrin/rg
+
+RPM build warnings:
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-pdf-concurrency-stage/.build-all.KFvg5N/linux/ottrin-0.1.0-1.x86_64.rpm
+portable: packaged helper and policy path PASS
+appimage: packaged helper and policy path PASS
+deb: packaged helper and policy path PASS
+rpm: packaged helper and policy path PASS
+Ottrin-0.1.0-linux-x86_64-portable.tar.gz: OK
+Ottrin-0.1.0-x86_64.AppImage: OK
+ottrin_0.1.0_amd64.deb: OK
+ottrin-0.1.0-1.x86_64.rpm: OK
+
+Built artifacts:
+  /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-pdf-concurrency-stage/Ottrin-0.1.0-linux-x86_64-portable.tar.gz
+  /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-pdf-concurrency-stage/Ottrin-0.1.0-linux-x86_64-portable.tar.gz.sha256
+  /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-pdf-concurrency-stage/Ottrin-0.1.0-x86_64.AppImage
+  /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-pdf-concurrency-stage/Ottrin-0.1.0-x86_64.AppImage.sha256
+  /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-pdf-concurrency-stage/ottrin_0.1.0_amd64.deb
+  /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-pdf-concurrency-stage/ottrin_0.1.0_amd64.deb.sha256
+  /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-pdf-concurrency-stage/ottrin-0.1.0-1.x86_64.rpm
+  /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-pdf-concurrency-stage/ottrin-0.1.0-1.x86_64.rpm.sha256

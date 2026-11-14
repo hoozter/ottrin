@@ -40,6 +40,7 @@ Default:
 EOF
 }
 
+build_arguments=("$@")
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --linux-only)
@@ -75,6 +76,7 @@ while [[ $# -gt 0 ]]; do
   shift
 done
 
+ottrin_guard_local_build "$ROOT" "$ROOT/build-all.sh" "${build_arguments[@]}"
 cd "$ROOT"
 # Keep the local build entry point's deliverables together. Every packager
 # receives the same destination, including standalone platform builds.

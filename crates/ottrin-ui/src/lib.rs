@@ -1043,6 +1043,12 @@ struct PendingRename {
     request_focus: bool,
 }
 
+struct PendingShortcutRename {
+    path: PathBuf,
+    name: String,
+    focus_input: bool,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct PendingCreation {
     kind: CreationKind,
@@ -4208,6 +4214,7 @@ pub struct OttrinApp {
     hash_rx: Receiver<(PathBuf, Result<String, String>)>,
     target_dropdown: TargetDropdown,
     pending_rename: Option<PendingRename>,
+    pending_shortcut_rename: Option<PendingShortcutRename>,
     pending_creation: Option<PendingCreation>,
     pending_delete: Option<PendingDelete>,
     pending_transfer_conflict: Option<PendingTransferConflict>,
@@ -4515,6 +4522,7 @@ impl OttrinApp {
             hash_rx,
             target_dropdown: TargetDropdown::default(),
             pending_rename: None,
+            pending_shortcut_rename: None,
             pending_creation: None,
             pending_delete: None,
             pending_transfer_conflict: None,
@@ -6141,11 +6149,18 @@ impl OttrinApp {
         self.state
             .config
             .bookmarks
-            .push((MI_FOLDER.to_string(), name, path));
+            .push((MI_FOLDER.to_string(), name, path.clone()));
+        self.state.config.removed_bookmarks.remove(&path);
+        self.persist_config();
     }
 
     fn remove_bookmark_for_path(&mut self, path: &Path) {
         self.state.config.bookmarks.retain(|(_, _, p)| p != path);
+        self.state
+            .config
+            .removed_bookmarks
+            .insert(path.to_path_buf());
+        self.persist_config();
     }
 
     // ── Listing requests ──────────────────────────────────────────────────────
@@ -9197,6 +9212,7 @@ impl OttrinApp {
         }
         // Space to toggle preview — must consume before widgets see it.
         if self.pending_rename.is_none()
+            && self.pending_shortcut_rename.is_none()
             && !self.creation_modal_active()
             && self.pending_delete.is_none()
             && self.pending_transfer_conflict.is_none()
@@ -13003,24 +13019,30 @@ impl OttrinApp {
             }
         }
         let storage_roots = self.known_storage_locations.clone();
+        let removed = &self.state.config.removed_bookmarks;
 
         // Ensure default bookmarks exist on first run
         if self.state.config.bookmarks.is_empty() {
             self.state.config.bookmarks =
                 Self::default_bookmarks_from_roots(&home, storage_roots.clone())
                     .into_iter()
-                    .filter(|(_, _, p)| p.exists())
+                    .filter(|(_, _, p)| !removed.contains(p) && p.exists())
                     .collect();
         } else {
             Self::reconcile_bookmarks_with_storage_roots(
                 &home,
                 &mut self.state.config.bookmarks,
-                storage_roots.clone(),
+                storage_roots
+                    .iter()
+                    .filter(|root| !removed.contains(&root.path))
+                    .cloned()
+                    .collect(),
             );
         }
 
         let mut navigate_to: Option<PathBuf> = None;
-        let mut remove_idx: Option<usize> = None;
+        let mut remove_shortcut = None;
+        let mut move_shortcut = None;
         let mut volume_index_action: Option<(String, PathBuf, bool)> = None;
         let mut input_rects = Vec::new();
 
@@ -13104,7 +13126,10 @@ impl OttrinApp {
                         resp.secondary_clicked(),
                         resp.context_menu_opened(),
                     ) {
-                        resp.show_tooltip_text(detail);
+                        // The tooltip needs its own popup ID so it cannot claim the menu's area.
+                        egui::Tooltip::for_widget(&resp).show(|ui| {
+                            ui.label(detail);
+                        });
                     }
                     if resp.clicked() {
                         navigate_to = Some(path.clone());
@@ -13153,8 +13178,28 @@ impl OttrinApp {
                             ui.separator();
                         }
 
-                        if menu_item(ui, MI_CLEAR, &format!("Remove \"{}\"", name), &c).clicked() {
-                            remove_idx = Some(idx);
+                        if menu_item(ui, MI_EDIT, "Rename Shortcut…", &c).clicked() {
+                            self.pending_shortcut_rename = Some(PendingShortcutRename {
+                                path: path.clone(),
+                                name: name.clone(),
+                                focus_input: true,
+                            });
+                            ui.close();
+                        }
+                        if let Some(previous) = idx.checked_sub(1)
+                            && menu_item(ui, MI_ARROW_UP, "Move Up", &c).clicked()
+                        {
+                            move_shortcut = Some((idx, previous));
+                            ui.close();
+                        }
+                        if idx + 1 < bookmarks.len()
+                            && menu_item(ui, MI_ARROW_DOWN, "Move Down", &c).clicked()
+                        {
+                            move_shortcut = Some((idx, idx + 1));
+                            ui.close();
+                        }
+                        if menu_item(ui, MI_CLEAR, "Remove Shortcut", &c).clicked() {
+                            remove_shortcut = Some(path.clone());
                             ui.close();
                         }
                     });
@@ -13174,8 +13219,12 @@ impl OttrinApp {
             let tab_id = self.state.active_tab().id;
             self.navigate_to_location(tab_id, path);
         }
-        if let Some(idx) = remove_idx {
-            self.state.config.bookmarks.remove(idx);
+        if let Some(path) = remove_shortcut {
+            self.remove_bookmark_for_path(&path);
+        }
+        if let Some((from, to)) = move_shortcut {
+            self.state.config.bookmarks.swap(from, to);
+            self.persist_config();
         }
 
         if let Some((identity, path, enabled)) = volume_index_action {
@@ -20120,6 +20169,52 @@ impl OttrinApp {
         }
     }
 
+    fn render_shortcut_rename_modal(&mut self, ctx: &Context) {
+        let Some(mut pending) = self.pending_shortcut_rename.take() else {
+            return;
+        };
+        let c = self.colors;
+        let mut cancel = false;
+        let mut save = false;
+        let modal = egui::Modal::new(egui::Id::new("shortcut_rename")).show(ctx, |ui| {
+            ui.heading("Rename Shortcut");
+            ui.label(path_label(&pending.path));
+            let input = ui.add(
+                egui::TextEdit::singleline(&mut pending.name)
+                    .themed(&c)
+                    .accessible_name("Shortcut name"),
+            );
+            if pending.focus_input {
+                input.request_focus();
+                pending.focus_input = false;
+            }
+            ui.horizontal(|ui| {
+                cancel = ui.add(egui::Button::new("Cancel").themed(&c)).clicked();
+                let button = ui.add_enabled(
+                    !pending.name.trim().is_empty(),
+                    egui::Button::new("Save").themed(&c),
+                );
+                save = button.enabled()
+                    && (button.clicked()
+                        || (input.lost_focus() && ui.input(|i| i.key_pressed(Key::Enter))));
+            });
+        });
+        if save {
+            if let Some((_, name, _)) = self
+                .state
+                .config
+                .bookmarks
+                .iter_mut()
+                .find(|(_, _, path)| path == &pending.path)
+            {
+                *name = pending.name.trim().to_owned();
+                self.persist_config();
+            }
+        } else if !cancel && !modal.should_close() {
+            self.pending_shortcut_rename = Some(pending);
+        }
+    }
+
     fn render_rename_modal(&mut self, ctx: &Context) {
         let Some(mut pending) = self.pending_rename.clone() else {
             return;
@@ -22982,6 +23077,7 @@ impl OttrinApp {
 
     fn handle_viewport_resize(&self, ctx: &Context) {
         if self.pending_rename.is_some()
+            || self.pending_shortcut_rename.is_some()
             || self.pending_delete.is_some()
             || self.pending_transfer_conflict.is_some()
             || self.pending_empty_trash
@@ -23205,7 +23301,10 @@ impl eframe::App for OttrinApp {
         );
 
         // Handle keyboard before rendering. Modal popups get first claim.
-        if self.pending_rename.is_some() || self.creation_modal_active() {
+        if self.pending_rename.is_some()
+            || self.pending_shortcut_rename.is_some()
+            || self.creation_modal_active()
+        {
             // Text-entry modals handle their own text input and Enter/Escape.
         } else if self.pending_delete.is_some() {
             if !inspector_entry_modal_active {
@@ -23304,6 +23403,7 @@ impl eframe::App for OttrinApp {
         self.sync_preview_to_selection();
         self.render_preview_overlay(ctx);
         self.render_theme_exit_confirmation(ctx);
+        self.render_shortcut_rename_modal(ctx);
         if !self.preview.visible {
             self.render_creation_modal(ctx);
             self.render_rename_modal(ctx);
@@ -40835,6 +40935,41 @@ mod tests {
     }
 
     #[test]
+    fn removed_shortcuts_stay_hidden_after_reload_and_can_be_added_again() {
+        let mut app = OttrinApp::default();
+        let home = default_home_dir();
+        let mount = home.join("test-mounted-shortcut");
+        app.known_storage_locations = vec![StorageLocation {
+            path: mount.clone(),
+            identity: "test-volume".into(),
+            stable_identity: None,
+            kind: StorageLocationKind::Removable,
+            display_name: None,
+        }];
+        app.state.config.bookmarks = vec![
+            (MI_HOME.into(), "Home".into(), home.clone()),
+            (MI_USB.into(), "Test volume".into(), mount.clone()),
+        ];
+        app.remove_bookmark_for_path(&home);
+        app.remove_bookmark_for_path(&mount);
+        app.state.config = load_config().unwrap();
+        assert!(app.state.config.bookmarks.is_empty());
+
+        let ctx = Context::default();
+        let _ = ctx.run(egui::RawInput::default(), |ctx| {
+            app.render_bookmarks_row(ctx);
+        });
+        assert!(!app.is_bookmarked(&home));
+        assert!(!app.is_bookmarked(&mount));
+        assert!(app.state.config.removed_bookmarks.contains(&mount));
+
+        app.add_bookmark_for_path(home.clone());
+        app.state.config = load_config().unwrap();
+        assert!(app.is_bookmarked(&home));
+        assert!(!app.state.config.removed_bookmarks.contains(&home));
+    }
+
+    #[test]
     fn persisted_standard_bookmarks_use_semantic_icons() {
         let home = PathBuf::from("/home/alice");
         assert_eq!(
@@ -40864,6 +40999,62 @@ mod tests {
         let app = OttrinApp::default();
         assert_eq!(app.locations_rail_width(), 44.0);
         assert!(!app.locations_rail_expanded);
+    }
+
+    #[test]
+    fn right_click_opens_shortcut_actions_in_both_locations_rail_modes() {
+        for expanded in [false, true] {
+            let ctx = Context::default();
+            let mut app = OttrinApp::default();
+            app.locations_rail_expanded = expanded;
+            let home = default_home_dir();
+            app.state.config.bookmarks = vec![
+                (MI_HOME.into(), "Home".into(), home.clone()),
+                (
+                    MI_DOWNLOAD.into(),
+                    "Downloads".into(),
+                    home.join("Downloads"),
+                ),
+            ];
+            let tile = std::cell::Cell::new(egui::Pos2::ZERO);
+            let mut frame = |events| {
+                ctx.run(
+                    egui::RawInput {
+                        screen_rect: Some(Rect::from_min_size(
+                            egui::Pos2::ZERO,
+                            Vec2::new(1024.0, 680.0),
+                        )),
+                        events,
+                        ..Default::default()
+                    },
+                    |ctx| {
+                        tile.set(app.render_bookmarks_row(ctx).input_rects[1].center());
+                        app.render_single_file_pane(ctx);
+                    },
+                )
+            };
+            frame(Vec::new());
+            let tile = tile.get();
+            frame(vec![egui::Event::PointerMoved(tile)]);
+            for pressed in [true, false] {
+                frame(vec![egui::Event::PointerButton {
+                    pos: tile,
+                    button: egui::PointerButton::Secondary,
+                    pressed,
+                    modifiers: egui::Modifiers::NONE,
+                }]);
+            }
+            let output = frame(Vec::new());
+            for label in ["Rename Shortcut…", "Move Down", "Remove Shortcut"] {
+                assert!(
+                    output.shapes.iter().any(|shape| matches!(
+                        &shape.shape,
+                        egui::Shape::Text(text) if text.galley.job.text == label
+                    )),
+                    "{label} must be visible after right-click with expanded={expanded}"
+                );
+            }
+        }
     }
 
     #[test]

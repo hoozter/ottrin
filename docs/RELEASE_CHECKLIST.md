@@ -2,7 +2,9 @@
 
 Every item must be checked against the exact artifact intended for release. A source-tree test does not count as packaged desktop validation.
 
-Current scope is the Linux/Windows release defined in the [roadmap](ROADMAP.md).
+Verify each platform's exact candidate separately. The [roadmap](ROADMAP.md)
+defines when Linux and Windows releases ship independently and when updates
+ship together.
 macOS construction, acceptance and signing are deferred; the future macOS checks
 below do not block this release. For current source/package progress and the
 unfinished QA handoff, use the [audited checkpoint](ROADMAP.md#current-delivery-and-next-work).
@@ -20,7 +22,8 @@ Unchecked final gates do not mean no scoped implementation or QA has occurred.
 - [ ] `cargo check --workspace --all-targets`
 - [ ] `cargo test --workspace`
 - [ ] `cargo clippy --workspace --all-targets -- -D warnings`
-- [ ] Linux and Windows CI are green for the release commit.
+- [ ] For a Linux release, the Linux verification and search-performance CI jobs are green for the release commit.
+- [ ] For a Windows release, the Windows verification and search-performance CI jobs are green for the release commit.
 - [ ] Exact release artifact checksums verify after rebuilding from the current release commit.
 - [ ] Archive inspection confirms the exact rebuilt app, indexer, privileged helper, policy/assets, and user documentation are present.
 - [ ] Every rebuilt format includes the exact bundled-font notice from `crates/ottrin-ui/assets/THIRD_PARTY_NOTICES.md`; native Windows MSI/NSIS payload comparison includes this file.

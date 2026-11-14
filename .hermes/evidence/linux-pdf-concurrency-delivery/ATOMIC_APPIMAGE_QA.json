@@ -1,0 +1,8 @@
+{
+  "status": "pass atomic replacement preserved the existing mounted window and the next launch used the new AppImage",
+  "previous_image_sha256": "d485bbd74009a6c3f35facb7371b7cf9fd6ef1433e2abd014be0a0a27164d66e",
+  "new_image_sha256": "34b32f796e207e762107909c0d42308338a60b3daaeeb92bbf062df3127a942f",
+  "old_window_operated_after_replacement": true,
+  "next_launch_new_binary": true,
+  "scope": "Private same-filesystem AppImage path replacement only. Multi-package promotion, concurrent settings writes, and managed service continuity are separate."
+}

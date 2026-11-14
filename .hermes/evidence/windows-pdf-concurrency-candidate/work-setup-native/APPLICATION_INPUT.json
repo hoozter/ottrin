@@ -1,0 +1,15 @@
+{
+  "source_revision": "974b5dee28193206eda9561cbb0bd546ff266c73",
+  "files": [
+    {
+      "name": "portable.zip",
+      "sha256": "cfe43dbc55e92826cb0765401846f2d9a1c735e7b9e4a729b151ecc5e23fb322"
+    },
+    {
+      "name": "current-setup.exe",
+      "sha256": "b2655269f41154e1f2a2a5b08ca69584ebee1dd16bf0c466f1c53b6188c761f3"
+    }
+  ],
+  "actor_sha256": "5fd5abd4c6a6bad4a60a8e59037772cdea29a96ad297bf42168161fe537f5186",
+  "scope": "Exact staged portable and NSIS with installed theme, picker, and Inspector image-to-PDF regressions."
+}

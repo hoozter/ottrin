@@ -1,0 +1,47 @@
+{
+  "status": "pass named visible numeric typing/restore/Cancel and normal closure",
+  "theme": "Light",
+  "scale": 1.5,
+  "cases": [
+    {
+      "component": "Theme defaults",
+      "name": "Window corners",
+      "typed": 24,
+      "restored": 0
+    },
+    {
+      "component": "Theme defaults",
+      "name": "Surface corners",
+      "typed": 14,
+      "restored": 0
+    },
+    {
+      "component": "Theme defaults",
+      "name": "Text size",
+      "typed": 1.2,
+      "restored": 1.0
+    },
+    {
+      "component": "Buttons & menus",
+      "name": "Button corners",
+      "typed": 14,
+      "restored": 5.0
+    },
+    {
+      "component": "Buttons & menus",
+      "name": "Window border thickness",
+      "typed": 3.25,
+      "restored": 1.0
+    },
+    {
+      "component": "File labels & icons",
+      "name": "Neutral text blend",
+      "typed": 0.75,
+      "restored": 0.22
+    }
+  ],
+  "source_preserved": true,
+  "unsaved_numeric_edit_not_persisted": true,
+  "named_selector_used": true,
+  "scope": "Exact AppImage/private X11/software native AT-SPI names, values/actions. No complete39control/platform/human acceptance claim"
+}

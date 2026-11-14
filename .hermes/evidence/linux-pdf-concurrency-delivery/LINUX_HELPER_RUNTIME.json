@@ -1,0 +1,97 @@
+{
+  "status": "pass actual Linux helper protocol5",
+  "executable": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-pdf-concurrency-extract/squashfs-root/usr/libexec/ottrin/ottrin-priv-helper",
+  "sha256": "f123b93368d7919067bdcfe6f295c079fc1d000c38fdb2f3f493c465bd0f932f",
+  "source": "BUILD_SOURCE.json",
+  "cases": [
+    {
+      "arguments": [
+        "--check-protocol",
+        "5"
+      ],
+      "exit": 0
+    },
+    {
+      "arguments": [
+        "--check-protocol",
+        "5",
+        "--copy-recovery"
+      ],
+      "exit": 0
+    },
+    {
+      "arguments": [
+        "--check-protocol",
+        "4",
+        "--copy-recovery"
+      ],
+      "exit": 78
+    },
+    {
+      "arguments": [
+        "--check-protocol",
+        "3",
+        "--copy-recovery"
+      ],
+      "exit": 78
+    },
+    {
+      "arguments": [
+        "--check-protocol",
+        "5",
+        "--bound-local-pipe"
+      ],
+      "exit": 69
+    },
+    {
+      "action": "Resume",
+      "exit": 0,
+      "response": {
+        "status": "Unsupported",
+        "message": "This Copy recovery action is unavailable on this platform.",
+        "payload": null
+      }
+    },
+    {
+      "action": "EndAttempt",
+      "exit": 0,
+      "response": {
+        "status": "Unsupported",
+        "message": "This Copy recovery action is unavailable on this platform.",
+        "payload": null
+      }
+    },
+    {
+      "action": "ReleaseName",
+      "exit": 0,
+      "response": {
+        "status": "Unsupported",
+        "message": "This Copy recovery action is unavailable on this platform.",
+        "payload": null
+      }
+    },
+    {
+      "version": 4,
+      "action": "Resume",
+      "exit": 0,
+      "response": {
+        "status": "Failed",
+        "message": "Administrator helper protocol does not match Ottrin. Update the application and helper together.",
+        "payload": null
+      }
+    },
+    {
+      "version": 5,
+      "action": "UnrecognizedAction",
+      "exit": 0,
+      "response": {
+        "status": "Failed",
+        "message": "Invalid request JSON: unknown variant `UnrecognizedAction`, expected one of `Resume`, `EndAttempt`, `ReleaseName` at line 1 column 133",
+        "payload": null
+      }
+    }
+  ],
+  "profile_removed": "/tmp/ottrin-helper-protocol-nsk62ii7",
+  "created_app_files": 0,
+  "scope": "Actual unprivileged executable negotiation, old-protocol/unknown-action refusal and unsupported Windows-only recovery. Bundled package helper only; no pkexec, installed-helper or protected-file acceptance."
+}

@@ -1,0 +1,33 @@
+{
+  "status": "closed",
+  "profile": "/var/tmp/.ottrin-picker-qa-bqpp_zxd",
+  "owned_processes_reaped": [
+    {
+      "pid": 3980355,
+      "exit": 0
+    },
+    {
+      "pid": 3980358,
+      "exit": 0
+    },
+    {
+      "pid": 3980359,
+      "exit": 15
+    },
+    {
+      "pid": 3980428,
+      "exit": 0
+    }
+  ],
+  "owned_children": {
+    "stopped": [
+      3980434,
+      3980505
+    ],
+    "unreadable_foreign_processes_preserved": 4
+  },
+  "owned_mounts_unmounted": [
+    "103 34 0:61 / /var/tmp/.ottrin-picker-qa-bqpp_zxd/runtime/doc rw,nosuid,nodev,relatime shared:556 - fuse.portal portal rw,user_id=1000,group_id=1000"
+  ],
+  "profile_removed": true
+}

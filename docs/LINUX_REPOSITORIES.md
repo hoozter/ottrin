@@ -13,6 +13,21 @@ into the RPM database. Ottrin's DNF source is restricted to the `ottrin`
 package. Uninstall removes the source and the packaged certificate file.
 The package manager owns its imported keys.
 
+## Public release status
+
+As of 2026-11-13, GitHub has no published Ottrin release. The update host
+returns HTTP 404 for the release receipt, APT InRelease, and RPM repository
+metadata. GitHub has the storage credentials and signing fingerprint
+configured. The signing subkey secret and repository enable switches are
+pending.
+
+Local AppImages are standalone downloads. The local DEB and RPM packages
+install without registering an Ottrin update source. After a signed bootstrap
+release and successful Ubuntu and Fedora upgrade checks against the live
+repository, subsequent official packages can install
+`/etc/apt/sources.list.d/ottrin.sources` or
+`/etc/yum.repos.d/ottrin.repo`.
+
 ## Before enabling publication
 
 - Set up a dedicated OpenPGP release signing identity. Keep the primary

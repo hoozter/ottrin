@@ -1,0 +1,15 @@
+{
+  "source_revision": "b545bd2efa96621783a95c16004f5aef18eeee22",
+  "files": [
+    {
+      "name": "portable.zip",
+      "sha256": "cb4f8f53d20780b5d193a781054a1fc2d173847bb4c209829adcd4dc991b85f7"
+    },
+    {
+      "name": "current-setup.exe",
+      "sha256": "9acfffc3aa059365919f13b856b7de408e060a144d5de15be9e4bf2eb99e377b"
+    }
+  ],
+  "actor_sha256": "0f17763688cbfb75a724c5fc388083c4f8762474ce48a0c528ada00fb1e18a5b",
+  "scope": "Exact staged portable and NSIS List density and overlapping picker preferences."
+}

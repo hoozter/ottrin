@@ -1196,7 +1196,9 @@ impl PickerDialog {
                                     &home,
                                     Vec::new(),
                                 ) {
-                                    if !places.iter().any(|(_, _, path)| path == &bookmark.2) {
+                                    if !config.removed_bookmarks.contains(&bookmark.2)
+                                        && !places.iter().any(|(_, _, path)| path == &bookmark.2)
+                                    {
                                         places.push(bookmark);
                                     }
                                 }

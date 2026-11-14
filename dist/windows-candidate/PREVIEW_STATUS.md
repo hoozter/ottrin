@@ -1,7 +1,13 @@
 # Current Windows preview
 
-Source `b545bd2e` is available as a portable ZIP, an NSIS installer and
-unsigned development MSIX 39. List spacing changed with the saved density
+The work-test installer is `Ottrin-0.1.0-windows-x64-setup.exe` from
+`974b5dee`. It passed a fresh ordinary-user install on Windows 11 build
+26300. Quick Inspector rendered an image and the first pages of two PDFs
+in one app session. Search found the new name after an in-app rename, and
+the index stopped and uninstall completed.
+
+The portable ZIP and unsigned development MSIX 39 use `b545bd2e`.
+The following picker and theme checks apply to the previous Windows cohort. List spacing changed with the saved density
 in the ZIP and installed picker. Both opened the exact file clicked. The
 installed Theme Editor passed preview-menu and pointer Cancel in both variants.
 Three overlapping picker windows from the

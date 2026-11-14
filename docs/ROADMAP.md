@@ -8,15 +8,18 @@ not complete a broader native, platform or user-acceptance requirement.
 
 | Platform | Launchable locally | Next delivery |
 | --- | --- | --- |
-| Linux | `b545bd2e` AppImage, portable archive, DEB and RPM in `dist/packages/`. [Exact package receipt](../dist/packages/LINUX_PACKAGES_ACCEPTANCE.json). | Promoted after mounted List-density and pointer checks, private AppImage replacement and all four [hosted jobs](https://github.com/hoozter/ottrin/actions/runs/42790815680). |
-| Windows | `b545bd2e` portable ZIP, NSIS and development MSIX 39 in `dist/windows-candidate/`. [Exact package receipt](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json). | Promoted after native List-density, overlapping picker and installed Theme Editor checks, MSIX 38-to-39 upgrade and sign-in, and all four [hosted jobs](https://github.com/hoozter/ottrin/actions/runs/42790815680). |
+| Linux | Local AppImage with shortcut management. The portable archive, DEB and RPM remain on PDF-fix revision `974b5dee`. [Exact package receipt](../dist/packages/LINUX_PACKAGES_ACCEPTANCE.json). | AppImage right-click rename, reorder and removal passed a mounted desktop test and persisted across restart. [Public downloads and native update status](LINUX_REPOSITORIES.md#public-release-status). |
+| Windows | Work-test NSIS setup from `974b5dee`, with the `b545bd2e` portable ZIP and development MSIX 39 in `dist/windows-candidate/`. [Exact package receipt](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json). | The work-test setup passed a native ordinary-user install, image-to-PDF rendering, indexing across a rename, and uninstall. Work-computer testing is next. MSI, MSIX and Store work have separate acceptance requirements. |
 
 The [ordered work](#current-ordered-work) tracks the remaining software
 and package acceptance. The [owner and external waiting list](#ownerexternal-waiting-list)
 records what depends on input, signing, devices or personal acceptance.
 
-Run the remaining release checks as a single candidate pass per platform.
-Both platforms now have the same source revision. Start with the
+The first full Linux and Windows releases can ship independently as each is
+ready. Once both platforms have had a full release, publish subsequent updates
+together. Apply the [release checklist](RELEASE_CHECKLIST.md) to each platform's
+exact candidate.
+Run the remaining checks as a single candidate pass per platform. Start with the
 main daily-use workflows and the outstanding installed theme property
 checks. Keep one package identity per platform across the main daily-use
 workflows in the [release checklist](RELEASE_CHECKLIST.md). Rebuild a
@@ -170,8 +173,9 @@ verification. The exact staged AppImage and portable archive then each
 passed 27 desktop checks. Quick Inspector opened the image and both PDFs
 in the same process and continued through the remaining preview and file
 operations. Fixture integrity passed. Both private profiles and the
-portable extraction were removed. Stable delivery awaits the remaining
-replacement, theme and hosted checks.
+portable extraction were removed. Private AppImage replacement, focused theme
+checks and both Linux CI jobs passed. The verified packages are now at their
+stable paths. [Promotion receipt](../.hermes/evidence/linux-pdf-concurrency-delivery/PROMOTION.json).
 [AppImage desktop receipt](../.hermes/evidence/release-audit-current/linux-974b5dee-appimage/CONTROL.json)
 and [portable desktop receipt](../.hermes/evidence/release-audit-current/linux-974b5dee-portable/CONTROL.json).
 

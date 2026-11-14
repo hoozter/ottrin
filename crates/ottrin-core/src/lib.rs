@@ -2,7 +2,7 @@ pub mod native_path;
 pub mod picker;
 
 use serde::{Deserialize, Serialize};
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
 
 // ── Theme ─────────────────────────────────────────────────────────────────────
@@ -931,6 +931,9 @@ pub struct AppConfig {
     /// The icon_char is a Material Icons codepoint string (e.g. "\u{E88A}").
     #[serde(default)]
     pub bookmarks: Vec<(String, String, PathBuf)>,
+    /// Paths the user removed from the automatically populated shortcuts.
+    #[serde(default)]
+    pub removed_bookmarks: BTreeSet<PathBuf>,
     #[serde(default)]
     pub search: SearchConfig,
     /// Whether the user has reviewed the independent search-layer choices.
@@ -988,6 +991,7 @@ impl Default for AppConfig {
             folder_grid_thumbnails: BTreeMap::new(),
             target: TargetState::default(),
             bookmarks: Vec::new(),
+            removed_bookmarks: BTreeSet::new(),
             search: SearchConfig::default(),
             search_setup_completed: false,
             folder_column_widths: BTreeMap::new(),

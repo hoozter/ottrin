@@ -3,6 +3,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 source "$ROOT/packaging/package-lifecycle.sh"
+ottrin_guard_local_build "$ROOT" "${BASH_SOURCE[0]}" "$@"
 source "$ROOT/packaging/package-search-runtime.sh"
 VERSION="${OTTRIN_VERSION:-$(grep -m1 '^version = ' "$ROOT/Cargo.toml" | sed -E 's/version = "([^"]+)"/\1/')}"
 TARGET="${OTTRIN_TARGET:-x86_64-pc-windows-gnu}"

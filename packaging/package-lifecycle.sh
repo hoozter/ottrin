@@ -2,6 +2,14 @@
 # Shared, sourceable lifecycle helpers for local Ottrin package builds.
 # Packages may be produced from a dirty working tree; artifacts must say so.
 
+ottrin_guard_local_build() {
+  local root="$1" script="$2" guard="$HOME/.local/libexec/project-build-guard"
+  shift 2
+  if [[ -x "$guard" && -z "${PROJECT_BUILD_GUARD_PID:-}" ]]; then
+    exec "$guard" "$root" bash "$script" "$@"
+  fi
+}
+
 ottrin_package_provenance() {
   local root="$1"
   local revision state diff_hash

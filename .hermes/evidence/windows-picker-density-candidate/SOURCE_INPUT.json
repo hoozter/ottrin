@@ -1,0 +1,14 @@
+{
+  "source_revision": "b545bd2efa96621783a95c16004f5aef18eeee22",
+  "purpose": "Pending native MSIX assembly using real Git and exact current stage",
+  "archive": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-picker-density-candidate/source.zip",
+  "status": "consumed by native MSIX 39 assembly; owned source archive retired",
+  "sha256": "2329fb76ca775a0590aa6426acc263857135cd7f036f4e778b59413253388430",
+  "archive_bytes": 2938703,
+  "real_shallow_clone": true,
+  "filter_requested": true,
+  "source_scope": "Exact Git commit and sparse packager inputs; omitted blobs are not assembly inputs. No new Git revision or forged provenance.",
+  "temporary_clone_removed": true,
+  "archive_retired": true,
+  "cleanup_consumer": "assembly39/ASSEMBLY.json"
+}

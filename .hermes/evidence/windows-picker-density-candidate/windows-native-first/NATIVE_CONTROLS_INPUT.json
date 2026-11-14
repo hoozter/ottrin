@@ -1,0 +1,4 @@
+{
+  "sha256": "c6fa404bd07713763f261a99a6194c3fe52930fbe123ffdb99355b77e20a7b11",
+  "scope": "Exact owned ISO input frozen before VM allocation; not runtime acceptance"
+}

@@ -1,0 +1,7 @@
+# Reuse compiled dependencies without retaining a second per-configuration
+# cache of compiler internals. Release builds already disable incremental.
+[profile.dev]
+incremental = false
+
+[profile.test]
+incremental = false

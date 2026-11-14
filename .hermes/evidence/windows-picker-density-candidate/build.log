@@ -1,0 +1,50 @@
+21G	/home/campbell/Projects/Ottrin/target/debug/deps
+25G	/home/campbell/Projects/Ottrin/target/debug/incremental
+25G	/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps
+49G	/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental
+4.3G	/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/release/deps
+32K	/home/campbell/Projects/Ottrin/.hermes/evidence/windows-picker-density-candidate
+Preparing worktree (detached HEAD b545bd2e)
+Updating files:  34% (9158/26449)Updating files:  35% (9258/26449)Updating files:  36% (9522/26449)Updating files:  37% (9787/26449)Updating files:  38% (10051/26449)Updating files:  39% (10316/26449)Updating files:  40% (10580/26449)Updating files:  41% (10845/26449)Updating files:  42% (11109/26449)Updating files:  43% (11374/26449)Updating files:  44% (11638/26449)Updating files:  45% (11903/26449)Updating files:  46% (12167/26449)Updating files:  47% (12432/26449)Updating files:  48% (12696/26449)Updating files:  49% (12961/26449)Updating files:  50% (13225/26449)Updating files:  51% (13489/26449)Updating files:  52% (13754/26449)Updating files:  53% (14018/26449)Updating files:  54% (14283/26449)Updating files:  55% (14547/26449)Updating files:  56% (14812/26449)Updating files:  57% (15076/26449)Updating files:  58% (15341/26449)Updating files:  59% (15605/26449)Updating files:  60% (15870/26449)Updating files:  61% (16134/26449)Updating files:  62% (16399/26449)Updating files:  63% (16663/26449)Updating files:  64% (16928/26449)Updating files:  65% (17192/26449)Updating files:  65% (17272/26449)Updating files:  66% (17457/26449)Updating files:  67% (17721/26449)Updating files:  68% (17986/26449)Updating files:  69% (18250/26449)Updating files:  70% (18515/26449)Updating files:  71% (18779/26449)Updating files:  72% (19044/26449)Updating files:  73% (19308/26449)Updating files:  74% (19573/26449)Updating files:  75% (19837/26449)Updating files:  76% (20102/26449)Updating files:  77% (20366/26449)Updating files:  78% (20631/26449)Updating files:  79% (20895/26449)Updating files:  80% (21160/26449)Updating files:  81% (21424/26449)Updating files:  82% (21689/26449)Updating files:  83% (21953/26449)Updating files:  84% (22218/26449)Updating files:  85% (22482/26449)Updating files:  86% (22747/26449)Updating files:  87% (23011/26449)Updating files:  88% (23276/26449)Updating files:  89% (23540/26449)Updating files:  90% (23805/26449)Updating files:  91% (24069/26449)Updating files:  92% (24334/26449)Updating files:  93% (24598/26449)Updating files:  94% (24863/26449)Updating files:  95% (25127/26449)Updating files:  96% (25392/26449)Updating files:  97% (25656/26449)Updating files:  98% (25921/26449)Updating files:  99% (26185/26449)Updating files: 100% (26449/26449)Updating files: 100% (26449/26449), done.
+HEAD is now at b545bd2e Honor saved list density in the file picker
+   Compiling egui v0.33.3 (/home/campbell/Projects/Ottrin/.hermes/worktrees/windows-picker-density-source/vendor/egui)
+   Compiling ottrin-core v0.1.0 (/home/campbell/Projects/Ottrin/.hermes/worktrees/windows-picker-density-source/crates/ottrin-core)
+   Compiling ottrin-shell v0.1.0 (/home/campbell/Projects/Ottrin/.hermes/worktrees/windows-picker-density-source/crates/ottrin-shell)
+   Compiling egui_glow v0.33.3
+   Compiling ottrin-platform v0.1.0 (/home/campbell/Projects/Ottrin/.hermes/worktrees/windows-picker-density-source/crates/ottrin-platform)
+   Compiling egui-wgpu v0.33.3
+   Compiling egui-winit v0.33.3 (/home/campbell/Projects/Ottrin/.hermes/worktrees/windows-picker-density-source/vendor/egui-winit)
+   Compiling eframe v0.33.3 (/home/campbell/Projects/Ottrin/.hermes/worktrees/windows-picker-density-source/vendor/eframe)
+   Compiling ottrin-preview v0.1.0 (/home/campbell/Projects/Ottrin/.hermes/worktrees/windows-picker-density-source/crates/ottrin-preview)
+   Compiling ottrin-search v0.1.0 (/home/campbell/Projects/Ottrin/.hermes/worktrees/windows-picker-density-source/crates/ottrin-search)
+   Compiling egui_extras v0.33.3
+   Compiling ottrin-app v0.1.0 (/home/campbell/Projects/Ottrin/.hermes/worktrees/windows-picker-density-source/crates/ottrin-app)
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/.hermes/worktrees/windows-picker-density-source/crates/ottrin-ui)
+    Finished `release` profile [optimized] target(s) in 9m 40s
+Windows GUI subsystem smoke passed: ordinary launch allocates no console.
+Verified app-local Mesa loader and absence of an eager OpenGL import.
+Command line defined: "VERSION=0.1.0"
+Command line defined: "STAGE=/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-density-build.kHmCpu/windows-payload/Ottrin-0.1.0-windows-x64"
+Command line defined: "OUTPUT=/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-density-build.kHmCpu/.windows-installer.QEHti1/Ottrin-0.1.0-windows-x64-setup.exe"
+Processing config: /etc/nsisconf.nsh
+Processing script file: "/home/campbell/Projects/Ottrin/.hermes/worktrees/windows-picker-density-source/packaging/windows/installer.nsi" (UTF8)
+
+Processed 1 file, writing output (x86-unicode):
+
+Output: "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-density-build.kHmCpu/.windows-installer.QEHti1/Ottrin-0.1.0-windows-x64-setup.exe"
+Install: 3 pages (192 bytes), 1 section (4120 bytes), 673 instructions (18844 bytes), 299 strings (14018 bytes), 1 language table (278 bytes).
+Uninstall: 3 pages (256 bytes), 1 section (4120 bytes), 669 instructions (18732 bytes), 227 strings (8268 bytes), 1 language table (282 bytes).
+Datablock optimizer saved 5874 KiB (~3.8%).
+
+Using lzma (compress whole) compression.
+
+EXE header size:              113664 / 100864 bytes
+Install code:                          (35868 bytes)
+Install data:                          (149809263 bytes)
+Uninstall code+data:                   (114000 bytes)
+Compressed data:            41312945 / 149959131 bytes
+CRC (0xC7CFD6BB):                  4 / 4 bytes
+
+Total size:                 41426613 / 150059999 bytes (27.6%)
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-density-build.kHmCpu/Ottrin-0.1.0-windows-x64-setup.exe
+Staged Windows installer SHA256 9acfffc3aa059365919f13b856b7de408e060a144d5de15be9e4bf2eb99e377b

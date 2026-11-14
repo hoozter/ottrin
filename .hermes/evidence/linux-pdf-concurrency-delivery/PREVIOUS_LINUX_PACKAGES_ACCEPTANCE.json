@@ -1,0 +1,46 @@
+{
+  "status": "pass scoped Linux picker List density delivery",
+  "source_revision": "b545bd2efa96621783a95c16004f5aef18eeee22",
+  "artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "7ab3adb7028af1976de5d6f1861b6b6a8722778977c0dc4998af9c671f6aa117",
+    "Ottrin-0.1.0-x86_64.AppImage": "d485bbd74009a6c3f35facb7371b7cf9fd6ef1433e2abd014be0a0a27164d66e",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "01d811fd01a7caaf0c7b7afa53ac658f83ad945c1c549eea25b98b19017344bd",
+    "ottrin_0.1.0_amd64.deb": "00749e836be1121b77aec7c6cbcb7f0995c89281230a57a3753a24ec2dc72e14"
+  },
+  "evidence": ".hermes/evidence/linux-picker-density-delivery",
+  "checks": [
+    "production portable/AppImage runtime closure and playback checks",
+    "production native payload, dependencies, policy, hooks and code identity blocks",
+    "exact bundled-font notice in all four formats",
+    "seven matching portable/AppImage runtime payloads including the HTML helper",
+    "exact current documentation and clean source notes",
+    "actual AppImage and RPM index daemon namespace/ownership refusal checks"
+  ],
+  "runtime_sha256": {
+    "application": "e86efc95e0381b4e1f56edb917f54734d192ea3a9c6076117530251ef36c9ebc",
+    "index_daemon": "c9a831be475532b338c2ded7a637c830f6d78ee23d261cb7082125ad19a90c31",
+    "privileged_helper": "f123b93368d7919067bdcfe6f295c079fc1d000c38fdb2f3f493c465bd0f932f",
+    "html_renderer": "f6a4ebe343c58ad3f06398c81574aa44d2b1afcfd7486e9e180c9368efefcbed"
+  },
+  "hosted_source": {
+    "run": 42790815680,
+    "tested_source_revision": "b545bd2efa96621783a95c16004f5aef18eeee22",
+    "non_runtime_diff": [],
+    "all_four_jobs_success": true
+  },
+  "source_scope": ".hermes/evidence/linux-picker-density-delivery/BUILD_SOURCE.json",
+  "mounted_picker_density": ".hermes/evidence/linux-picker-density-delivery/mounted-density/ACCEPTANCE.json",
+  "current_helper_read_only": [
+    ".hermes/evidence/linux-picker-density-delivery/LINUX_HELPER_RUNTIME.json"
+  ],
+  "previous_cohort": {
+    "source_revision": "f62ec5e4319514e699112a3442da630747cd2839",
+    "receipt": ".hermes/evidence/linux-picker-density-delivery/PREVIOUS_LINUX_PACKAGES_ACCEPTANCE.json"
+  },
+  "limits": [
+    "Mounted Dark X11 checks cover two saved List densities, exact file selection and preservation of main settings and fixture bytes.",
+    "Other portal, theme and native distro receipts retain their recorded package scopes.",
+    "Daemon, helper and HTML renderer bytes match the previous cohort.",
+    "Packaged manuals are build-time snapshots at b545bd2e; repository metadata records later delivery."
+  ]
+}

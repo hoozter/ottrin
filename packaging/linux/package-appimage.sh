@@ -4,6 +4,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 source "$ROOT/packaging/linux/bundle-runtime-libs.sh"
 source "$ROOT/packaging/package-lifecycle.sh"
+ottrin_guard_local_build "$ROOT" "${BASH_SOURCE[0]}" "$@"
 VERSION="${OTTRIN_VERSION:-$(grep -m1 '^version = ' "$ROOT/Cargo.toml" | sed -E 's/version = "([^"]+)"/\1/')}"
 DIST_DIR="${OTTRIN_DIST_DIR:-$ROOT/dist/packages}"
 BUILD_DIR="$ROOT/target/release"

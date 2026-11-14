@@ -1,0 +1,227 @@
+{
+  "installed_binary_sha256": "e4f5e1fb173888a99b34e15fbe0180f6a62c8e1d91138b6e93c48db3b14b0a95",
+  "scope": "List density and overlapping preferences in exact portable and installed pickers",
+  "phase": "installed Theme Editor in Dark and Light",
+  "preferences_preserved": true,
+  "desktop_ready": true,
+  "remembered_folder_verified": true,
+  "owned_portable_extraction_removed": true,
+  "grid_and_hidden_preserved": true,
+  "picker_cases": [
+    {
+      "start_ms": 1168.1093,
+      "request_sent_ms": 1168.7111,
+      "case": "portable-grid",
+      "process_id": 1828,
+      "window_mapped_upper_bound_ms": 1446.37,
+      "renderer_arguments": "",
+      "normal_cancel": true,
+      "launch_unix_ms": 1794309203636,
+      "response": {
+        "accepted": false,
+        "paths": [],
+        "current_filter": null,
+        "choices": {}
+      },
+      "trace": [
+        {
+          "phase": "reading_request",
+          "elapsed_ms": 0.014,
+          "entry_unix_ms": 1794309204859
+        },
+        {
+          "phase": "request_ready",
+          "elapsed_ms": 0.113,
+          "entry_unix_ms": 1794309204859
+        },
+        {
+          "phase": "starting_wgpu",
+          "elapsed_ms": 1.917,
+          "entry_unix_ms": 1794309204859
+        },
+        {
+          "phase": "renderer_ready",
+          "elapsed_ms": 180.252,
+          "entry_unix_ms": 1794309204859
+        },
+        {
+          "phase": "picker_ready",
+          "elapsed_ms": 181.056,
+          "entry_unix_ms": 1794309204859
+        },
+        {
+          "phase": "first_ui_pass",
+          "elapsed_ms": 183.31,
+          "entry_unix_ms": 1794309204859
+        }
+      ]
+    },
+    {
+      "start_ms": 5.779800000000001,
+      "request_sent_ms": 6.1851,
+      "case": "installed-hidden",
+      "process_id": 3608,
+      "window_mapped_upper_bound_ms": 1867.97,
+      "renderer_arguments": "",
+      "normal_cancel": true,
+      "launch_unix_ms": 1794309205083,
+      "response": {
+        "accepted": false,
+        "paths": [],
+        "current_filter": null,
+        "choices": {}
+      },
+      "trace": [
+        {
+          "phase": "reading_request",
+          "elapsed_ms": 0.03,
+          "entry_unix_ms": 1794309205602
+        },
+        {
+          "phase": "request_ready",
+          "elapsed_ms": 0.209,
+          "entry_unix_ms": 1794309205602
+        },
+        {
+          "phase": "starting_wgpu",
+          "elapsed_ms": 2.853,
+          "entry_unix_ms": 1794309205602
+        },
+        {
+          "phase": "renderer_ready",
+          "elapsed_ms": 912.89,
+          "entry_unix_ms": 1794309205602
+        },
+        {
+          "phase": "picker_ready",
+          "elapsed_ms": 913.633,
+          "entry_unix_ms": 1794309205602
+        },
+        {
+          "phase": "first_ui_pass",
+          "elapsed_ms": 926.94,
+          "entry_unix_ms": 1794309205602
+        }
+      ]
+    },
+    {
+      "start_ms": 24.302400000000002,
+      "request_sent_ms": 25.265600000000003,
+      "case": "portable-untouched",
+      "process_id": 4568,
+      "window_mapped_upper_bound_ms": 530.34,
+      "renderer_arguments": "",
+      "normal_cancel": true,
+      "launch_unix_ms": 1794309203099,
+      "response": {
+        "accepted": false,
+        "paths": [],
+        "current_filter": null,
+        "choices": {}
+      },
+      "trace": [
+        {
+          "phase": "reading_request",
+          "elapsed_ms": 0.033,
+          "entry_unix_ms": 1794309203188
+        },
+        {
+          "phase": "request_ready",
+          "elapsed_ms": 0.376,
+          "entry_unix_ms": 1794309203188
+        },
+        {
+          "phase": "starting_wgpu",
+          "elapsed_ms": 2.713,
+          "entry_unix_ms": 1794309203188
+        },
+        {
+          "phase": "renderer_ready",
+          "elapsed_ms": 348.775,
+          "entry_unix_ms": 1794309203188
+        },
+        {
+          "phase": "picker_ready",
+          "elapsed_ms": 349.833,
+          "entry_unix_ms": 1794309203188
+        },
+        {
+          "phase": "first_ui_pass",
+          "elapsed_ms": 353.572,
+          "entry_unix_ms": 1794309203188
+        }
+      ]
+    }
+  ],
+  "list_density": {
+    "installed": [
+      {
+        "opened_expected_file": true,
+        "scale": 0.9,
+        "pitch": 26,
+        "height": 23
+      },
+      {
+        "opened_expected_file": true,
+        "scale": 1.35,
+        "pitch": 37,
+        "height": 34
+      }
+    ],
+    "portable": [
+      {
+        "opened_expected_file": true,
+        "scale": 0.9,
+        "pitch": 26,
+        "height": 23
+      },
+      {
+        "opened_expected_file": true,
+        "scale": 1.35,
+        "pitch": 37,
+        "height": 34
+      }
+    ]
+  },
+  "no_index": true,
+  "source_preserved": true,
+  "identity": {
+    "profile": "C:\\Users\\OTMSI2a182503e813",
+    "sid": "S-1-5-21-3790294415-2606194316-2422870471-1002",
+    "administrator": false,
+    "session": 1
+  },
+  "owned_installation_removed": true,
+  "installed_theme": [
+    {
+      "physical_cancel": true,
+      "normal_exit": true,
+      "preview_menu": true,
+      "theme": "Dark"
+    },
+    {
+      "physical_cancel": true,
+      "normal_exit": true,
+      "preview_menu": true,
+      "theme": "Light"
+    }
+  ],
+  "status": "pass",
+  "package": {
+    "source_revision": "b545bd2efa96621783a95c16004f5aef18eeee22",
+    "files": [
+      {
+        "name": "portable.zip",
+        "sha256": "cb4f8f53d20780b5d193a781054a1fc2d173847bb4c209829adcd4dc991b85f7"
+      },
+      {
+        "name": "current-setup.exe",
+        "sha256": "9acfffc3aa059365919f13b856b7de408e060a144d5de15be9e4bf2eb99e377b"
+      }
+    ],
+    "actor_sha256": "0f17763688cbfb75a724c5fc388083c4f8762474ce48a0c528ada00fb1e18a5b",
+    "scope": "Exact staged portable and NSIS List density and overlapping picker preferences."
+  },
+  "binary_sha256": "e4f5e1fb173888a99b34e15fbe0180f6a62c8e1d91138b6e93c48db3b14b0a95",
+  "uninstall_exit": 0
+}

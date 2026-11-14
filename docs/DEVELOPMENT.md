@@ -15,6 +15,13 @@ Ottrin is a Rust workspace using egui/eframe.
 
 The supported Rust toolchain is pinned in `rust-toolchain.toml`.
 
+The workspace disables incremental compilation for development and test builds.
+Cargo still reuses compiled dependencies in `target/`. On Campbell's Linux host,
+the local Cargo launcher and packaging scripts use
+`~/.local/libexec/project-build-guard`. Ottrin and Minus share one build slot.
+The system drive needs 20 GiB free at launch, and the guard cancels a build at
+the 15 GiB reserve. Smaller auxiliary filesystems have a proportional reserve.
+
 Use the workspace `target/` for current builds. Historical-source QA builds must use a task-owned `CARGO_TARGET_DIR` under that directory: Cargo can reuse relative-path fingerprints across worktrees and report an older executable as fresh. Keep that isolation only while its consumers need it, and remove it after QA. Record source revision and executable hashes before packaging; a successful Cargo exit does not prove artifact freshness.
 
 Publish packages through `packaging/package-lifecycle.sh`. Replacing any Linux

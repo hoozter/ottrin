@@ -1,0 +1,10 @@
+{
+  "source_revision": "b545bd2efa96621783a95c16004f5aef18eeee22",
+  "actor_sha256": "001d3c7032bee0543b05c05888e951ec091a78cfc2dc280ab7faed560a04cc7a",
+  "stable_windows_hashes_match": true,
+  "owned_vm_started": false,
+  "available_bytes": 16928784384,
+  "vm_minimum_bytes": 25769803776,
+  "headroom_candidates_present": 16,
+  "scope": "Read-only driver and payload baseline before the private Windows stage is complete"
+}
