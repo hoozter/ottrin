@@ -2223,7 +2223,7 @@ mod tests {
                 "General",
                 "Appearance",
                 "Files",
-                SETTINGS_SERVICES_TITLE,
+                "Services",
                 "Search",
                 "Cache",
             ] {
@@ -2244,7 +2244,7 @@ mod tests {
                         Toggled::False
                     })
                 );
-                if label == SETTINGS_SERVICES_TITLE {
+                if label == "Services" {
                     services = Some(*id);
                 }
             }
@@ -2259,7 +2259,7 @@ mod tests {
             let nodes = output.platform_output.accesskit_update.unwrap().nodes;
             assert!(nodes.iter().any(|(_, node)| {
                 node.role() == Role::RadioButton
-                    && node.label() == Some(SETTINGS_SERVICES_TITLE)
+                    && node.label() == Some("Services")
                     && node.toggled() == Some(Toggled::True)
             }));
             assert_eq!(app.settings_tab, SettingsTab::Services);
