@@ -24,6 +24,20 @@ pub(crate) fn render_file_row(
     c: &Colors,
     config: &AppConfig,
 ) -> egui::Response {
+    render_file_row_with_name_width(ui, entry, state, layout, layout.width, c, config)
+}
+
+/// Keep one full-width row interaction/background while reserving space for
+/// metadata columns to the right of the ordinary filename cell.
+pub(crate) fn render_file_row_with_name_width(
+    ui: &mut egui::Ui,
+    entry: &FileEntry,
+    state: EntryVisualState,
+    layout: FileRowLayout,
+    name_width: f32,
+    c: &Colors,
+    config: &AppConfig,
+) -> egui::Response {
     let FileRowLayout {
         index: row_index,
         width: row_width,
@@ -105,10 +119,11 @@ pub(crate) fn render_file_row(
 
     let gap = ICON_TEXT_GAP * c.font_scale;
     let text_left = icon_rect.right() + gap;
+    let name_right = (row_rect.left() + name_width).min(row_rect.right());
     let text_right = if is_dir {
         painter
             .text(
-                egui::Pos2::new(row_rect.right() - 10.0, row_rect.center().y),
+                egui::Pos2::new(name_right - 10.0, row_rect.center().y),
                 Align2::RIGHT_CENTER,
                 "\u{203A}",
                 FontId::proportional(text_size),
@@ -117,7 +132,7 @@ pub(crate) fn render_file_row(
             .left()
             - gap
     } else {
-        row_rect.right() - 10.0
+        name_right - 10.0
     }
     .max(row_rect.left());
     let name_rect = Rect::from_min_max(
@@ -170,6 +185,7 @@ mod tests {
                 symlink_target_is_dir: None,
                 size_bytes: None,
                 modified_unix_secs: None,
+                created_unix_secs: None,
             };
             let output = ctx.run(
                 egui::RawInput {

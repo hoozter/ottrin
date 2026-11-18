@@ -80,6 +80,9 @@ use std::time::{Duration, Instant};
 const LINUX_SYSTEM_MEDIA_DISCLOSURE: &str = "On Linux, Ottrin uses GStreamer installed on this system. Ottrin does not include, download, install, or select codec implementations. Playback depends on the media plugins made available by the operating system or user.";
 
 mod appearance_editor;
+mod command_files;
+#[cfg(test)]
+mod command_frame_tests;
 mod config;
 mod operation_paths;
 #[cfg(any(unix, target_os = "windows"))]
@@ -96,7 +99,9 @@ mod file_details;
 mod file_grid;
 mod file_list;
 mod file_row;
+mod folder_preferences;
 mod inspector_controls;
+mod miller_columns;
 mod picker;
 mod picker_parent;
 mod status_bar;
@@ -136,7 +141,7 @@ use image_ops::{compute_sha256, rotate_image_file};
 use launcher::{install_terminal_launcher, launcher_status, remove_terminal_launcher};
 use listing::{
     default_sort_direction, list_directory, nearest_existing_dir, sibling_from_entries,
-    sort_entries, sort_supports_direction,
+    sort_entries,
 };
 #[cfg(not(target_os = "linux"))]
 use preview_render::render_document_body_preview;
@@ -2436,6 +2441,12 @@ struct CommandFrame {
     history: Vec<String>,
     history_idx: Option<usize>,
     completions: Vec<String>,
+    file_matches: Vec<FileEntry>,
+    /// None keeps Enter bound to command execution, even with file matches.
+    file_focus: Option<PathBuf>,
+    file_query: String,
+    file_directory: Option<PathBuf>,
+    reveal_file: bool,
     error: Option<String>,
     message: Option<String>, // informational output (e.g., from "help")
     /// Needs input focus handed to the TextEdit next frame.
@@ -3736,7 +3747,6 @@ struct SearchQueryResponse {
     request_id: u64,
     query: SearchQuery,
     root: Option<PathBuf>,
-    previously_selected_path: Option<PathBuf>,
     result: SearchQueryResult,
 }
 
@@ -4003,6 +4013,7 @@ struct SearchUiState {
     last_warning: Option<String>,
     request_focus: bool,
     input_focused: bool,
+    request_result_focus: bool,
     last_query_root: Option<PathBuf>,
     include_glob_input: String,
     exclude_glob_input: String,
@@ -4020,6 +4031,9 @@ struct SearchUiState {
     result_resize_start: Option<(usize, usize, f32, f32)>,
     latest_request_id: u64,
     search_inflight: bool,
+    /// The in-flight request was issued by a background snapshot refresh, so
+    /// the UI must not flash the "searching" spinner for it.
+    search_inflight_background: bool,
     sqlite_schedule_status: Option<LocateScheduleStatus>,
     administrator_persistent_confirmation: bool,
     administrator_purge_on_remove: bool,
@@ -4043,6 +4057,7 @@ impl Default for SearchUiState {
             last_warning: None,
             request_focus: false,
             input_focused: false,
+            request_result_focus: false,
             last_query_root: None,
             include_glob_input: String::new(),
             exclude_glob_input: String::new(),
@@ -4056,6 +4071,7 @@ impl Default for SearchUiState {
             result_resize_start: None,
             latest_request_id: 0,
             search_inflight: false,
+            search_inflight_background: false,
             sqlite_schedule_status: None,
             administrator_persistent_confirmation: false,
             administrator_purge_on_remove: false,
@@ -4348,6 +4364,8 @@ impl OttrinApp {
 
     /// Open the active tab at a directory supplied by the launcher.
     pub fn open_directory_at_startup(&mut self, path: PathBuf) {
+        // An explicit launch does not use the configured startup folder.
+        self.status_message = None;
         let tab_id = self.state.active_tab().id;
         self.navigate_tab_to(tab_id, path);
         self.request_miller_reveal(tab_id);
@@ -4355,6 +4373,7 @@ impl OttrinApp {
 
     /// Reveal an entry in its parent; filesystem roots open their own contents.
     pub fn reveal_path_at_startup(&mut self, path: PathBuf) {
+        self.status_message = None;
         let Some(parent) = path.parent().map(Path::to_path_buf) else {
             self.open_directory_at_startup(path);
             return;
@@ -4387,6 +4406,9 @@ impl OttrinApp {
             symlink_target_is_dir: None,
             size_bytes: metadata.as_ref().map(std::fs::Metadata::len),
             modified_unix_secs,
+            created_unix_secs: metadata
+                .as_ref()
+                .and_then(ottrin_core::metadata_created_unix_secs),
         };
         self.quick_inspector_only = true;
         self.open_preview_entry(entry);
@@ -4439,13 +4461,7 @@ impl OttrinApp {
 
         let colors = Colors::for_config(&config, None);
 
-        let mut state = AppState {
-            config,
-            ..AppState::default()
-        };
-        for tab in &mut state.tabs {
-            tab.view_mode = state.config.default_view_mode;
-        }
+        let (mut state, startup_warning) = AppState::from_config(config);
         state.config.folder_column_widths.clear();
         let search_config = state.config.search.clone();
         let mut retained_move_activity_loader =
@@ -4599,9 +4615,21 @@ impl OttrinApp {
         app.search_ui.include_hidden = app.state.config.search.include_hidden_system;
         app.search_service
             .update_config(app.state.config.search.clone());
-        app.refresh_active_tab();
+        // Restored List/Grid tabs also need listings before their first focus.
+        let initial_tabs: Vec<_> = app
+            .state
+            .tabs
+            .iter()
+            .map(|tab| (tab.id, tab.current_dir.clone()))
+            .collect();
+        for (id, dir) in initial_tabs {
+            app.refresh_tab(id, dir);
+        }
         app.request_miller_reveal(app.state.active_tab().id);
         app.privileged_availability = app.platform.privileged_availability();
+        if let Some(warning) = startup_warning {
+            app.set_status_message(warning, false, 15);
+        }
         app
     }
 
@@ -4628,6 +4656,11 @@ impl OttrinApp {
         self.command_frame.error = None;
         self.command_frame.message = None;
         self.command_frame.completions.clear();
+        self.command_frame.file_matches.clear();
+        self.command_frame.file_focus = None;
+        self.command_frame.file_query.clear();
+        self.command_frame.file_directory = None;
+        self.command_frame.reveal_file = false;
     }
 
     fn discard_cached_pdf_preview_when_runtime_is_unavailable(
@@ -4696,6 +4729,9 @@ impl OttrinApp {
 
     fn persist_config(&mut self) -> bool {
         // Editor previews live in ThemeEditorState, never in the persisted configuration.
+        if !self.quick_inspector_only {
+            self.state.remember_session();
+        }
         if let Err(error) = save_config(&self.state.config) {
             eprintln!("ottrin: {error}");
             self.set_status_message(error, false, 12);
@@ -5371,7 +5407,7 @@ impl OttrinApp {
                 "The left rail containing bookmarked locations and storage devices."
             }
             ThemePreviewRegion::ColumnBackground => {
-                "Background behind files in every view mode. Canvas and row fills stay square; selected Grid tiles use Surface corners. The editing outline only identifies the target."
+                "Background behind files in every view mode, including Column view headings. Canvas and row fills stay square; selected Grid tiles use Surface corners. The editing outline only identifies the target."
             }
             ThemePreviewRegion::SelectedRow => {
                 "Selected file background, also used for text selection. Row fills stay square; Grid tiles use Surface corners. Focus outlines use the shared accent."
@@ -6607,14 +6643,7 @@ impl OttrinApp {
             col.loading = false;
             match resp.result {
                 Ok(mut entries) => {
-                    let sort_cfg = if matches!(resp.key, ListingKey::TabMain(_)) {
-                        self.state
-                            .tab_by_id(tab_id)
-                            .map(|t| t.sort)
-                            .unwrap_or_default()
-                    } else {
-                        ottrin_core::SortConfig::default()
-                    };
+                    let sort_cfg = self.state.config.sort_for_folder(&col.dir);
                     sort_entries(&mut entries, &sort_cfg);
                     col.entries = entries;
                     col.error = None;
@@ -8292,12 +8321,6 @@ impl OttrinApp {
             .tab_by_id(tab_id)
             .map(|t| t.current_dir.clone())
             .unwrap_or_else(default_home_dir);
-        let sort_cfg = self
-            .state
-            .tab_by_id(tab_id)
-            .map(|t| t.sort)
-            .unwrap_or_default();
-
         // Build root -> ... -> current path chain first.
         let mut dirs: Vec<PathBuf> = Vec::new();
         let mut cursor = Some(current_dir.clone());
@@ -8321,6 +8344,7 @@ impl OttrinApp {
         while idx < dirs.len() && cols.len() < 64 {
             let dir = dirs[idx].clone();
             let is_current_dir = dir == current_dir;
+            let sort_cfg = self.state.config.sort_for_folder(&dir);
             match self.miller_list_entries(tab_id, &dir, sort_cfg) {
                 Ok(entries) => {
                     let selected = if idx + 1 < path_chain.len() {
@@ -8404,8 +8428,30 @@ impl OttrinApp {
             return 0;
         }
         let current_col = current_col.min(cols.len() - 1);
-        let ui = self.tab_ui.entry(tab_id).or_default();
-        let mut focus_col = match ui.miller_focus_hint {
+        let mut focus_col = self.miller_pre_bump_focus_col(tab_id, cols, current_col);
+        // Startup/no-selection behavior: if current dir has no active row yet,
+        // treat the path row in the previous column as keyboard focus.
+        if focus_col == current_col && cols[current_col].selected.is_none() && current_col > 0 {
+            focus_col = current_col - 1;
+        }
+        focus_col
+    }
+
+    /// Keyboard focus column before the no-selection borrow applies.
+    fn miller_pre_bump_focus_col(
+        &self,
+        tab_id: u64,
+        cols: &[MillerColumnModel],
+        current_col: usize,
+    ) -> usize {
+        if cols.is_empty() {
+            return 0;
+        }
+        let current_col = current_col.min(cols.len() - 1);
+        let Some(ui) = self.tab_ui.get(&tab_id) else {
+            return current_col;
+        };
+        match ui.miller_focus_hint {
             Some(MillerFocusHint::LeftEdge) => 0,
             Some(MillerFocusHint::CurrentDir) => current_col,
             None => ui
@@ -8413,13 +8459,25 @@ impl OttrinApp {
                 .as_ref()
                 .and_then(|d| cols.iter().position(|c| &c.dir == d))
                 .unwrap_or(current_col),
-        };
-        // Startup/no-selection behavior: if current dir has no active row yet,
-        // treat the path row in the previous column as keyboard focus.
-        if focus_col == current_col && cols[current_col].selected.is_none() && current_col > 0 {
-            focus_col = current_col - 1;
         }
-        focus_col
+    }
+
+    /// True while the no-selection borrow displays the current directory's
+    /// path row in the previous column. This is a per-frame display state: it
+    /// must not persist as Miller focus, or navigating into a directory would
+    /// leave commands scoped to the ancestor listing.
+    fn miller_focus_borrowed_to_parent(
+        &self,
+        tab_id: u64,
+        cols: &[MillerColumnModel],
+        current_col: usize,
+    ) -> bool {
+        if cols.is_empty() {
+            return false;
+        }
+        let current_col = current_col.min(cols.len() - 1);
+        let focus_col = self.miller_pre_bump_focus_col(tab_id, cols, current_col);
+        focus_col == current_col && cols[current_col].selected.is_none() && current_col > 0
     }
 
     // ── Navigation ────────────────────────────────────────────────────────────
@@ -9218,11 +9276,22 @@ impl OttrinApp {
             && self.pending_transfer_conflict.is_none()
             && !self.pending_empty_trash
             && !self.any_address_bar_editing()
-            && !self.command_frame.visible
+            && (!self.command_frame.visible || self.command_frame.file_focus.is_some())
         {
             let space = self.preview.text_editor.is_none()
+                // Space belongs to the search query while it is focused;
+                // toggling the preview there steals typed spaces.
+                && !(self.sidebar == SidebarSection::Search
+                    && self.search_ui.input_focused && !self.preview.visible)
                 && ctx.input_mut(|i| i.consume_key(egui::Modifiers::NONE, Key::Space));
             if space {
+                // Native backends deliver both Key::Space and Text(" ").
+                // Consuming just the key leaves a space for a focused TextEdit.
+                ctx.input_mut(|input| {
+                    input
+                        .events
+                        .retain(|event| !matches!(event, egui::Event::Text(text) if text == " "))
+                });
                 if self.preview.visible {
                     if self.request_preview_close() {
                         self.close_preview(ctx);
@@ -9240,6 +9309,14 @@ impl OttrinApp {
         if !self.main_shortcuts_available(ctx) {
             return;
         }
+        // Dismissing a command preview must not also clear the file selection.
+        if self.command_frame.visible
+            && ctx.input_mut(|i| i.consume_key(egui::Modifiers::NONE, Key::Escape))
+        {
+            self.cancel_unexecuted_command_frame();
+            ctx.memory_mut(|m| m.surrender_focus(egui::Id::new("cmd_input_field")));
+            return;
+        }
         // Don't intercept keys when typing in address bar
         if self.any_address_bar_editing() {
             return;
@@ -9247,61 +9324,32 @@ impl OttrinApp {
 
         if self.sidebar == SidebarSection::Search
             && !self.command_frame.visible
-            && self.search_ui.input_focused
+            && !self.preview.visible
+            && self.pending_rename.is_none()
+            && self.pending_delete.is_none()
         {
-            let mut consumed = false;
-            ctx.input_mut(|input| {
-                if input.consume_key(egui::Modifiers::NONE, Key::ArrowDown) {
-                    consumed = true;
-                    if !self.search_ui.results.is_empty() {
-                        let cur = self.search_ui.selected.unwrap_or(0);
-                        self.search_ui.selected =
-                            Some((cur + 1).min(self.search_ui.results.len() - 1));
-                        self.search_ui.scroll_to_selected = true;
-                    }
-                }
-                if input.consume_key(egui::Modifiers::NONE, Key::ArrowUp) {
-                    consumed = true;
-                    if !self.search_ui.results.is_empty() {
-                        let cur = self.search_ui.selected.unwrap_or(0);
-                        self.search_ui.selected = Some(cur.saturating_sub(1));
-                        self.search_ui.scroll_to_selected = true;
-                    }
-                }
-                if input.consume_key(egui::Modifiers::ALT, Key::Enter) {
-                    consumed = true;
-                    self.open_search_selected_parent();
-                } else if input.consume_key(egui::Modifiers::NONE, Key::Enter) {
-                    consumed = true;
-                    self.open_search_selected();
-                }
-            });
-            if consumed {
-                return;
-            }
-        }
-
-        if self.sidebar == SidebarSection::Search
-            && !self.command_frame.visible
-            && !self.search_ui.input_focused
-        {
+            let was_editing = self.search_ui.input_focused;
             let mut consumed = false;
             ctx.input_mut(|input| {
                 if input.consume_key(egui::Modifiers::NONE, Key::ArrowDown)
                     && !self.search_ui.results.is_empty()
                 {
                     consumed = true;
-                    let cur = self.search_ui.selected.unwrap_or(0);
-                    self.search_ui.selected = Some((cur + 1).min(self.search_ui.results.len() - 1));
-                    self.search_ui.scroll_to_selected = true;
+                    let next = if was_editing {
+                        self.search_ui.selected.unwrap_or(0)
+                    } else {
+                        self.search_ui
+                            .selected
+                            .map_or(0, |i| (i + 1).min(self.search_ui.results.len() - 1))
+                    };
+                    self.select_search_row(next);
                 }
                 if input.consume_key(egui::Modifiers::NONE, Key::ArrowUp)
                     && !self.search_ui.results.is_empty()
                 {
                     consumed = true;
                     let cur = self.search_ui.selected.unwrap_or(0);
-                    self.search_ui.selected = Some(cur.saturating_sub(1));
-                    self.search_ui.scroll_to_selected = true;
+                    self.select_search_row(cur.saturating_sub(1));
                 }
                 if input.consume_key(egui::Modifiers::ALT, Key::Enter) {
                     consumed = true;
@@ -9312,11 +9360,73 @@ impl OttrinApp {
                 }
             });
             if consumed {
+                self.search_ui.input_focused = false;
+                self.search_ui.request_focus = false;
+                ctx.memory_mut(|m| m.surrender_focus(egui::Id::new("search_input_field")));
                 return;
+            }
+            if !was_editing {
+                let entry = self.search_ui_selected_entry();
+                let events = ctx.input_mut(|input| {
+                    let permanent_delete = input.events.iter().any(|event| {
+                        matches!(
+                            event, egui::Event::Key {
+                                key: Key::Delete, pressed: true, modifiers, ..
+                            } if modifiers.shift
+                        )
+                    });
+                    let events = input
+                        .events
+                        .iter()
+                        .filter(|event| {
+                            matches!(event, egui::Event::Copy)
+                                || !permanent_delete && matches!(event, egui::Event::Cut)
+                        })
+                        .cloned()
+                        .collect::<Vec<_>>();
+                    input.events.retain(|event| {
+                        !matches!(
+                            event,
+                            egui::Event::Copy | egui::Event::Cut | egui::Event::Paste(_)
+                        )
+                    });
+                    events
+                });
+                if let Some(entry) = entry {
+                    for event in events {
+                        self.capture_clipboard(
+                            ctx,
+                            vec![entry.path.clone()],
+                            matches!(event, egui::Event::Cut),
+                        );
+                    }
+                    if ctx.input_mut(|i| i.consume_key(egui::Modifiers::NONE, Key::F2)) {
+                        self.begin_rename_path(self.state.active_tab().id, entry.path.clone());
+                        return;
+                    }
+                    let delete = ctx.input_mut(|i| {
+                        if i.consume_key(egui::Modifiers::SHIFT, Key::Delete) {
+                            Some(DeleteMode::Permanent)
+                        } else if i.consume_key(egui::Modifiers::NONE, Key::Delete) {
+                            Some(DeleteMode::Trash)
+                        } else {
+                            None
+                        }
+                    });
+                    if let Some(mode) = delete {
+                        self.request_delete_paths(
+                            self.state.active_tab().id,
+                            vec![entry.path],
+                            mode,
+                        );
+                        return;
+                    }
+                }
             }
         }
 
-        let tandem_switch = if !self.command_frame.visible {
+        let tandem_switch = if !self.command_frame.visible && self.sidebar != SidebarSection::Search
+        {
             ctx.input(|input| {
                 let ctrl = input.modifiers.ctrl || input.modifiers.command;
                 let switch_left = input.key_pressed(Key::Tab) && input.modifiers.shift;
@@ -9348,13 +9458,19 @@ impl OttrinApp {
         // egui's wants_keyboard_input includes focused buttons. A native
         // accessibility action can focus a file row, which still owns file
         // shortcuts; only an actual TextEdit should claim them for text.
+        // While the search sidebar is open, file shortcuts must not act on the
+        // main list at all: the results are the active selection context, and
+        // the main list stays independent of the search state.
         let text_input_focused = ctx
             .memory(|memory| memory.focused())
             .is_some_and(|id| egui::TextEdit::load_state(ctx, id).is_some());
-        let file_shortcuts_allowed = !(self.command_frame.visible
+        let navigating_matches = self.command_frame.visible
+            && self.command_frame.file_focus.is_some()
+            && ctx.memory(|m| m.has_focus(egui::Id::new("cmd_input_field")));
+        let file_shortcuts_allowed = !((self.command_frame.visible || text_input_focused)
+            && !navigating_matches
             || self.preview.visible
-            || text_input_focused
-            || self.sidebar == SidebarSection::Search && self.search_ui.input_focused);
+            || self.sidebar == SidebarSection::Search);
         // winit emits clipboard events, not C/X/V key presses.
         if file_shortcuts_allowed {
             let (events, shift) = ctx.input_mut(|input| {
@@ -9422,6 +9538,7 @@ impl OttrinApp {
             let is_grid = matches!(view, ViewMode::Grid);
             let is_miller = matches!(view, ViewMode::Miller);
             let tab_id = self.state.active_tab().id;
+            let browsing = self.sidebar != SidebarSection::Search;
             let ctrl = input.modifiers.ctrl || input.modifiers.command;
             let extend_selection = input.modifiers.shift;
             // A complete chord can be pressed and released between frames.
@@ -9442,7 +9559,7 @@ impl OttrinApp {
             }
 
             // ── Navigation ──────────────────────────────────────────────────
-            if input.key_pressed(Key::ArrowDown) && !self.command_frame.visible {
+            if input.key_pressed(Key::ArrowDown) && !self.command_frame.visible && browsing {
                 if is_miller {
                     let (cols, current_col) = self.build_miller_model(tab_id);
                     if !cols.is_empty() {
@@ -9481,7 +9598,7 @@ impl OttrinApp {
                     self.select_next_entry(extend_selection);
                 }
             }
-            if input.key_pressed(Key::ArrowUp) && !self.command_frame.visible {
+            if input.key_pressed(Key::ArrowUp) && !self.command_frame.visible && browsing {
                 if is_miller {
                     let (cols, current_col) = self.build_miller_model(tab_id);
                     if !cols.is_empty() {
@@ -9521,7 +9638,7 @@ impl OttrinApp {
                     self.select_prev_entry(extend_selection);
                 }
             }
-            if input.key_pressed(Key::ArrowRight) && !self.command_frame.visible {
+            if input.key_pressed(Key::ArrowRight) && !self.command_frame.visible && browsing {
                 if is_miller {
                     let _ = self.navigate_miller_right(tab_id);
                 } else if is_grid {
@@ -9530,7 +9647,7 @@ impl OttrinApp {
                     self.enter_selected_folder_miller();
                 }
             }
-            if input.key_pressed(Key::ArrowLeft) && !self.command_frame.visible {
+            if input.key_pressed(Key::ArrowLeft) && !self.command_frame.visible && browsing {
                 if is_miller {
                     let (cols, current_col) = self.build_miller_model(tab_id);
                     if !cols.is_empty() {
@@ -9571,7 +9688,7 @@ impl OttrinApp {
                     self.navigate_active_up();
                 }
             }
-            if input.key_pressed(Key::Enter) && !self.command_frame.visible {
+            if input.key_pressed(Key::Enter) && !self.command_frame.visible && browsing {
                 if is_miller {
                     let (cols, current_col) = self.build_miller_model(tab_id);
                     if !cols.is_empty() {
@@ -9589,7 +9706,7 @@ impl OttrinApp {
                     self.enter_selected();
                 }
             }
-            if input.key_pressed(Key::Backspace) && !self.command_frame.visible {
+            if input.key_pressed(Key::Backspace) && !self.command_frame.visible && browsing {
                 self.navigate_active_up();
             }
 
@@ -9639,7 +9756,7 @@ impl OttrinApp {
                 if self.preview.visible && !self.request_preview_close() {
                     return;
                 }
-                let cleared_selection = self.clear_multi_selection(tab_id);
+                let cleared_selection = browsing && self.clear_multi_selection(tab_id);
                 if self.sidebar == SidebarSection::Search {
                     self.sidebar = SidebarSection::None;
                     self.search_ui.request_focus = false;
@@ -9695,20 +9812,32 @@ impl OttrinApp {
             // Any printable non-whitespace character while file list is focused
             // opens the command frame. Space is excluded — it controls the preview.
             if !self.command_frame.visible
+                && file_shortcuts_allowed
                 && !self.any_address_bar_editing()
                 && self.sidebar != SidebarSection::Search
                 && !self.show_settings
                 && self.pending_delete.is_none()
+                && self.pending_rename.is_none()
+                && self.pending_shortcut_rename.is_none()
+                && !self.creation_modal_active()
+                && self.pending_transfer_conflict.is_none()
+                && !self.pending_empty_trash
             {
                 for event in &input.events {
                     if let egui::Event::Text(text) = event {
                         // Skip whitespace-only text (space, newline, etc.)
-                        if !text.is_empty() && !ctrl && !text.chars().all(|c| c.is_whitespace()) {
+                        if !text.is_empty()
+                            && !ctrl
+                            && !input.modifiers.alt
+                            && !text.chars().all(|c| c.is_whitespace())
+                        {
                             self.command_frame.input = text.clone();
                             self.command_frame.visible = true;
                             self.command_frame.request_focus = true;
                             self.command_frame.error = None;
                             self.command_frame.message = None;
+                            self.command_frame.file_focus = None;
+                            self.command_frame.file_query.clear();
                             break;
                         }
                     }
@@ -9800,7 +9929,7 @@ impl OttrinApp {
             return;
         }
         // Newly opened this frame; allow the TextEdit to acquire focus first.
-        if self.command_frame.request_focus {
+        if self.command_frame.request_focus || self.command_frame.file_focus.is_some() {
             return;
         }
         let focused = ctx.memory(|m| m.has_focus(egui::Id::new("cmd_input_field")));
@@ -9851,6 +9980,15 @@ impl OttrinApp {
         self.preview.text_editor = None;
         self.preview.text_edit_discard_confirmation = None;
         self.preview_load_slots[PreviewTarget::Overlay.index()].invalidate();
+        // Closing a preview opened from search results returns focus to the
+        // results, never to the query field: the query only regains focus
+        // explicitly (clicking it, Ctrl+F, or the `search` command).
+        if self.sidebar == SidebarSection::Search {
+            self.search_ui.request_focus = false;
+            self.search_ui.input_focused = false;
+            self.search_ui.request_result_focus = true;
+            ctx.memory_mut(|m| m.surrender_focus(egui::Id::new("search_input_field")));
+        }
         ctx.request_repaint();
     }
 
@@ -10095,6 +10233,7 @@ impl OttrinApp {
             symlink_target_is_dir: item.symlink_target_is_dir,
             size_bytes: item.size_bytes,
             modified_unix_secs: item.modified_unix_secs,
+            created_unix_secs: None,
         }
     }
 
@@ -10443,11 +10582,7 @@ impl OttrinApp {
                     .or_default()
                     .miller_cache
                     .insert(dir.clone(), Ok(entries.clone()));
-                let sort_cfg = self
-                    .state
-                    .tab_by_id(tab_id)
-                    .map(|t| t.sort)
-                    .unwrap_or_default();
+                let sort_cfg = self.state.config.sort_for_folder(&dir);
                 let mut sorted = entries;
                 sort_entries(&mut sorted, &sort_cfg);
 
@@ -10671,7 +10806,7 @@ impl OttrinApp {
     }
 
     fn request_delete_paths(&mut self, tab_id: u64, targets: Vec<PathBuf>, mode: DeleteMode) {
-        self.pending_delete = Some(PendingDelete {
+        let pending = PendingDelete {
             tab_id,
             targets,
             requested_mode: mode,
@@ -10680,7 +10815,12 @@ impl OttrinApp {
             } else {
                 DeleteChoice::MoveToTrash
             },
-        });
+        };
+        if matches!(mode, DeleteMode::Permanent) && !self.state.config.confirm_permanent_delete {
+            self.execute_delete(pending, mode);
+        } else {
+            self.pending_delete = Some(pending);
+        }
     }
 
     fn execute_delete(&mut self, pending: PendingDelete, mode: DeleteMode) {
@@ -11635,7 +11775,15 @@ impl OttrinApp {
         self.run_search_query_page(0);
     }
 
+    /// Background refresh issued because the index snapshot changed. It keeps
+    /// the flag that suppresses the transient "searching" spinner flash.
+    fn run_search_query_refresh(&mut self, offset: usize) {
+        self.run_search_query_page(offset);
+        self.search_ui.search_inflight_background = true;
+    }
+
     fn run_search_query_page(&mut self, offset: usize) {
+        self.search_ui.search_inflight_background = false;
         let offset = if self.search_ui.query == self.search_ui.last_executed_query {
             offset
         } else {
@@ -11644,11 +11792,6 @@ impl OttrinApp {
         self.search_ui.pending_query_since = None;
         self.search_ui.last_executed_query = self.search_ui.query.clone();
         self.ensure_search_started();
-        let previously_selected_path = self
-            .search_ui
-            .selected
-            .and_then(|i| self.search_ui.results.get(i))
-            .map(|it| it.path.clone());
         let root = Some(self.state.active_tab().current_dir.clone());
         if self.search_ui.query.trim().is_empty() {
             if let Some(cancelled) = self.search_cancellation.take() {
@@ -11663,6 +11806,7 @@ impl OttrinApp {
             self.search_ui.last_query_root = root;
             self.search_ui.scroll_to_selected = false;
             self.search_ui.search_inflight = false;
+            self.search_ui.search_inflight_background = false;
             return;
         }
         let q = SearchQuery {
@@ -11689,7 +11833,6 @@ impl OttrinApp {
                 request_id,
                 query: q,
                 root: response_root,
-                previously_selected_path,
                 result,
             });
         });
@@ -11715,30 +11858,42 @@ impl OttrinApp {
             {
                 let limit = result.query.limit.max(1);
                 let last_page = result.result.response.total.saturating_sub(1) / limit * limit;
-                self.run_search_query_page(last_page);
+                self.run_search_query_refresh(last_page);
                 continue;
             }
             self.search_ui.last_query_root = result.root;
             self.search_cancellation = None;
             self.search_ui.last_error = result.result.response.error;
             self.search_ui.last_warning = result.result.warning;
+            let previous_path = self
+                .search_ui
+                .selected
+                .and_then(|i| self.search_ui.results.get(i))
+                .map(|item| item.path.clone());
+            let fresh_query = !self.search_ui.search_inflight_background;
             // Even a partial or failed query replaces the previous query's rows.
             self.search_ui.results = result.result.response.items;
             self.search_ui.total = result.result.response.total;
             self.search_ui.page_offset = result.query.offset;
-            let new_selected = result
-                .previously_selected_path
+            // A background refresh of the same query restores the prior
+            // selection by path and never invents a new one: yanking selection
+            // and scrolling to the top row is what makes the idle results
+            // flash on every index snapshot bump.
+            let new_selected = previous_path
                 .and_then(|path| self.search_ui.results.iter().position(|it| it.path == path))
-                .or(if self.search_ui.results.is_empty() {
-                    None
-                } else {
-                    Some(0)
+                .or_else(|| {
+                    if fresh_query && !self.search_ui.results.is_empty() {
+                        Some(0)
+                    } else {
+                        None
+                    }
                 });
             if new_selected != self.search_ui.selected {
                 self.search_ui.result_preview = None;
             }
             self.search_ui.selected = new_selected;
-            self.search_ui.scroll_to_selected = true;
+            self.search_ui.scroll_to_selected = fresh_query;
+            self.search_ui.search_inflight_background = false;
         }
     }
 
@@ -11749,6 +11904,9 @@ impl OttrinApp {
             .and_then(|i| self.search_ui.results.get(i))
             .cloned();
         if let Some(it) = entry {
+            if it.kind == EntryKind::Directory {
+                self.sidebar = SidebarSection::None;
+            }
             self.open_entry(it.path, it.kind);
         }
     }
@@ -11760,15 +11918,25 @@ impl OttrinApp {
             .and_then(|i| self.search_ui.results.get(i))
             .cloned();
         if let Some(it) = entry {
-            let tab_id = self.state.active_tab().id;
-            self.navigate_tab_to(tab_id, it.parent_path);
+            self.reveal_search_result(it.parent_path, it.path);
         }
+    }
+
+    fn reveal_search_result(&mut self, parent: PathBuf, path: PathBuf) {
+        let tab_id = self.state.active_tab().id;
+        self.navigate_tab_to(tab_id, parent);
+        self.tab_ui.entry(tab_id).or_default().pending_select_path = Some(path);
+        self.request_miller_reveal(tab_id);
+        self.sidebar = SidebarSection::None;
+        self.search_ui.input_focused = false;
+        self.search_ui.request_focus = false;
     }
 
     fn select_search_row(&mut self, idx: usize) {
         if idx >= self.search_ui.results.len() {
             return;
         }
+        self.search_ui.request_result_focus = true;
         if self.search_ui.selected == Some(idx) {
             self.search_ui.scroll_to_selected = true;
             return;
@@ -12540,11 +12708,6 @@ impl OttrinApp {
             .tab_by_id(tab_id)
             .map(|tab| tab.view_mode)
             .unwrap_or(ViewMode::Miller);
-        let sort = self
-            .state
-            .tab_by_id(tab_id)
-            .map(|tab| tab.sort)
-            .unwrap_or_default();
         let current_dir = self
             .state
             .tab_by_id(tab_id)
@@ -12578,11 +12741,14 @@ impl OttrinApp {
         menu_separator(ui, c);
         match view_mode {
             ViewMode::Miller => {
-                ui.add_enabled(
-                    false,
-                    aligned_menu_button("", MI_IMAGE, "Miller preview column handles previews", &c)
-                        .indicator_column()
-                        .themed(&c),
+                widget_style::aligned_choice_submenu(
+                    ui,
+                    MI_VIEW_COLUMN,
+                    "Visible columns",
+                    c,
+                    |ui| {
+                        self.render_miller_columns_menu(ui);
+                    },
                 );
             }
             ViewMode::List => {
@@ -12629,67 +12795,13 @@ impl OttrinApp {
             .clicked()
         {
             self.state.config.show_hidden_files = !hidden_on;
-            if let Some(dir) = self.state.tab_by_id(tab_id).map(|t| t.current_dir.clone()) {
-                self.refresh_tab(tab_id, dir);
-            }
+            self.refresh_visibility();
         }
 
         menu_separator(ui, c);
-        ui.label(
-            RichText::new("Sort")
-                .size(11.5 * c.font_scale)
-                .color(c.text_dim),
-        );
-        for (sort_by, label, icon) in [
-            (SortBy::Name, "Name", MI_SORT_NAME),
-            (SortBy::Kind, "Type", MI_DESCRIPTION),
-            (SortBy::Size, "Size", MI_STORAGE),
-            (SortBy::Modified, "Modified", MI_HISTORY),
-        ] {
-            let selected = sort.by == sort_by;
-            let check = if selected { MI_CHECK } else { " " };
-            if ui
-                .add(aligned_menu_button(check, icon, label, &c))
-                .clicked()
-            {
-                let dir = self.state.tab_by_id(tab_id).map(|t| t.current_dir.clone());
-                if let Some(tab) = self.state.tab_by_id_mut(tab_id) {
-                    tab.sort.by = sort_by;
-                    tab.sort.ascending = default_sort_direction(sort_by);
-                }
-                if let Some(dir) = dir {
-                    self.refresh_tab(tab_id, dir);
-                }
-            }
-        }
-        if sort_supports_direction(sort.by) {
-            let label = if sort.ascending {
-                "Ascending"
-            } else {
-                "Descending"
-            };
-            if ui
-                .add(aligned_menu_button(
-                    " ",
-                    if sort.ascending {
-                        MI_SORT_ASCENDING
-                    } else {
-                        MI_SORT_DESCENDING
-                    },
-                    label,
-                    &c,
-                ))
-                .clicked()
-            {
-                let dir = self.state.tab_by_id(tab_id).map(|t| t.current_dir.clone());
-                if let Some(tab) = self.state.tab_by_id_mut(tab_id) {
-                    tab.sort.ascending = !tab.sort.ascending;
-                }
-                if let Some(dir) = dir {
-                    self.refresh_tab(tab_id, dir);
-                }
-            }
-        }
+        widget_style::aligned_choice_submenu(ui, MI_VIEW_LIST, "Sort by", c, |ui| {
+            self.render_folder_sort_menu(ui, &current_dir);
+        });
 
         if matches!(view_mode, ViewMode::List) {
             menu_separator(ui, c);
@@ -14223,7 +14335,7 @@ impl OttrinApp {
                     Some(status_bar::Action::Services) => self.open_services_settings(),
                     Some(status_bar::Action::ToggleHidden) => {
                         self.state.config.show_hidden_files = !self.state.config.show_hidden_files;
-                        self.refresh_active_tab();
+                        self.refresh_visibility();
                     }
                     Some(status_bar::Action::ToggleCommand) => {
                         self.command_frame.visible = !self.command_frame.visible;
@@ -15285,7 +15397,7 @@ impl OttrinApp {
                     let resp = ui.add_sized(
                         [ui.available_width(), 20.0],
                         egui::TextEdit::singleline(&mut self.search_ui.query)
-                            .id_source("search_input_field")
+                            .id(egui::Id::new("search_input_field"))
                             .frame(false)
                             .hint_text("Search files and folders…")
                             .font(FontId::proportional(13.0 * c.font_scale))
@@ -15412,18 +15524,22 @@ impl OttrinApp {
         ui.add_space(8.0);
 
         // ── Body: empty state or results ──────────────────────────────────
+        self.render_search_sort_controls(ui);
         let results_height = ui.available_height().max(120.0);
         let diag = self.search_service.diagnostics();
 
         // Atomic rebuilds keep the previous snapshot queryable, then replace it all at once.
         // Refresh on snapshot identity rather than item count so same-size replacements appear.
         let has_query = !self.search_ui.query.is_empty();
-        if advance_search_snapshot(
-            &mut self.search_ui.last_seen_snapshot_revision,
-            diag.snapshot_revision,
-            has_query,
-        ) {
-            self.run_search_query_page(self.search_ui.page_offset);
+        if !self.search_ui.search_inflight
+            && self.search_ui.pending_query_since.is_none()
+            && advance_search_snapshot(
+                &mut self.search_ui.last_seen_snapshot_revision,
+                diag.snapshot_revision,
+                has_query,
+            )
+        {
+            self.run_search_query_refresh(self.search_ui.page_offset);
         }
         if has_query {
             // The worker has no UI context, so poll cheaply while search is open. Queries only
@@ -15544,7 +15660,7 @@ impl OttrinApp {
                         "Estimated index progress. Results may keep expanding until indexing finishes.",
                     );
                     ui.add(egui::Spinner::new().size(10.0 * c.font_scale).color(c.accent));
-                } else if self.search_ui.search_inflight {
+                } else if self.search_ui.search_inflight && !self.search_ui.search_inflight_background {
                     ui.ctx().request_repaint_after(Duration::from_millis(50));
                     ui.label(
                         RichText::new("· searching")
@@ -15668,6 +15784,7 @@ impl OttrinApp {
 
             let mut pending_op: Option<FileCommand> = None;
             let mut open_parent: Option<PathBuf> = None;
+            let mut open_parent_reveal: Option<PathBuf> = None;
             let mut open_entry_now: Option<(PathBuf, EntryKind)> = None;
             let mut open_tandem_now: Option<PathBuf> = None;
             let mut add_bookmark: Option<PathBuf> = None;
@@ -15679,6 +15796,12 @@ impl OttrinApp {
 
             let mut table = TableBuilder::new(ui)
                 .id_salt("search_results_table")
+                // These are horizontal cells, not stacked form controls.
+                // Inheriting top-down layout makes cell minimum-size
+                // allocation extend below the visible row and misreport its
+                // accessible click target.
+                .cell_layout(Layout::left_to_right(Align::Center))
+                .sense(Sense::click())
                 .striped(true)
                 .resizable(false)
                 .vscroll(true)
@@ -15713,12 +15836,12 @@ impl OttrinApp {
                          right_align: bool| {
                             header.col(|ui| {
                                 let header_rect = ui.max_rect();
-                                let active = self.search_ui.sort == sort;
+                                 let active = self.search_ui.sort.column() == sort;
                                 let (rect, resp) = ui.allocate_exact_size(ui.available_size(), Sense::click());
                                 resp.widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Button, ui.is_enabled(), format!("Sort search results by {label}")));
                                 paint_sort_header(
                                     ui, rect, label,
-                                    active.then_some(matches!(sort, SearchSort::Name | SearchSort::Path)),
+                                     active.then_some(self.search_ui.sort.ascending()),
                                     FontId::proportional(10.5 * c.font_scale),
                                     if active { c.text } else { c.text_muted }, right_align,
                                 );
@@ -15728,8 +15851,8 @@ impl OttrinApp {
                                 let resp = resp.on_hover_text(format!(
                                     "Sort search results by {label}.\nRight-click for visible columns."
                                 ));
-                                if resp.clicked() && self.search_ui.sort != sort {
-                                    clicked_sort = Some(sort);
+                                 if resp.clicked() {
+                                     clicked_sort = Some(if active { self.search_ui.sort.reversed() } else { sort });
                                 }
                                 let visible_indices = search_visible_column_indices(visible_cols);
                                 if let Some(pos) =
@@ -15838,7 +15961,9 @@ impl OttrinApp {
                 .body(|mut body| {
                     for (i, item) in search_results.iter().enumerate() {
                         let selected = self.search_ui.selected == Some(i);
-                        body.row(24.0, |mut row| {
+                        // Reserve a second line for content snippets.
+                        let row_height = if item.content_snippet.is_some() { 40.0 } else { 24.0 };
+                        body.row(row_height, |mut row| {
                             row.set_selected(selected);
                             let style = style_for_search_item(
                                 item,
@@ -15867,6 +15992,9 @@ impl OttrinApp {
 
                             if visible_cols[0] {
                                 row.col(|ui| {
+                                    // Result text belongs to the file row: text
+                                    // selection must not steal its double-click.
+                                    ui.style_mut().interaction.selectable_labels = false;
                                     if selected {
                                         ui.painter().rect_filled(
                                             ui.max_rect(),
@@ -15903,6 +16031,7 @@ impl OttrinApp {
                             }
                             if visible_cols[1] {
                                 row.col(|ui| {
+                                    ui.style_mut().interaction.selectable_labels = false;
                                     if selected {
                                         ui.painter().rect_filled(
                                             ui.max_rect(),
@@ -15921,6 +16050,7 @@ impl OttrinApp {
                             }
                             if visible_cols[2] {
                                 row.col(|ui| {
+                                    ui.style_mut().interaction.selectable_labels = false;
                                     if selected {
                                         ui.painter().rect_filled(
                                             ui.max_rect(),
@@ -15935,6 +16065,7 @@ impl OttrinApp {
                             }
                             if visible_cols[3] {
                                 row.col(|ui| {
+                                    ui.style_mut().interaction.selectable_labels = false;
                                     if selected {
                                         ui.painter().rect_filled(
                                             ui.max_rect(),
@@ -15950,7 +16081,11 @@ impl OttrinApp {
                                 });
                             }
 
-                            let row_resp = row.response().interact(Sense::click());
+                            let mut row_resp = row.response();
+                            // Table cells can report allocated content beyond
+                            // their clip (notably in narrow panels). Expose
+                            // only the real, clipped hit area to accessibility.
+                            row_resp.rect = row_resp.interact_rect;
                             row_resp.widget_info(|| {
                                 WidgetInfo::selected(
                                     WidgetType::Button,
@@ -15959,13 +16094,21 @@ impl OttrinApp {
                                     search_result_accessibility_label(&item.name),
                                 )
                             });
+                            if selected && self.search_ui.request_result_focus {
+                                row_resp.request_focus();
+                                self.search_ui.request_result_focus = false;
+                            }
                             if row_resp.clicked() {
                                 self.select_search_row(i);
+                                row_resp.request_focus();
+                                self.search_ui.input_focused = false;
                             }
                             if row_resp.secondary_clicked() {
                                 self.select_search_row(i);
+                                row_resp.request_focus();
+                                self.search_ui.input_focused = false;
                             }
-                            if row_resp.double_clicked() {
+                            if self.item_pointer_opens(&row_resp) {
                                 self.select_search_row(i);
                                 open_entry_now = Some((item.path.clone(), item.kind));
                             }
@@ -15981,24 +16124,23 @@ impl OttrinApp {
                                 &mut open_tandem_now,
                                 &mut add_bookmark,
                                 &mut remove_bookmark,
+                                Some(&mut open_parent_reveal),
                             );
                         });
                     }
                 });
             if let Some(sort) = clicked_sort {
-                self.search_ui.sort = sort;
-                self.run_search_query();
+                self.set_search_sort(sort);
             }
             if column_visibility_changed {
-                if matches!(self.search_ui.sort, SearchSort::Path)
+                if matches!(self.search_ui.sort.column(), SearchSort::Path)
                     && !self.search_ui.result_columns[1]
-                    || matches!(self.search_ui.sort, SearchSort::Modified)
+                    || matches!(self.search_ui.sort.column(), SearchSort::Modified)
                         && !self.search_ui.result_columns[2]
-                    || matches!(self.search_ui.sort, SearchSort::Size)
+                    || matches!(self.search_ui.sort.column(), SearchSort::Size)
                         && !self.search_ui.result_columns[3]
                 {
-                    self.search_ui.sort = SearchSort::Name;
-                    self.run_search_query();
+                    self.set_search_sort(SearchSort::Name);
                 }
                 ui.ctx().request_repaint();
             }
@@ -16008,10 +16150,17 @@ impl OttrinApp {
                 self.run_file_op(cmd, Some(tab_id));
             }
             if let Some(p) = open_parent {
-                let tab_id = self.state.active_tab().id;
-                self.navigate_tab_to(tab_id, p);
+                if let Some(reveal_path) = open_parent_reveal {
+                    self.reveal_search_result(p, reveal_path);
+                } else {
+                    let tab_id = self.state.active_tab().id;
+                    self.navigate_tab_to(tab_id, p);
+                }
             }
             if let Some((p, k)) = open_entry_now {
+                if k == EntryKind::Directory {
+                    self.sidebar = SidebarSection::None;
+                }
                 self.open_entry(p, k);
             }
             if let Some(path) = open_tandem_now {
@@ -16172,25 +16321,53 @@ impl OttrinApp {
     }
 
     fn render_command_frame(&mut self, ctx: &Context) {
-        if !self.command_frame.visible && !self.state.config.command_frame_always_visible {
-            return;
+        if !self.command_frame.visible {
+            self.command_frame.file_focus = None;
+            self.command_frame.file_matches.clear();
+            self.command_frame.file_query.clear();
+            self.command_frame.file_directory = None;
+            if !self.state.config.command_frame_always_visible {
+                return;
+            }
         }
         let c = self.colors;
 
-        // Tab completion: use a stable widget ID so we can check focus before
-        // consuming the key. egui's default Tab handling moves focus; we must
-        // consume it first to prevent that when the TextEdit is focused.
+        self.update_command_file_matches();
+        // Keep text focus in one field; section ownership determines Enter.
+        // Consume navigation before TextEdit's default focus/cursor handling.
         let cmd_input_id = egui::Id::new("cmd_input_field");
-        let cmd_focused = ctx.memory(|m| m.has_focus(cmd_input_id));
-        let tab_pressed = if self.command_frame.visible && cmd_focused {
-            ctx.input_mut(|i| i.consume_key(egui::Modifiers::NONE, Key::Tab))
-        } else {
-            false
-        };
+        let cmd_focused = ctx.memory(|m| {
+            m.has_focus(cmd_input_id)
+                || m.focused().is_none() && m.had_focus_last_frame(cmd_input_id)
+        });
+        let (back_tab, tab_pressed, complete, enter, escape, up, down) =
+            if self.command_frame.visible && cmd_focused && !self.preview.visible {
+                ctx.input_mut(|i| {
+                    (
+                        i.consume_key(egui::Modifiers::SHIFT, Key::Tab),
+                        i.consume_key(egui::Modifiers::NONE, Key::Tab),
+                        i.consume_key(egui::Modifiers::CTRL, Key::Space),
+                        i.consume_key(egui::Modifiers::NONE, Key::Enter),
+                        i.consume_key(egui::Modifiers::NONE, Key::Escape),
+                        i.consume_key(egui::Modifiers::NONE, Key::ArrowUp),
+                        i.consume_key(egui::Modifiers::NONE, Key::ArrowDown),
+                    )
+                })
+            } else {
+                (false, false, false, false, false, false, false)
+            };
+        if tab_pressed || back_tab || up || down {
+            // egui schedules focus traversal at begin_pass, before keys can be
+            // consumed. Cancel that traversal as well as consuming the event.
+            ctx.memory_mut(|m| {
+                m.move_focus(egui::FocusDirection::None);
+                m.request_focus(cmd_input_id);
+            });
+        }
 
         egui::TopBottomPanel::bottom("command_frame")
             .resizable(false)
-            .max_height(120.0)
+            .max_height(260.0)
             .frame(
                 Frame::new()
                     .fill(c.panel_raised)
@@ -16233,7 +16410,7 @@ impl OttrinApp {
                     ui.label(RichText::new(msg).color(c.accent).size(11.5 * c.font_scale));
                 }
 
-                // Completions hint (shown after Tab press)
+                // Explicit command-argument completion remains available.
                 if !self.command_frame.completions.is_empty() {
                     let hint = self
                         .command_frame
@@ -16244,14 +16421,14 @@ impl OttrinApp {
                         .collect::<Vec<_>>()
                         .join("   ");
                     ui.label(
-                        RichText::new(format!("Tab>  {}", hint))
+                        RichText::new(format!("Complete path>  {}", hint))
                             .color(c.text_muted)
                             .size(11.0 * c.font_scale),
                     );
                 }
 
                 // Input line
-                ui.with_layout(Layout::left_to_right(Align::Center), |ui| {
+                ui.horizontal(|ui| {
                     ui.label(RichText::new(">").color(c.accent).size(13.0 * c.font_scale));
                     ui.add_space(4.0);
 
@@ -16266,17 +16443,27 @@ impl OttrinApp {
                             .themed(&c)
                             .accessible_name("Command"),
                     );
+                    if resp.has_focus() {
+                        self.command_frame.visible = true;
+                    }
 
                     if self.command_frame.request_focus {
                         resp.request_focus();
                         self.command_frame.request_focus = false;
                     }
+                    ctx.memory_mut(|m| m.set_focus_lock_filter(cmd_input_id, egui::EventFilter {
+                        tab: true, horizontal_arrows: true, vertical_arrows: true, escape: true,
+                    }));
 
-                    // Tab: compute and apply first completion.
-                    // tab_pressed was already gated on cmd_focused (verified before panel render),
-                    // so we don't need resp.has_focus() here.
-                    if tab_pressed {
-                        // Compute fresh completions on Tab press
+                    if resp.changed() {
+                        self.command_frame.error = None;
+                        self.command_frame.message = None;
+                        self.command_frame.completions.clear();
+                        self.update_command_file_matches();
+                    }
+
+                    // Ctrl+Space completes a path argument; Tab owns Files.
+                    if complete {
                         self.update_completions();
                         if let Some(comp) = self.command_frame.completions.first().cloned() {
                             // Completions are full paths — replace the path
@@ -16301,25 +16488,20 @@ impl OttrinApp {
                         te_state.store(ui.ctx(), cmd_input_id);
                     }
 
-                    // Enter executes, Escape closes.
-                    if resp.lost_focus() {
-                        if ui.input(|i| i.key_pressed(Key::Enter)) {
-                            self.execute_command_input();
-                        } else if ui.input(|i| i.key_pressed(Key::Escape)) {
-                            self.command_frame.visible = false;
-                            self.command_frame.error = None;
-                            self.command_frame.completions.clear();
-                        } else {
-                            // Anything else (unlikely now) — keep focus here
-                            self.command_frame.request_focus = true;
-                        }
+                    if tab_pressed {
+                        self.toggle_command_file_focus();
                     }
-
-                    // History navigation with ↑ / ↓
-                    if resp.has_focus() {
-                        let (up, down) = ctx.input(|i| {
-                            (i.key_pressed(Key::ArrowUp), i.key_pressed(Key::ArrowDown))
-                        });
+                    if back_tab {
+                        self.command_frame.file_focus = None;
+                    }
+                    if self.command_frame.file_focus.is_some() {
+                        if up || down {
+                            self.move_command_file_focus(down);
+                        }
+                    } else if down && !self.command_frame.file_matches.is_empty() {
+                        self.toggle_command_file_focus();
+                    } else {
+                        // Preserve command history navigation in Commands.
                         if up && !self.command_frame.history.is_empty() {
                             let max = self.command_frame.history.len() - 1;
                             let idx = self
@@ -16341,16 +16523,68 @@ impl OttrinApp {
                             }
                         }
 
-                        // Clear error on any edit; do NOT auto-update completions
-                        // (they are computed lazily on Tab only)
-                        if resp.changed() {
-                            self.command_frame.error = None;
-                            self.command_frame.message = None;
-                            self.command_frame.completions.clear();
-                        }
                     }
                 });
+                // History and completion edits also reset Enter to Commands.
+                self.update_command_file_matches();
+                if escape {
+                    self.cancel_unexecuted_command_frame();
+                    ctx.memory_mut(|m| m.surrender_focus(cmd_input_id));
+                } else if enter {
+                    self.activate_command_frame();
+                    if self.command_frame.visible {
+                        self.command_frame.request_focus = true;
+                    } else {
+                        ctx.memory_mut(|m| m.surrender_focus(cmd_input_id));
+                    }
+                }
+                if self.command_frame.visible && !self.command_frame.input.trim().is_empty() {
+                    ui.horizontal(|ui| {
+                        let files = self.command_frame.file_focus.is_some();
+                        if ui.selectable_label(!files, "Command").clicked() {
+                            self.command_frame.file_focus = None;
+                            self.command_frame.request_focus = true;
+                        }
+                        if ui.selectable_label(files, "Files in this folder").clicked() {
+                            self.command_frame.file_focus = self.command_frame.file_matches
+                                .first().map(|entry| entry.path.clone());
+                            self.command_frame.reveal_file = true;
+                            self.command_frame.request_focus = true;
+                        }
+                        ui.label(RichText::new(if files {
+                            "Enter: open file · Space: preview · Tab: command · ↑↓: files · Esc: dismiss"
+                        } else {
+                            "Enter: run command · ↓ / Tab: files · ↑: history · Esc: dismiss"
+                        }).size(11.0 * c.font_scale).color(c.text_muted));
+                    });
+                    if let Some(dir) = &self.command_frame.file_directory {
+                        ui.label(RichText::new(dir.display().to_string()).small().color(c.text_muted));
+                    }
+                    if self.command_frame.file_matches.is_empty() {
+                        ui.label(RichText::new("No matching files in this folder").small().color(c.text_muted));
+                    } else {
+                        ScrollArea::vertical().id_salt("command_file_matches")
+                            .max_height(100.0).show(ui, |ui| {
+                                for entry in &self.command_frame.file_matches {
+                                    let focused = self.command_frame.file_focus.as_ref() == Some(&entry.path);
+                                    let icon = if matches!(entry.kind, EntryKind::Directory) { MI_FOLDER } else { MI_FILE };
+                                    let response = ui.selectable_label(focused, format!("{icon} {}", entry.name));
+                                    if focused && (tab_pressed || up || down) {
+                                        response.scroll_to_me(Some(Align::Center));
+                                    }
+                                    if response.clicked() {
+                                        self.command_frame.file_focus = Some(entry.path.clone());
+                                        self.command_frame.reveal_file = true;
+                                        self.command_frame.request_focus = true;
+                                    }
+                                }
+                            });
+                    }
+                    ui.label(RichText::new("Ctrl+Space: complete a command path argument")
+                        .small().color(c.text_muted));
+                }
             });
+        self.sync_command_file_selection();
     }
 
     #[allow(clippy::too_many_arguments)]
@@ -16365,6 +16599,7 @@ impl OttrinApp {
         open_tandem: &mut Option<PathBuf>,
         add_bookmark: &mut Option<PathBuf>,
         remove_bookmark: &mut Option<PathBuf>,
+        mut open_parent_reveal: Option<&mut Option<PathBuf>>,
     ) {
         let path = entry.path.clone();
         let kind = entry.kind;
@@ -16381,7 +16616,10 @@ impl OttrinApp {
             .map(|(_, dir)| dir);
         let tab_id = self.state.active_tab().id;
         let selected_paths = self.selected_paths_for_tab(tab_id);
-        let menu_sources = if selected_paths.len() > 1 && selected_paths.contains(&path) {
+        let menu_sources = if open_parent_reveal.is_none()
+            && selected_paths.len() > 1
+            && selected_paths.contains(&path)
+        {
             selected_paths
         } else {
             vec![path.clone()]
@@ -16411,6 +16649,16 @@ impl OttrinApp {
             ui.visuals_mut().override_text_color = Some(self.colors.text_muted);
             ui.set_min_width(206.0);
             let c = self.colors;
+            // Search rows offer an explicit navigate-and-reveal to the folder
+            // holding the result; main-list rows already sit in that folder.
+            if let Some(reveal) = open_parent_reveal.as_mut() {
+                if menu_item(ui, MI_FOLDER_OPEN, "Open Containing Folder", &c).clicked() {
+                    *open_parent = Some(parent.clone());
+                    **reveal = Some(path.clone());
+                    ui.close();
+                }
+                ui.separator();
+            }
             if menu_item(ui, MI_FOLDER_OPEN, "Open", &c).clicked() {
                 *open_entry = Some((path.clone(), kind));
                 ui.close();
@@ -16429,6 +16677,22 @@ impl OttrinApp {
             }
             if is_dir_like && menu_item(ui, MI_VIEW_COLUMN, "Open in Tandem", &c).clicked() {
                 *open_tandem = Some(path.clone());
+                ui.close();
+            }
+            if is_dir_like
+                && menu_item(
+                    ui,
+                    MI_OPEN_IN_NEW,
+                    if self.state.config.open_folders_in_new_window {
+                        "Open in new window"
+                    } else {
+                        "Open in new tab"
+                    },
+                    &c,
+                )
+                .clicked()
+            {
+                self.open_folder_in_new(&path);
                 ui.close();
             }
             ui.separator();
@@ -16700,6 +16964,154 @@ impl OttrinApp {
         });
     }
 
+    fn update_command_file_matches(&mut self) {
+        if !self.command_frame.visible {
+            self.command_frame.file_matches.clear();
+            self.command_frame.file_focus = None;
+            return;
+        }
+        let tab = self.state.active_tab();
+        let ui_state = self.tab_ui.get(&tab.id);
+        let dir = if tab.view_mode == ViewMode::Miller {
+            ui_state
+                .and_then(|ui| ui.miller_focus_dir.clone())
+                .unwrap_or_else(|| tab.current_dir.clone())
+        } else {
+            tab.current_dir.clone()
+        };
+        // Only consult listings already loaded by the view. Typing must not
+        // introduce synchronous filesystem scans or a second listing source.
+        let entries = ui_state
+            .map(|ui| {
+                if ui.main.dir == dir {
+                    ui.main.entries.as_slice()
+                } else if ui.left.dir == dir {
+                    ui.left.entries.as_slice()
+                } else if ui.right.dir == dir {
+                    ui.right.entries.as_slice()
+                } else if let Some(Ok(entries)) = ui.miller_cache.get(&dir) {
+                    entries.as_slice()
+                } else {
+                    &[]
+                }
+            })
+            .unwrap_or_default();
+        let query = self.command_frame.input.clone();
+        let changed = self.command_frame.file_query != query
+            || self.command_frame.file_directory.as_ref() != Some(&dir);
+        let matches = command_files::matches(&query, entries);
+        if changed {
+            self.command_frame.file_focus = None;
+            self.command_frame.reveal_file = true;
+        } else if self
+            .command_frame
+            .file_focus
+            .as_ref()
+            .is_some_and(|path| !matches.iter().any(|entry| &entry.path == path))
+        {
+            // A disappearing file must never transfer Enter to another file.
+            self.command_frame.file_focus = None;
+        }
+        self.command_frame.file_matches = matches;
+        self.command_frame.file_query = query;
+        self.command_frame.file_directory = Some(dir);
+    }
+
+    fn toggle_command_file_focus(&mut self) {
+        self.command_frame.file_focus = if self.command_frame.file_focus.is_some() {
+            None
+        } else {
+            self.command_frame
+                .file_matches
+                .first()
+                .map(|entry| entry.path.clone())
+        };
+        self.command_frame.reveal_file = true;
+        self.command_frame.request_focus = true;
+    }
+
+    /// Command matches refer to the loaded folder listing, so use its real
+    /// selection rather than a second, decorative highlight.
+    fn sync_command_file_selection(&mut self) {
+        if !self.command_frame.visible {
+            return;
+        }
+        let Some(entry) = self
+            .command_frame
+            .file_focus
+            .as_ref()
+            .and_then(|path| {
+                self.command_frame
+                    .file_matches
+                    .iter()
+                    .find(|e| &e.path == path)
+            })
+            .or_else(|| self.command_frame.file_matches.first())
+            .cloned()
+        else {
+            return;
+        };
+        let Some(dir) = self.command_frame.file_directory.clone() else {
+            return;
+        };
+        let tab_id = self.state.active_tab().id;
+        let ui = self.tab_ui.entry(tab_id).or_default();
+        let changed =
+            ui.selection_memory.get(&dir) != Some(&entry.path) || !ui.selected_paths.is_empty();
+        ui.selection_memory.insert(dir.clone(), entry.path.clone());
+        ui.selected_paths.clear();
+        ui.selection_anchor = None;
+        if ui.main.dir == dir {
+            ui.main_sel = ui.main.entries.iter().position(|e| e.path == entry.path);
+        }
+        if changed {
+            self.command_frame.reveal_file = true;
+            ui.miller_scroll_selected = true;
+        }
+    }
+
+    fn move_command_file_focus(&mut self, down: bool) {
+        let Some(index) = self
+            .command_frame
+            .file_matches
+            .iter()
+            .position(|entry| Some(&entry.path) == self.command_frame.file_focus.as_ref())
+        else {
+            return;
+        };
+        let next = if down {
+            (index + 1).min(self.command_frame.file_matches.len() - 1)
+        } else {
+            index.saturating_sub(1)
+        };
+        self.command_frame.file_focus = Some(self.command_frame.file_matches[next].path.clone());
+        self.command_frame.reveal_file = true;
+    }
+
+    fn activate_command_frame(&mut self) {
+        if let Some(path) = self.command_frame.file_focus.clone() {
+            if let Some(entry) = self
+                .command_frame
+                .file_matches
+                .iter()
+                .find(|entry| entry.path == path)
+                .cloned()
+            {
+                self.cancel_unexecuted_command_frame();
+                let kind = if entry.kind == EntryKind::Symlink
+                    && entry.symlink_target_is_dir == Some(false)
+                {
+                    EntryKind::File
+                } else {
+                    entry.kind
+                };
+                self.open_entry(entry.path, kind);
+            }
+        } else {
+            self.execute_command_input();
+        }
+    }
+
     fn update_completions(&mut self) {
         let input = self.command_frame.input.trim().to_string();
         let cwd = self.state.active_tab().current_dir.clone();
@@ -16858,7 +17270,6 @@ impl OttrinApp {
         if !matches!(previous, ViewMode::Miller) && matches!(view_mode, ViewMode::Miller) {
             self.request_miller_reveal(tab_id);
         }
-        self.state.config.default_view_mode = view_mode;
         self.persist_config();
     }
 
@@ -16903,13 +17314,8 @@ impl OttrinApp {
         self.persist_config();
     }
 
-    fn render_view_controls_row(&mut self, ui: &mut egui::Ui, tab_id: u64, bottom_text: Color32) {
+    fn render_view_controls_row(&mut self, ui: &mut egui::Ui, tab_id: u64, _bottom_text: Color32) {
         let c = self.colors;
-        let current_sort = self
-            .state
-            .tab_by_id(tab_id)
-            .map(|t| t.sort)
-            .unwrap_or_default();
         let current_dir = self
             .state
             .tab_by_id(tab_id)
@@ -16921,115 +17327,8 @@ impl OttrinApp {
             .map(|t| t.view_mode)
             .unwrap_or(ViewMode::Miller);
 
-        ui.with_layout(Layout::left_to_right(Align::Center), |ui| {
-            ui.label(
-                RichText::new("Sort")
-                    .size(11.5 * c.font_scale)
-                    .color(bottom_text),
-            );
-            ui.add_space(6.0);
-
-            let mut sort_by = current_sort.by;
-            let sort_combo = egui::ComboBox::from_id_salt(("sort_by", tab_id))
-                .selected_text(
-                    RichText::new(match sort_by {
-                        SortBy::Name => "Name",
-                        SortBy::Kind => "Type",
-                        SortBy::Size => "Size",
-                        SortBy::Modified => "Modified",
-                    })
-                    .color(bottom_text)
-                    .size(11.5 * c.font_scale),
-                )
-                .width(90.0)
-                .show_ui(ui, |ui| {
-                    ui.selectable_value(
-                        &mut sort_by,
-                        SortBy::Name,
-                        RichText::new("Name").color(bottom_text),
-                    );
-                    ui.selectable_value(
-                        &mut sort_by,
-                        SortBy::Kind,
-                        RichText::new("Type").color(bottom_text),
-                    );
-                    ui.selectable_value(
-                        &mut sort_by,
-                        SortBy::Size,
-                        RichText::new("Size").color(bottom_text),
-                    );
-                    ui.selectable_value(
-                        &mut sort_by,
-                        SortBy::Modified,
-                        RichText::new("Modified").color(bottom_text),
-                    );
-                });
-            sort_combo
-                .response
-                .on_hover_text("Choose which file attribute controls the order.");
-
-            let mut asc = if sort_by == current_sort.by {
-                current_sort.ascending
-            } else {
-                default_sort_direction(sort_by)
-            };
-            let sort_supports_direction = sort_supports_direction(sort_by);
-            let direction_label = match sort_by {
-                SortBy::Name | SortBy::Kind => {
-                    if asc {
-                        "A-Z"
-                    } else {
-                        "Z-A"
-                    }
-                }
-                SortBy::Size => "Largest",
-                SortBy::Modified => "Newest",
-            };
-            if !sort_supports_direction {
-                asc = false;
-            }
-            if ui
-                .add_enabled(
-                    sort_supports_direction,
-                    egui::Button::new(RichText::new(direction_label).size(11.5 * c.font_scale))
-                        .min_size(Vec2::new(72.0, 20.0))
-                        .themed(&c),
-                )
-                .on_hover_text(if sort_supports_direction {
-                    match sort_by {
-                        SortBy::Name => "Toggle name order between A-Z and Z-A.",
-                        SortBy::Kind => {
-                            "Toggle type order and the name order inside each type group."
-                        }
-                        SortBy::Size | SortBy::Modified => "Toggle sort direction",
-                    }
-                } else {
-                    match sort_by {
-                        SortBy::Size => "Size is fixed to largest first.",
-                        SortBy::Modified => "Modified is fixed to newest first.",
-                        SortBy::Name | SortBy::Kind => "This sort mode uses a fixed direction.",
-                    }
-                })
-                .clicked()
-            {
-                asc = !asc;
-            }
-
-            if sort_by != current_sort.by || asc != current_sort.ascending {
-                self.focus_tab(tab_id);
-                let dir = self.state.tab_by_id(tab_id).map(|t| t.current_dir.clone());
-                if let Some(tab) = self.state.tab_by_id_mut(tab_id) {
-                    tab.sort.by = sort_by;
-                    tab.sort.ascending = asc;
-                }
-                if let Some(dir) = dir {
-                    self.refresh_tab(tab_id, dir);
-                }
-            }
-
-            ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
-                self.render_view_scale_control(ui, view_mode, &current_dir, c);
-            });
+        ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
+            self.render_view_scale_control(ui, view_mode, &current_dir, c);
         });
     }
 
@@ -17508,15 +17807,34 @@ impl OttrinApp {
             return;
         }
         let focus_col = self.effective_miller_focus_col(tab_id, &cols, current_col);
+        let command_preview = (self.command_frame.visible && self.state.active_tab().id == tab_id)
+            .then(|| {
+                self.command_frame.file_focus.clone().or_else(|| {
+                    self.command_frame
+                        .file_matches
+                        .first()
+                        .map(|entry| entry.path.clone())
+                })
+            })
+            .flatten();
+        let reveal_command_preview =
+            command_preview.is_some() && std::mem::take(&mut self.command_frame.reveal_file);
         let selected_paths = self
             .tab_ui
             .get(&tab_id)
             .map(|ui| ui.selected_paths.clone())
             .unwrap_or_default();
+        let focus_borrowed_to_parent =
+            self.miller_focus_borrowed_to_parent(tab_id, &cols, current_col);
         {
             let ui = self.tab_ui.entry(tab_id).or_default();
-            ui.miller_focus_dir = Some(cols[focus_col].dir.clone());
-            ui.miller_focus_hint = None;
+            // The no-selection borrow is display-only. Persisting it would
+            // move Miller focus (and command scope) to the ancestor column
+            // whenever the current directory has no active row yet.
+            if !focus_borrowed_to_parent {
+                ui.miller_focus_dir = Some(cols[focus_col].dir.clone());
+                ui.miller_focus_hint = None;
+            }
         }
         // Detect navigation keys for scroll control.
         // Only act when the command frame is closed.
@@ -17618,6 +17936,9 @@ impl OttrinApp {
                         self.miller_column_width(&col.dir, &col.entries)
                     };
                     width = (width * scale.clamp(0.92, 1.22)).clamp(96.0, 620.0);
+                    let metadata_width =
+                        miller_columns::metadata_width(&self.state.config, scale, &c);
+                    width += metadata_width;
                     let inner = ui.allocate_ui_with_layout(
                         Vec2::new(width, h),
                         Layout::top_down(Align::Min),
@@ -17626,6 +17947,7 @@ impl OttrinApp {
                             // into neighboring columns when horizontally scrollable.
                             let clip = ui.clip_rect().intersect(ui.max_rect());
                             ui.set_clip_rect(clip);
+                            self.render_folder_sort_header(ui, &col.dir);
                             ScrollArea::vertical()
                                 .id_salt(("miller_col", tab_id, col.dir.clone(), epoch))
                                 .auto_shrink([false, false])
@@ -17692,6 +18014,19 @@ impl OttrinApp {
                                             width,
                                             &c,
                                         );
+                                        // A filename match is a preview, not a selection:
+                                        // never feed it into the Miller path/child model.
+                                        if command_preview.as_ref() == Some(&entry.path) {
+                                            ui.painter().rect_stroke(
+                                                resp.rect.shrink(1.0),
+                                                3.0,
+                                                Stroke::new(1.5, c.accent),
+                                                egui::StrokeKind::Inside,
+                                            );
+                                            if reveal_command_preview {
+                                                resp.scroll_to_me(Some(Align::Center));
+                                            }
+                                        }
                                         if (scroll_selected && col_idx == focus_col
                                             || reveal_col == Some(col_idx))
                                             && selected
@@ -17763,7 +18098,10 @@ impl OttrinApp {
                                             }
                                             ui.ctx().request_repaint();
                                         }
-                                        if resp.double_clicked() {
+                                        if resp.double_clicked()
+                                            || (matches!(entry.kind, EntryKind::File)
+                                                && self.item_pointer_opens(&resp))
+                                        {
                                             self.focus_tab(tab_id);
                                             let is_current = col_idx == current_col;
                                             self.set_miller_selection(
@@ -17795,6 +18133,7 @@ impl OttrinApp {
                                             &mut open_tandem_now,
                                             &mut add_bookmark,
                                             &mut remove_bookmark,
+                                            None,
                                         );
                                         if i >= 400 {
                                             ui.label(
@@ -17879,8 +18218,10 @@ impl OttrinApp {
                         paint_resize_separator(ui, divider_rect, &sep_resp, &c);
                         if sep_resp.dragged() {
                             let dx = ui.ctx().input(|i| i.pointer.delta().x);
-                            width = (width + dx).clamp(96.0, 560.0);
-                            self.set_miller_column_width(&col.dir, width);
+                            let name_width = ((width + dx - metadata_width)
+                                / scale.clamp(0.92, 1.22))
+                            .clamp(96.0, 560.0);
+                            self.set_miller_column_width(&col.dir, name_width);
                         }
                     }
                 }
@@ -18656,11 +18997,7 @@ impl OttrinApp {
         let mut open_tandem_now: Option<PathBuf> = None;
         let mut add_bookmark: Option<PathBuf> = None;
         let mut remove_bookmark: Option<PathBuf> = None;
-        let current_sort = self
-            .state
-            .tab_by_id(tab_id)
-            .map(|t| t.sort)
-            .unwrap_or_default();
+        let current_sort = self.state.config.sort_for_folder(&current_dir);
         let (entries, loading, error, sel, selected_paths) = {
             let s = self.tab_ui.entry(tab_id).or_default();
             (
@@ -18706,6 +19043,8 @@ impl OttrinApp {
             Rect::from_min_size(ui.cursor().min, Vec2::new(ui.available_width(), header_h));
         let header_resp = ui.allocate_rect(header_rect, Sense::click());
         header_resp.context_menu(|ui| {
+            self.render_folder_sort_menu(ui, &current_dir);
+            ui.separator();
             ui.visuals_mut().override_text_color = Some(c.text_muted);
             ui.set_min_width(180.0);
             ui.label(
@@ -18776,28 +19115,16 @@ impl OttrinApp {
                 .on_hover_text(match sort_by {
                     SortBy::Name => "Sort by name. Click again to switch A-Z/Z-A.",
                     SortBy::Kind => "Sort by type. Click again to switch group order.",
-                    SortBy::Size => "Sort by size. Largest files stay first.",
-                    SortBy::Modified => "Sort by modified time. Newest files stay first.",
+                    SortBy::Size => "Sort by size. Click again to reverse.",
+                    SortBy::Modified => "Sort by modified time. Click again to reverse.",
+                    SortBy::Created => "Sort by creation time. Click again to reverse.",
                 });
             if col_resp.hovered() {
                 ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
                 ui.painter().rect_filled(col_rect, 0.0, c.hover);
             }
             if col_resp.clicked() {
-                let dir = self.state.tab_by_id(tab_id).map(|t| t.current_dir.clone());
-                if let Some(tab) = self.state.tab_by_id_mut(tab_id) {
-                    if tab.sort.by == sort_by {
-                        if sort_supports_direction(sort_by) {
-                            tab.sort.ascending = !tab.sort.ascending;
-                        }
-                    } else {
-                        tab.sort.by = sort_by;
-                        tab.sort.ascending = default_sort_direction(sort_by);
-                    }
-                }
-                if let Some(dir) = dir {
-                    self.refresh_tab(tab_id, dir);
-                }
+                self.change_folder_sort_heading(&current_dir, sort_by);
                 return;
             }
             file_list::paint_heading(
@@ -18869,6 +19196,13 @@ impl OttrinApp {
                         thumbnail,
                     );
                     let row_rect = response.rect;
+                    if selected
+                        && self.command_frame.visible
+                        && self.state.active_tab().id == tab_id
+                        && std::mem::take(&mut self.command_frame.reveal_file)
+                    {
+                        response.scroll_to_me(Some(Align::Center));
+                    }
                     list_rows.push((entry.path.clone(), row_rect));
                     if Self::row_pointer_selects(response.clicked(), response.secondary_clicked()) {
                         self.focus_tab(tab_id);
@@ -18880,7 +19214,7 @@ impl OttrinApp {
                             response.secondary_clicked(),
                         );
                     }
-                    if response.double_clicked() {
+                    if self.item_pointer_opens(&response) {
                         self.focus_tab(tab_id);
                         let path = entry.path.clone();
                         let kind = entry.kind;
@@ -18901,6 +19235,7 @@ impl OttrinApp {
                         &mut open_tandem_now,
                         &mut add_bookmark,
                         &mut remove_bookmark,
+                        None,
                     );
                 }
             })
@@ -19034,6 +19369,13 @@ impl OttrinApp {
                                 thumbnail,
                             );
                             grid_cells.push((entry.path.clone(), cell_resp.rect));
+                            if selected
+                                && self.command_frame.visible
+                                && self.state.active_tab().id == tab_id
+                                && std::mem::take(&mut self.command_frame.reveal_file)
+                            {
+                                cell_resp.scroll_to_me(Some(Align::Center));
+                            }
 
                             // Handle click/double-click
                             if Self::row_pointer_selects(
@@ -19049,7 +19391,7 @@ impl OttrinApp {
                                     cell_resp.secondary_clicked(),
                                 );
                             }
-                            if cell_resp.double_clicked() {
+                            if self.item_pointer_opens(&cell_resp) {
                                 self.focus_tab(tab_id);
                                 let path = entry.path.clone();
                                 let kind = entry.kind;
@@ -19069,6 +19411,7 @@ impl OttrinApp {
                                 &mut open_tandem_now,
                                 &mut add_bookmark,
                                 &mut remove_bookmark,
+                                None,
                             );
 
                             if col + 1 < cols && i + col + 1 < entries.len() {
@@ -21391,6 +21734,7 @@ impl OttrinApp {
                             match self.settings_tab {
                                 SettingsTab::General => {
                                     settings_page_heading(ui, c, "General", "Default behavior and application preferences.");
+                                    self.render_general_folder_preferences(ui);
                                     ui.add_space(12.0);
                                     ui.label(RichText::new("Default view").color(c.text_dim).size(12.0 * c.font_scale));
                                     ui.add_space(6.0);
@@ -21601,15 +21945,9 @@ impl OttrinApp {
                                 }
                                 SettingsTab::Files => {
                                     ui.label(RichText::new("Files").color(c.heading).size(settings_title).strong());
-                                    ui.label(RichText::new("Defaults for file visibility and document previews.")
+                                     ui.label(RichText::new("Document previews and media support. File visibility is in General.")
                                         .color(c.text_muted).size(settings_subtitle));
                                     ui.add_space(12.0);
-                                    let show_hidden = self.state.config.show_hidden_files;
-                                    let icon = if show_hidden { MI_CHECK } else { "  " };
-                                    if ui.add(aligned_menu_button(icon, MI_VISIBILITY, "Show hidden files", &c).frame_when_inactive(true).min_size(Vec2::new(ui.available_width(), 28.0 * c.font_scale)).themed(&c)).clicked() {
-                                        self.state.config.show_hidden_files = !show_hidden;
-                                        self.refresh_active_tab();
-                                    }
 
                                     #[cfg(target_os = "linux")]
                                     {
@@ -23056,7 +23394,7 @@ impl OttrinApp {
         row_width: f32,
         c: &Colors,
     ) -> egui::Response {
-        file_row::render_file_row(
+        miller_columns::render_row(
             ui,
             entry,
             EntryVisualState {
@@ -25843,6 +26181,8 @@ fn theme_editor_large_preview(
                     .layout(Layout::top_down(Align::Min)),
             );
             column_ui.set_clip_rect(col_rect.intersect(ui.clip_rect()));
+            let header_rect = miller_columns::allocate_header(&mut column_ui, &preview);
+            miller_columns::paint_heading(&column_ui, header_rect, "Name", Some(true), &preview);
             for (row, (label, directory)) in samples[idx].iter().enumerate() {
                 let entry = FileEntry {
                     name: (*label).into(),
@@ -25856,6 +26196,7 @@ fn theme_editor_large_preview(
                     symlink_target_is_dir: None,
                     size_bytes: None,
                     modified_unix_secs: None,
+                    created_unix_secs: None,
                 };
                 let selected = idx == 1 && row == 1;
                 let response = file_row::render_file_row(
@@ -25911,6 +26252,7 @@ fn theme_editor_large_preview(
             symlink_target_is_dir: None,
             size_bytes: (!directory).then_some(8192),
             modified_unix_secs: Some(1_640_995_200),
+            created_unix_secs: None,
         });
         let config = AppConfig::default();
         let mut content_ui = ui.new_child(
@@ -28764,7 +29106,7 @@ mod tests {
         }
     }
 
-    fn clipboard_keyboard_fixture() -> (tempfile::TempDir, OttrinApp, PathBuf) {
+    pub(super) fn clipboard_keyboard_fixture() -> (tempfile::TempDir, OttrinApp, PathBuf) {
         // File transfers require a home or discovered-volume binding. /tmp is
         // neither, even though it is a valid location for other test fixtures.
         let root = tempfile::Builder::new()
@@ -28785,6 +29127,7 @@ mod tests {
             symlink_target_is_dir: None,
             size_bytes: Some(17),
             modified_unix_secs: None,
+            created_unix_secs: None,
         }];
         ui.main_sel = Some(0);
         (root, app, source)
@@ -34695,6 +35038,7 @@ mod tests {
                         symlink_target_is_dir: None,
                         size_bytes: None,
                         modified_unix_secs: Some(1_640_995_200),
+                        created_unix_secs: None,
                     }];
                     let live_ctx = Context::default();
                     install_application_fonts(&live_ctx);
@@ -34845,6 +35189,7 @@ mod tests {
                 symlink_target_is_dir: None,
                 size_bytes: None,
                 modified_unix_secs: None,
+                created_unix_secs: None,
             };
             let mut live_rect = Rect::NOTHING;
             let live = live_ctx.run(input(vec![]), |ctx| {
@@ -35265,6 +35610,7 @@ mod tests {
             symlink_target_is_dir: None,
             size_bytes: None,
             modified_unix_secs: None,
+            created_unix_secs: None,
         });
 
         let visible = app.preview.data.as_ref().expect("optimistic preview data");
@@ -35347,6 +35693,7 @@ mod tests {
             symlink_target_is_dir: None,
             size_bytes: None,
             modified_unix_secs: None,
+            created_unix_secs: None,
         };
         let out = ctx.run(Default::default(), |ctx| {
             egui::CentralPanel::default().show(ctx, |ui| {
@@ -35371,6 +35718,7 @@ mod tests {
             symlink_target_is_dir: None,
             size_bytes: None,
             modified_unix_secs: None,
+            created_unix_secs: None,
         };
         let mut app = OttrinApp::default();
         app.info_panel_preview = Some((
@@ -35889,6 +36237,7 @@ mod tests {
                 symlink_target_is_dir: None,
                 size_bytes: None,
                 modified_unix_secs: None,
+                created_unix_secs: None,
             });
             for _ in 0..100 {
                 app.poll_preview_loads();
@@ -35969,6 +36318,7 @@ mod tests {
             symlink_target_is_dir: None,
             size_bytes: None,
             modified_unix_secs: None,
+            created_unix_secs: None,
         });
         assert_eq!(app.preview.path, Some(original));
         assert!(!app.request_preview_close());
@@ -37245,7 +37595,111 @@ mod tests {
     }
 
     #[test]
-    fn size_sort_is_fixed_descending() {
+    fn async_listings_use_the_listed_folders_sort_in_every_column() {
+        for column in 0..3 {
+            let (_root, mut app, source) = clipboard_keyboard_fixture();
+            let tab_id = app.state.active_tab().id;
+            let sort = ottrin_core::SortConfig {
+                by: SortBy::Size,
+                ascending: true,
+                folders_first: false,
+            };
+            let template = app.tab_ui[&tab_id].main.entries[0].clone();
+            let mut small = template.clone();
+            small.name = "z-small".into();
+            small.path = source.with_file_name("z-small");
+            small.size_bytes = Some(1);
+            let mut large = template.clone();
+            large.name = "a-large".into();
+            large.path = source.with_file_name("a-large");
+            large.size_bytes = Some(100);
+            let mut folder = template;
+            folder.name = "folder".into();
+            folder.path = source.with_file_name("folder");
+            folder.kind = EntryKind::Directory;
+            folder.size_bytes = None;
+            let (tx, rx) = mpsc::channel();
+            app.listing_rx = rx;
+            let key = match column {
+                0 => ListingKey::TabMain(tab_id),
+                1 => ListingKey::TabLeft(tab_id),
+                _ => ListingKey::TabRight(tab_id),
+            };
+            let current_dir = app.state.active_tab().current_dir.clone();
+            let ui = app.tab_ui.get_mut(&tab_id).unwrap();
+            ui.main.dir = current_dir;
+            ui.main_sel = None;
+            let state = match column {
+                0 => &mut ui.main,
+                1 => &mut ui.left,
+                _ => &mut ui.right,
+            };
+            app.state.config.set_folder_sort(&state.dir, Some(sort));
+            state.request_id = 42;
+            tx.send(ListingResponse {
+                key,
+                request_id: 42,
+                result: Ok(vec![folder, large, small]),
+            })
+            .unwrap();
+            app.poll_listing_results();
+            let ui = &app.tab_ui[&tab_id];
+            let entries = match column {
+                0 => &ui.main.entries,
+                1 => &ui.left.entries,
+                _ => &ui.right.entries,
+            };
+            assert_eq!(
+                entries
+                    .iter()
+                    .map(|entry| entry.name.as_str())
+                    .collect::<Vec<_>>(),
+                ["z-small", "a-large", "folder"],
+                "column {column}"
+            );
+        }
+    }
+
+    #[test]
+    fn changed_sort_restores_main_selection_by_identity() {
+        let (_root, mut app, source) = clipboard_keyboard_fixture();
+        let tab_id = app.state.active_tab().id;
+        let selected = app.tab_ui[&tab_id].main.entries[0].clone();
+        let mut other = selected.clone();
+        other.path = source.with_file_name("zzz-other");
+        other.name = "zzz-other".into();
+        let current_dir = app.state.active_tab().current_dir.clone();
+        app.state.config.set_folder_sort(
+            &current_dir,
+            Some(ottrin_core::SortConfig {
+                ascending: false,
+                ..Default::default()
+            }),
+        );
+        let ui = app.tab_ui.get_mut(&tab_id).unwrap();
+        ui.main.dir = current_dir;
+        ui.main.request_id = 42;
+        ui.pending_main_selection = Some(PendingMainSelection {
+            request_id: 42,
+            path: selected.path.clone(),
+        });
+        let (tx, rx) = mpsc::channel();
+        app.listing_rx = rx;
+        tx.send(ListingResponse {
+            key: ListingKey::TabMain(tab_id),
+            request_id: 42,
+            result: Ok(vec![selected.clone(), other]),
+        })
+        .unwrap();
+        app.poll_listing_results();
+        let ui = &app.tab_ui[&tab_id];
+        assert_eq!(ui.main_sel, Some(1));
+        assert_eq!(ui.main.entries[1].path, selected.path);
+        assert_eq!(ui.selected_paths, HashSet::from([selected.path]));
+    }
+
+    #[test]
+    fn size_sort_supports_both_directions() {
         let mut entries = vec![
             FileEntry {
                 name: "small.txt".to_string(),
@@ -37255,6 +37709,7 @@ mod tests {
                 symlink_target_is_dir: None,
                 size_bytes: Some(10),
                 modified_unix_secs: None,
+                created_unix_secs: None,
             },
             FileEntry {
                 name: "large.txt".to_string(),
@@ -37264,6 +37719,7 @@ mod tests {
                 symlink_target_is_dir: None,
                 size_bytes: Some(100),
                 modified_unix_secs: None,
+                created_unix_secs: None,
             },
         ];
         sort_entries(
@@ -37271,14 +37727,16 @@ mod tests {
             &ottrin_core::SortConfig {
                 by: SortBy::Size,
                 ascending: true,
+                folders_first: true,
             },
         );
-        assert_eq!(entries[0].name, "large.txt");
+        assert_eq!(entries[0].name, "small.txt");
         sort_entries(
             &mut entries,
             &ottrin_core::SortConfig {
                 by: SortBy::Size,
                 ascending: false,
+                folders_first: true,
             },
         );
         assert_eq!(entries[0].name, "large.txt");
@@ -37295,6 +37753,7 @@ mod tests {
                 symlink_target_is_dir: None,
                 size_bytes: None,
                 modified_unix_secs: None,
+                created_unix_secs: None,
             },
             FileEntry {
                 name: "alpha.txt".to_string(),
@@ -37304,6 +37763,7 @@ mod tests {
                 symlink_target_is_dir: None,
                 size_bytes: None,
                 modified_unix_secs: None,
+                created_unix_secs: None,
             },
             FileEntry {
                 name: "docs".to_string(),
@@ -37313,6 +37773,7 @@ mod tests {
                 symlink_target_is_dir: None,
                 size_bytes: None,
                 modified_unix_secs: None,
+                created_unix_secs: None,
             },
         ];
         sort_entries(
@@ -37320,6 +37781,7 @@ mod tests {
             &ottrin_core::SortConfig {
                 by: SortBy::Kind,
                 ascending: true,
+                folders_first: true,
             },
         );
         assert_eq!(entries[0].name, "docs");
@@ -37331,6 +37793,7 @@ mod tests {
             &ottrin_core::SortConfig {
                 by: SortBy::Kind,
                 ascending: false,
+                folders_first: true,
             },
         );
         assert_eq!(entries[0].name, "docs");
@@ -37477,6 +37940,7 @@ mod tests {
             symlink_target_is_dir: None,
             size_bytes: Some(1024),
             modified_unix_secs: None,
+            created_unix_secs: None,
         };
         let pdf_entry = FileEntry {
             name: "manual.PDF".to_string(),
@@ -37486,6 +37950,7 @@ mod tests {
             symlink_target_is_dir: None,
             size_bytes: Some(2048),
             modified_unix_secs: None,
+            created_unix_secs: None,
         };
         let office_entry = FileEntry {
             name: "budget.xlsx".to_string(),
@@ -37495,6 +37960,7 @@ mod tests {
             symlink_target_is_dir: None,
             size_bytes: Some(2048),
             modified_unix_secs: None,
+            created_unix_secs: None,
         };
         let source_entry = FileEntry {
             name: "main.rs".to_string(),
@@ -37504,6 +37970,7 @@ mod tests {
             symlink_target_is_dir: None,
             size_bytes: Some(1024),
             modified_unix_secs: None,
+            created_unix_secs: None,
         };
         let stl_entry = FileEntry {
             name: "bracket.stl".to_string(),
@@ -37513,6 +37980,7 @@ mod tests {
             symlink_target_is_dir: None,
             size_bytes: Some(2048),
             modified_unix_secs: None,
+            created_unix_secs: None,
         };
         let video_entry = FileEntry {
             name: "clip.mp4".to_string(),
@@ -37522,6 +37990,7 @@ mod tests {
             symlink_target_is_dir: None,
             size_bytes: Some(2048),
             modified_unix_secs: None,
+            created_unix_secs: None,
         };
 
         assert!(image_thumbnail_candidate(&image_entry));
@@ -37541,6 +38010,7 @@ mod tests {
             symlink_target_is_dir: None,
             size_bytes: Some(1024),
             modified_unix_secs: None,
+            created_unix_secs: None,
         }));
     }
 
@@ -37651,6 +38121,7 @@ mod tests {
             symlink_target_is_dir: None,
             size_bytes: None,
             modified_unix_secs: None,
+            created_unix_secs: None,
         }];
         app.search_ui.results = vec![
             SearchResultItem {
@@ -37721,6 +38192,7 @@ mod tests {
             symlink_target_is_dir: None,
             size_bytes: None,
             modified_unix_secs: None,
+            created_unix_secs: None,
         });
 
         assert_eq!(app.preview.path, Some(path.clone()));
@@ -37761,6 +38233,7 @@ mod tests {
             symlink_target_is_dir: None,
             size_bytes: None,
             modified_unix_secs: None,
+            created_unix_secs: None,
         });
         let reopen_deadline = Instant::now() + Duration::from_secs(1);
         while app.preview.data.is_none() && Instant::now() < reopen_deadline {
@@ -37849,6 +38322,7 @@ mod tests {
             symlink_target_is_dir: None,
             size_bytes: Some(1),
             modified_unix_secs: None,
+            created_unix_secs: None,
         }];
         app.command_frame.visible = true;
         app.command_frame.input = "rm -rf not-executed".to_string();
@@ -37876,6 +38350,7 @@ mod tests {
             symlink_target_is_dir: None,
             size_bytes: None,
             modified_unix_secs: None,
+            created_unix_secs: None,
         }];
         app.command_frame.visible = true;
         app.command_frame.input = "rm -rf not-executed".to_string();
@@ -37920,6 +38395,7 @@ mod tests {
                         symlink_target_is_dir: None,
                         size_bytes: Some(5),
                         modified_unix_secs: None,
+                        created_unix_secs: None,
                     },
                     FileEntry {
                         name: "alpha".to_string(),
@@ -37929,6 +38405,7 @@ mod tests {
                         symlink_target_is_dir: None,
                         size_bytes: Some(5),
                         modified_unix_secs: None,
+                        created_unix_secs: None,
                     },
                 ];
             }
@@ -37967,6 +38444,7 @@ mod tests {
                 symlink_target_is_dir: None,
                 size_bytes: Some(5),
                 modified_unix_secs: None,
+                created_unix_secs: None,
             }];
         }
         app.set_main_selection_from_click(tab_id, 0, egui::Modifiers::NONE, false);
@@ -38011,6 +38489,7 @@ mod tests {
                 symlink_target_is_dir: None,
                 size_bytes: Some(8),
                 modified_unix_secs: None,
+                created_unix_secs: None,
             }];
         }
         app.set_main_selection_from_click(tab_id, 0, egui::Modifiers::NONE, false);
@@ -38449,6 +38928,7 @@ mod tests {
                 symlink_target_is_dir: None,
                 size_bytes: None,
                 modified_unix_secs: None,
+                created_unix_secs: None,
             })
             .collect();
         state.miller_cache.insert(dir.clone(), Ok(entries.clone()));
@@ -39331,17 +39811,25 @@ mod tests {
     }
 
     #[test]
-    fn selected_view_is_restored_after_recreating_the_app() {
+    fn tab_view_does_not_replace_default_but_session_restore_remembers_it() {
         let mut app = OttrinApp::default();
         let tab_id = app.state.active_tab().id;
         for view in [ViewMode::List, ViewMode::Miller, ViewMode::Grid] {
             app.set_tab_view_mode(tab_id, view);
             let reopened = OttrinApp::new_with_config_and_graphics_status(
-                load_config().expect("valid private test config"),
+                app.state.config.clone(),
                 GraphicsRuntimeStatus::default(),
             );
-            assert_eq!(reopened.state.active_tab().view_mode, view);
-            assert_eq!(reopened.state.config.default_view_mode, view);
+            assert_eq!(reopened.state.active_tab().view_mode, ViewMode::Miller);
+            assert_eq!(reopened.state.config.default_view_mode, ViewMode::Miller);
+            app.state.config.restore_tabs = true;
+            app.state.remember_session();
+            let restored = OttrinApp::new_with_config_and_graphics_status(
+                app.state.config.clone(),
+                GraphicsRuntimeStatus::default(),
+            );
+            assert_eq!(restored.state.active_tab().view_mode, view);
+            app.state.config.restore_tabs = false;
         }
     }
 
@@ -39707,6 +40195,7 @@ mod tests {
                 symlink_target_is_dir: None,
                 size_bytes: None,
                 modified_unix_secs: None,
+                created_unix_secs: None,
             };
             let tab_id = app.state.active_tab().id;
             let state = app.tab_ui.entry(tab_id).or_default();
@@ -39772,6 +40261,7 @@ mod tests {
                                 symlink_target_is_dir: None,
                                 size_bytes: Some(14),
                                 modified_unix_secs: None,
+                                created_unix_secs: None,
                             };
                             let tab_id = app.state.active_tab().id;
                             let state = app.tab_ui.entry(tab_id).or_default();
@@ -39971,6 +40461,7 @@ mod tests {
                     symlink_target_is_dir: None,
                     size_bytes: Some(14),
                     modified_unix_secs: None,
+                    created_unix_secs: None,
                 });
                 let key = preview_cache_key_for_page_with_generations(
                     &entries[0].path,
@@ -40089,6 +40580,7 @@ mod tests {
                     symlink_target_is_dir: None,
                     size_bytes: Some(14),
                     modified_unix_secs: None,
+                    created_unix_secs: None,
                 }];
                 let ctx = Context::default();
                 install_application_fonts(&ctx);
@@ -40151,6 +40643,7 @@ mod tests {
                 symlink_target_is_dir: None,
                 size_bytes: None,
                 modified_unix_secs: None,
+                created_unix_secs: None,
             })
             .collect();
         let ctx = Context::default();
@@ -40554,6 +41047,7 @@ mod tests {
             symlink_target_is_dir: None,
             size_bytes: None,
             modified_unix_secs: None,
+            created_unix_secs: None,
         });
         assert_eq!(app.preview.pdf_page_index, 0);
     }
@@ -42023,6 +42517,7 @@ mod tests {
                 symlink_target_is_dir: None,
                 size_bytes: Some(1),
                 modified_unix_secs: Some(1_700_000_001),
+                created_unix_secs: None,
             },
             FileEntry {
                 name: "keep-other.txt".to_string(),
@@ -42032,6 +42527,7 @@ mod tests {
                 symlink_target_is_dir: None,
                 size_bytes: Some(2),
                 modified_unix_secs: Some(1_700_000_002),
+                created_unix_secs: None,
             },
         ];
         let conflict_input = || -> Vec<egui::Event> {
@@ -42620,7 +43116,6 @@ mod tests {
                         offset: 0,
                     },
                     root: None,
-                    previously_selected_path: Some(PathBuf::from("old-query.txt")),
                     result: SearchQueryResult {
                         response: ottrin_core::SearchResponse {
                             total: items.len(),
@@ -42979,6 +43474,7 @@ mod tests {
                     symlink_target_is_dir: None,
                     size_bytes: None,
                     modified_unix_secs: None,
+                    created_unix_secs: None,
                 };
                 let _ = ctx.run(egui::RawInput::default(), |ctx| {
                     egui::CentralPanel::default().show(ctx, |ui| {

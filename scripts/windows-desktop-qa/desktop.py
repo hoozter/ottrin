@@ -8,7 +8,7 @@ import subprocess
 import uuid
 
 ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT / '.hermes/evidence/windows-copy-cleanup-current'))
+sys.path.insert(0, str(ROOT / '.evidence/windows-copy-cleanup-current'))
 import transport as n
 
 n.GROOT = r'C:\OttrinWindowQA'
@@ -18,8 +18,8 @@ parser.add_argument('--evidence-dir', required=True, type=Path)
 parser.add_argument('operation', help='prepare, cleanup, retire, resume, or a JSON desktop operation')
 arguments = parser.parse_args()
 E = arguments.evidence_dir.resolve()
-if E.parent != ROOT / '.hermes/evidence':
-    raise SystemExit('Evidence must be one owned directory under .hermes/evidence')
+if E.parent != ROOT / '.evidence':
+    raise SystemExit('Evidence must be one owned directory under .evidence')
 
 
 def wait(pid):
@@ -63,14 +63,14 @@ if operation == 'prepare':
     archive = Path(owner['archive'])
     assert hashlib.sha256(archive.read_bytes()).hexdigest() == owner['archive_sha256']
     manifest = Path(owner['payload_manifest']).resolve()
-    manifest.relative_to(ROOT / '.hermes/evidence')
+    manifest.relative_to(ROOT / '.evidence')
     payload = json.loads(manifest.read_text())
     assert payload['archive_sha256'] == owner['archive_sha256']
     assert payload['source_commit'] == owner['package_source']
     wait(n.start((HERE / 'prepare.ps1').read_text()))
     for name in ['interop.ps1', 'actor.ps1', 'cleanup.ps1']:
         n.upload(HERE / name, name)
-    n.upload(ROOT / '.hermes/evidence/address-selection-current/VALID_CONFIG_TEMPLATE.json', 'config-template.json')
+    n.upload(ROOT / '.evidence/address-selection-current/VALID_CONFIG_TEMPLATE.json', 'config-template.json')
     n.upload(manifest, 'payload-manifest.json')
     n.upload(archive, 'payload.zip')
     wait(n.start(r"""

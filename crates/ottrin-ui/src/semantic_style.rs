@@ -629,6 +629,7 @@ mod tests {
             symlink_target_is_dir: None,
             size_bytes: None,
             modified_unix_secs: None,
+            created_unix_secs: None,
         };
         let closed = style_for_entry(
             &entry,
@@ -667,6 +668,7 @@ mod tests {
             symlink_target_is_dir: None,
             size_bytes: None,
             modified_unix_secs: None,
+            created_unix_secs: None,
         };
         let style = style_for_entry(&entry, EntryVisualState::default(), &c, &cfg);
         assert_eq!(style.text_color, c.file);

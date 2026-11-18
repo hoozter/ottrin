@@ -12,8 +12,8 @@ for binary in "$APP" "$INDEXD"; do
 done
 
 RUN_ID="$(date -u +%Y%m%dT%H%M%SZ)-$$"
-SANDBOX="$ROOT/.hermes/service-harness/$RUN_ID"
-RUNTIME="$ROOT/.hermes/service-runtime-$RUN_ID"
+SANDBOX="$ROOT/.evidence/service-harness/$RUN_ID"
+RUNTIME="$ROOT/.evidence/service-runtime-$RUN_ID"
 mkdir -p "$SANDBOX"/{bin,cache,config,home,stage} "$RUNTIME"
 chmod 700 "$RUNTIME"
 cp "$APP" "$SANDBOX/stage/ottrin"

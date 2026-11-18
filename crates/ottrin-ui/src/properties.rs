@@ -230,6 +230,7 @@ fn render_properties(
         symlink_target_is_dir: None,
         size_bytes: Some(properties.size_bytes),
         modified_unix_secs: None,
+        created_unix_secs: None,
     };
     let style = crate::style_for_entry(&entry, crate::EntryVisualState::default(), &c, config);
     let icon = crate::material_icon(style.icon);

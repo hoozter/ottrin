@@ -5,6 +5,11 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 source "$ROOT/packaging/linux/bundle-runtime-libs.sh"
 source "$ROOT/packaging/package-lifecycle.sh"
 DIST_DIR="${1:-dist}"
+RELEASE_SCOPE="${OTTRIN_RELEASE_SCOPE:-all}"
+case "$RELEASE_SCOPE" in
+  all|linux) ;;
+  *) printf 'Invalid release scope: %s\n' "$RELEASE_SCOPE" >&2; exit 2 ;;
+esac
 VERSION="$(grep -m1 '^version = ' "$ROOT/Cargo.toml" | sed -E 's/version = "([^"]+)"/\1/')"
 EXPECTED_SOURCE_REVISION="$(git -C "$ROOT" rev-parse --verify HEAD)"
 MESA_OPENGL32_SHA256="52119774eb912d07c3abfb6e3e894981f425b3c79d852f5363927e38fa3bde7e"
@@ -38,9 +43,12 @@ find_one() {
 
 LINUX_ARCHIVE="$(find_one "Ottrin-$VERSION-linux-x86_64-portable.tar.gz" 'Linux portable archive')"
 LINUX_APPIMAGE="$(find_one "Ottrin-$VERSION-x86_64.AppImage" 'Linux AppImage')"
-WINDOWS_ARCHIVE="$(find_one "Ottrin-$VERSION-windows-x64-portable.zip" 'Windows portable archive')"
-WINDOWS_INSTALLER="$(find_one "Ottrin-$VERSION-windows-x64-setup.exe" 'Windows installer')"
-WINDOWS_MSI="$(find_one "Ottrin-$VERSION-windows-x64.msi" 'Windows MSI')"
+if [[ "$RELEASE_SCOPE" == all ]]; then
+  WINDOWS_ARCHIVE="$(find_one "Ottrin-$VERSION-windows-x64-portable.zip" 'Windows portable archive')"
+  WINDOWS_INSTALLER="$(find_one "Ottrin-$VERSION-windows-x64-setup.exe" 'Windows installer')"
+  WINDOWS_MSI="$(find_one "Ottrin-$VERSION-windows-x64.msi" 'Windows MSI')"
+fi
+
 LINUX_DEB="$(find_one "ottrin_${VERSION}_amd64.deb" 'Linux DEB')"
 LINUX_RPM="$(find_one "ottrin-$VERSION-*.x86_64.rpm" 'Linux RPM')"
 
@@ -56,11 +64,17 @@ expect_artifact_name() {
 
 expect_artifact_name "$LINUX_ARCHIVE" "Ottrin-$VERSION-linux-x86_64-portable.tar.gz"
 expect_artifact_name "$LINUX_APPIMAGE" "Ottrin-$VERSION-x86_64.AppImage"
-expect_artifact_name "$WINDOWS_ARCHIVE" "Ottrin-$VERSION-windows-x64-portable.zip"
-expect_artifact_name "$WINDOWS_INSTALLER" "Ottrin-$VERSION-windows-x64-setup.exe"
-expect_artifact_name "$WINDOWS_MSI" "Ottrin-$VERSION-windows-x64.msi"
+if [[ "$RELEASE_SCOPE" == all ]]; then
+  expect_artifact_name "$WINDOWS_ARCHIVE" "Ottrin-$VERSION-windows-x64-portable.zip"
+  expect_artifact_name "$WINDOWS_INSTALLER" "Ottrin-$VERSION-windows-x64-setup.exe"
+  expect_artifact_name "$WINDOWS_MSI" "Ottrin-$VERSION-windows-x64.msi"
+fi
 
-for artifact in "$LINUX_ARCHIVE" "$LINUX_APPIMAGE" "$WINDOWS_ARCHIVE" "$WINDOWS_INSTALLER" "$WINDOWS_MSI" "$LINUX_DEB" "$LINUX_RPM"; do
+artifacts=("$LINUX_ARCHIVE" "$LINUX_APPIMAGE" "$LINUX_DEB" "$LINUX_RPM")
+if [[ "$RELEASE_SCOPE" == all ]]; then
+  artifacts+=("$WINDOWS_ARCHIVE" "$WINDOWS_INSTALLER" "$WINDOWS_MSI")
+fi
+for artifact in "${artifacts[@]}"; do
   checksum="$artifact.sha256"
   if [[ ! -s "$checksum" ]]; then
     printf 'release artifact checksum is missing: %s\n' "$checksum" >&2
@@ -90,11 +104,12 @@ verify_bundled_font_notice() {
 }
 
 LINUX_CONTENTS="$(tar -tzf "$LINUX_ARCHIVE")"
-WINDOWS_CONTENTS="$(unzip -Z1 "$WINDOWS_ARCHIVE")"
 verify_bundled_font_notice 'Linux portable archive' \
   <(tar -xOf "$LINUX_ARCHIVE" "Ottrin-$VERSION-linux-x86_64/third-party-notices/BUNDLED_FONTS.md")
-verify_bundled_font_notice 'Windows portable archive' \
-  <(unzip -p "$WINDOWS_ARCHIVE" "Ottrin-$VERSION-windows-x64/third-party-notices/BUNDLED_FONTS.md")
+if [[ "$RELEASE_SCOPE" == all ]]; then
+  verify_bundled_font_notice 'Windows portable archive' \
+    <(unzip -p "$WINDOWS_ARCHIVE" "Ottrin-$VERSION-windows-x64/third-party-notices/BUNDLED_FONTS.md")
+fi
 
 require_tar_entry() {
   local pattern="$1"
@@ -136,42 +151,44 @@ for entry in \
   require_tar_entry "$entry"
 done
 
-for entry in \
-  '/bin/ottrin\.exe$' \
-  '/bin/ottrin_shell\.dll$' \
-  '/bin/ottrin-legacy-doc-render\.exe$' \
-  '/bin/ottrin-priv-helper\.exe$' \
-  '/bin/pdfium/pdfium\.dll$' \
-  '/bin/pdfium/LICENSE$' \
-  '/bin/pdfium/licenses/pdfium\.txt$' \
-  '/bin/opengl32\.dll$' \
-  '/bin/libEGL\.dll$' \
-  '/bin/libGLESv2\.dll$' \
-  '/bin/libgallium_wgl\.dll$' \
-  '/bin/dxil\.dll$' \
-  '/third-party-notices/MANIFEST\.txt$' \
-  '/third-party-notices/mesa3d-26\.1\.3/docs/license\.rst$' \
-  '/third-party-notices/mesa3d-26\.1\.3/licenses/Apache-2\.0$' \
-  '/third-party-notices/mesa3d-26\.1\.3/licenses/BSL-1\.0$' \
-  '/third-party-notices/mesa3d-26\.1\.3/licenses/GPL-1\.0-or-later$' \
-  '/third-party-notices/mesa3d-26\.1\.3/licenses/GPL-2\.0-only$' \
-  '/third-party-notices/mesa3d-26\.1\.3/licenses/MIT$' \
-  '/third-party-notices/mesa3d-26\.1\.3/licenses/SGI-B-2\.0$' \
-  '/third-party-notices/mesa3d-26\.1\.3/licenses/exceptions/Linux-Syscall-Note$' \
-  '/third-party-notices/pal1000-LICENSE\.txt$' \
-  '/third-party-notices/Microsoft-DXC-LICENSE-MS\.txt$' \
-  '/SOURCE_REVISION\.txt$' \
-  '/assets/icon\.svg$' \
-  '/LICENSE$' \
-  '/README\.md$' \
-  '/docs/USER_GUIDE\.md$' \
-  '/docs/DEVELOPMENT\.md$' \
-  '/docs/ROADMAP\.md$' \
-  '/docs/RELEASE_NOTES\.md$' \
-  '/docs/RELEASE_CHECKLIST\.md$'; do
-  require_zip_entry "$entry"
-done
-
+if [[ "$RELEASE_SCOPE" == all ]]; then
+  WINDOWS_CONTENTS="$(unzip -Z1 "$WINDOWS_ARCHIVE")"
+  for entry in \
+    '/bin/ottrin\.exe$' \
+    '/bin/ottrin_shell\.dll$' \
+    '/bin/ottrin-legacy-doc-render\.exe$' \
+    '/bin/ottrin-priv-helper\.exe$' \
+    '/bin/pdfium/pdfium\.dll$' \
+    '/bin/pdfium/LICENSE$' \
+    '/bin/pdfium/licenses/pdfium\.txt$' \
+    '/bin/opengl32\.dll$' \
+    '/bin/libEGL\.dll$' \
+    '/bin/libGLESv2\.dll$' \
+    '/bin/libgallium_wgl\.dll$' \
+    '/bin/dxil\.dll$' \
+    '/third-party-notices/MANIFEST\.txt$' \
+    '/third-party-notices/mesa3d-26\.1\.3/docs/license\.rst$' \
+    '/third-party-notices/mesa3d-26\.1\.3/licenses/Apache-2\.0$' \
+    '/third-party-notices/mesa3d-26\.1\.3/licenses/BSL-1\.0$' \
+    '/third-party-notices/mesa3d-26\.1\.3/licenses/GPL-1\.0-or-later$' \
+    '/third-party-notices/mesa3d-26\.1\.3/licenses/GPL-2\.0-only$' \
+    '/third-party-notices/mesa3d-26\.1\.3/licenses/MIT$' \
+    '/third-party-notices/mesa3d-26\.1\.3/licenses/SGI-B-2\.0$' \
+    '/third-party-notices/mesa3d-26\.1\.3/licenses/exceptions/Linux-Syscall-Note$' \
+    '/third-party-notices/pal1000-LICENSE\.txt$' \
+    '/third-party-notices/Microsoft-DXC-LICENSE-MS\.txt$' \
+    '/SOURCE_REVISION\.txt$' \
+    '/assets/icon\.svg$' \
+    '/LICENSE$' \
+    '/README\.md$' \
+    '/docs/USER_GUIDE\.md$' \
+    '/docs/DEVELOPMENT\.md$' \
+    '/docs/ROADMAP\.md$' \
+    '/docs/RELEASE_NOTES\.md$' \
+    '/docs/RELEASE_CHECKLIST\.md$'; do
+    require_zip_entry "$entry"
+  done
+fi
 
 if ! grep -Fq "<release version=\"$VERSION\"" "$ROOT/packaging/linux/ottrin.appdata.xml"; then
   printf 'AppStream metadata does not contain release version %s\n' "$VERSION" >&2
@@ -191,7 +208,7 @@ verify_release_file_bytes() {
     printf 'Linux portable archive contains stale content: %s\n' "$relative_path" >&2
     exit 1
   fi
-  if ! cmp -s \
+  if [[ "$RELEASE_SCOPE" == all ]] && ! cmp -s \
     <(unzip -p "$WINDOWS_ARCHIVE" "Ottrin-$VERSION-windows-x64/$relative_path") \
     "$ROOT/$relative_path"; then
     printf 'Windows portable archive contains stale content: %s\n' "$relative_path" >&2
@@ -227,9 +244,11 @@ verify_source_revision() {
 verify_source_revision \
   'Linux portable archive' \
   "$(tar -xOf "$LINUX_ARCHIVE" "Ottrin-$VERSION-linux-x86_64/SOURCE_REVISION.txt")"
-verify_source_revision \
-  'Windows portable archive' \
-  "$(unzip -p "$WINDOWS_ARCHIVE" "Ottrin-$VERSION-windows-x64/SOURCE_REVISION.txt")"
+if [[ "$RELEASE_SCOPE" == all ]]; then
+  verify_source_revision \
+    'Windows portable archive' \
+    "$(unzip -p "$WINDOWS_ARCHIVE" "Ottrin-$VERSION-windows-x64/SOURCE_REVISION.txt")"
+fi
 
 # RUNNING.md is the artifact-local setup guidance for the portable Linux
 # release.  Require its safety-critical helper instructions independently of
@@ -255,309 +274,315 @@ if ! linux_portable_running_instructions="$(tar -xOf "$LINUX_ARCHIVE" \
 fi
 verify_linux_portable_running_instructions "$linux_portable_running_instructions"
 
-verify_portable_graphics_runtime_dll() {
-  local expected="$1"
-  local entry="$2"
-  local actual
-  actual="$(unzip -p "$WINDOWS_ARCHIVE" "Ottrin-$VERSION-windows-x64/$entry" | sha256sum | awk '{print $1}')"
-  if [[ "$actual" != "$expected" ]]; then
-    printf 'Windows portable archive contains an unexpected graphics runtime DLL: %s\n' "$entry" >&2
+verify_windows_release() {
+  verify_portable_graphics_runtime_dll() {
+    local expected="$1"
+    local entry="$2"
+    local actual
+    actual="$(unzip -p "$WINDOWS_ARCHIVE" "Ottrin-$VERSION-windows-x64/$entry" | sha256sum | awk '{print $1}')"
+    if [[ "$actual" != "$expected" ]]; then
+      printf 'Windows portable archive contains an unexpected graphics runtime DLL: %s\n' "$entry" >&2
+      exit 1
+    fi
+  }
+
+  # Presence alone is not enough for the redistributable notices: a stale or
+  # substituted stage could retain the expected paths while losing the texts
+  # that correspond to the pinned Mesa source archive.  These hashes are for
+  # the exact files from mesa-mesa-26.1.3.tar.gz, whose archive hash is pinned
+  # above.
+  verify_graphics_runtime_notice_file() {
+    local artifact_label="$1"
+    local expected="$2"
+    local entry="$3"
+    local actual="$4"
+    if [[ "$actual" != "$expected" ]]; then
+      printf '%s contains an unexpected Mesa notice SHA-256: %s\n' \
+        "$artifact_label" "$entry" >&2
+      exit 1
+    fi
+  }
+
+  verify_portable_graphics_runtime_notice_file() {
+    local expected="$1"
+    local entry="$2"
+    local actual
+    actual="$(unzip -p "$WINDOWS_ARCHIVE" \
+      "Ottrin-$VERSION-windows-x64/third-party-notices/mesa3d-26.1.3/$entry" | sha256sum | awk '{print $1}')"
+    verify_graphics_runtime_notice_file 'Windows portable archive' "$expected" "$entry" "$actual"
+  }
+
+  verify_portable_graphics_runtime_notice_root_file() {
+    local expected="$1"
+    local entry="$2"
+    local actual
+    actual="$(unzip -p "$WINDOWS_ARCHIVE" \
+      "Ottrin-$VERSION-windows-x64/third-party-notices/$entry" | sha256sum | awk '{print $1}')"
+    verify_graphics_runtime_notice_file 'Windows portable archive' "$expected" "$entry" "$actual"
+  }
+
+  verify_installer_graphics_runtime_notice_file() {
+    local expected="$1"
+    local entry="$2"
+    local actual
+    actual="$(7z x -so "$WINDOWS_INSTALLER" \
+      "third-party-notices/mesa3d-26.1.3/$entry" | sha256sum | awk '{print $1}')"
+    verify_graphics_runtime_notice_file 'Windows installer' "$expected" "$entry" "$actual"
+  }
+
+  verify_installer_graphics_runtime_notice_root_file() {
+    local expected="$1"
+    local entry="$2"
+    local actual
+    actual="$(7z x -so "$WINDOWS_INSTALLER" \
+      "third-party-notices/$entry" | sha256sum | awk '{print $1}')"
+    verify_graphics_runtime_notice_file 'Windows installer' "$expected" "$entry" "$actual"
+  }
+
+  for checksum_and_entry in \
+    '0d1a0472ecc81830e75c20d59b0ea02841e3db21255e0ebad97ab682c54d6615 docs/license.rst' \
+    '7e4d3fba250d15e9e0afa380d4b611828fa2560cc8fdebe95bcf2f01a487de12 licenses/Apache-2.0' \
+    '9b9fea7520a816107fcac2598b7c0155222f16bc430e989706b22f4367f1df7d licenses/BSL-1.0' \
+    '8ff76f1528e6e4e9400c0f6b1f2d19d4979aaac3bcc44bb707a55389132825c4 licenses/GPL-1.0-or-later' \
+    '6667ad4063569cd53b13500550d93fcd3dc11bcf82c5514296af013a0b720ba5 licenses/GPL-2.0-only' \
+    '323c587d0ccf10e376f8bf9a7f31fb4ca6078105194b42e0b1e0ee2bc9bde71f licenses/MIT' \
+    '686bf035a1fd22076416fd3b90370ac67771e884bf57f55693d51f8ce7c710a7 licenses/SGI-B-2.0' \
+    '9b4084655174654608fd037e9ddb4feeadfada01cd042e9c17b05aa7105b2b9f licenses/exceptions/Linux-Syscall-Note'; do
+    read -r expected entry <<<"$checksum_and_entry"
+    verify_portable_graphics_runtime_notice_file "$expected" "$entry"
+    # The installer is verified later, after its NSIS payload has been opened.
+  done
+  verify_portable_graphics_runtime_notice_root_file "$PAL_LICENSE_SHA256" 'pal1000-LICENSE.txt'
+  verify_portable_graphics_runtime_notice_root_file "$DXC_LICENSE_SHA256" 'Microsoft-DXC-LICENSE-MS.txt'
+
+  verify_graphics_runtime_notice_manifest() {
+    local artifact_label="$1"
+    local manifest="$2"
+    local expected
+    for expected in \
+      'Ottrin Windows graphics compatibility runtime' \
+      "Mesa archive: $MESA_URL" \
+      "Mesa archive SHA-256: $MESA_SHA256" \
+      "Mesa source archive: $MESA_SOURCE_URL" \
+      "Mesa source archive SHA-256: $MESA_SOURCE_SHA256" \
+      "opengl32.dll SHA-256: $MESA_OPENGL32_SHA256" \
+      "libEGL.dll SHA-256: $MESA_LIBEGL_SHA256" \
+      "libGLESv2.dll SHA-256: $MESA_LIBGLESV2_SHA256" \
+      "libgallium_wgl.dll SHA-256: $MESA_LIBGALLIUM_WGL_SHA256" \
+      "pal1000 license: $PAL_LICENSE_URL" \
+      "pal1000 license SHA-256: $PAL_LICENSE_SHA256" \
+      "Microsoft DXC archive: $DXC_URL" \
+      "Microsoft DXC archive SHA-256: $DXC_SHA256" \
+      "Microsoft DXC license SHA-256: $DXC_LICENSE_SHA256" \
+      "dxil.dll SHA-256: $DXIL_SHA256" \
+      'Included Mesa DLLs: opengl32.dll, libEGL.dll, libGLESv2.dll, libgallium_wgl.dll'; do
+      if ! grep -Fqx "$expected" <<<"$manifest"; then
+        printf '%s graphics-runtime notice manifest is missing: %s\\n' \
+          "$artifact_label" "$expected" >&2
+        exit 1
+      fi
+    done
+  }
+
+  # The compatibility DLLs are deliberately opt-in.  Verify that each shipped
+  # Windows artifact carries the exact recovery instructions, so a user who
+  # encounters a virtual or remote adapter failure can select the bundled path
+  # without changing the normal WGPU default.
+  verify_windows_graphics_recovery_instructions() {
+    local artifact_label="$1"
+    local instructions="$2"
+    local expected
+    for expected in \
+      'ottrin.exe --renderer opengl' \
+      'OTTRIN_RENDERER=opengl' \
+      'WGPU with the system graphics driver'; do
+      if ! grep -Fq "$expected" <<<"$instructions"; then
+        printf '%s is missing the graphics recovery instruction: %s\n' \
+          "$artifact_label" "$expected" >&2
+        exit 1
+      fi
+    done
+  }
+
+  # The compatibility runtime is not the only safety-critical Windows guidance:
+  # the same artifact-local instructions must retain the UAC/helper boundary and
+  # make clear that ordinary user-owned operations never require elevation.
+  verify_windows_runtime_instructions() {
+    local artifact_label="$1"
+    local instructions="$2"
+    local expected
+    for expected in \
+      '.\bin\ottrin-priv-helper.exe' \
+      'Normal user-owned file operations do not require elevation.' \
+      'Denied operations use the bundled helper through the Windows UAC flow.'; do
+      if ! grep -Fq "$expected" <<<"$instructions"; then
+        printf '%s is missing the Windows runtime instruction: %s\\n' \
+          "$artifact_label" "$expected" >&2
+        exit 1
+      fi
+    done
+  }
+
+  verify_portable_graphics_runtime_notice_manifest() {
+    local manifest
+    if ! manifest="$(unzip -p "$WINDOWS_ARCHIVE" \
+      "Ottrin-$VERSION-windows-x64/third-party-notices/MANIFEST.txt")"; then
+      printf 'Windows portable archive is missing the graphics-runtime notice manifest.\\n' >&2
+      exit 1
+    fi
+    verify_graphics_runtime_notice_manifest 'Windows portable archive' "$manifest"
+  }
+
+  verify_portable_graphics_runtime_dll "$MESA_OPENGL32_SHA256" 'bin/opengl32.dll'
+  verify_portable_graphics_runtime_dll "$MESA_LIBEGL_SHA256" 'bin/libEGL.dll'
+  verify_portable_graphics_runtime_dll "$MESA_LIBGLESV2_SHA256" 'bin/libGLESv2.dll'
+  verify_portable_graphics_runtime_dll "$MESA_LIBGALLIUM_WGL_SHA256" 'bin/libgallium_wgl.dll'
+  verify_portable_graphics_runtime_dll "$DXIL_SHA256" 'bin/dxil.dll'
+  verify_portable_graphics_runtime_notice_manifest
+  if ! portable_running_instructions="$(unzip -p "$WINDOWS_ARCHIVE" \
+    "Ottrin-$VERSION-windows-x64/RUNNING.md")"; then
+    printf 'Windows portable archive is missing RUNNING.md.\n' >&2
     exit 1
   fi
-}
+  verify_windows_graphics_recovery_instructions \
+    'Windows portable archive RUNNING.md' "$portable_running_instructions"
+  verify_windows_runtime_instructions \
+    'Windows portable archive RUNNING.md' "$portable_running_instructions"
 
-# Presence alone is not enough for the redistributable notices: a stale or
-# substituted stage could retain the expected paths while losing the texts
-# that correspond to the pinned Mesa source archive.  These hashes are for
-# the exact files from mesa-mesa-26.1.3.tar.gz, whose archive hash is pinned
-# above.
-verify_graphics_runtime_notice_file() {
-  local artifact_label="$1"
-  local expected="$2"
-  local entry="$3"
-  local actual="$4"
-  if [[ "$actual" != "$expected" ]]; then
-    printf '%s contains an unexpected Mesa notice SHA-256: %s\n' \
-      "$artifact_label" "$entry" >&2
-    exit 1
-  fi
-}
-
-verify_portable_graphics_runtime_notice_file() {
-  local expected="$1"
-  local entry="$2"
-  local actual
-  actual="$(unzip -p "$WINDOWS_ARCHIVE" \
-    "Ottrin-$VERSION-windows-x64/third-party-notices/mesa3d-26.1.3/$entry" | sha256sum | awk '{print $1}')"
-  verify_graphics_runtime_notice_file 'Windows portable archive' "$expected" "$entry" "$actual"
-}
-
-verify_portable_graphics_runtime_notice_root_file() {
-  local expected="$1"
-  local entry="$2"
-  local actual
-  actual="$(unzip -p "$WINDOWS_ARCHIVE" \
-    "Ottrin-$VERSION-windows-x64/third-party-notices/$entry" | sha256sum | awk '{print $1}')"
-  verify_graphics_runtime_notice_file 'Windows portable archive' "$expected" "$entry" "$actual"
-}
-
-verify_installer_graphics_runtime_notice_file() {
-  local expected="$1"
-  local entry="$2"
-  local actual
-  actual="$(7z x -so "$WINDOWS_INSTALLER" \
-    "third-party-notices/mesa3d-26.1.3/$entry" | sha256sum | awk '{print $1}')"
-  verify_graphics_runtime_notice_file 'Windows installer' "$expected" "$entry" "$actual"
-}
-
-verify_installer_graphics_runtime_notice_root_file() {
-  local expected="$1"
-  local entry="$2"
-  local actual
-  actual="$(7z x -so "$WINDOWS_INSTALLER" \
-    "third-party-notices/$entry" | sha256sum | awk '{print $1}')"
-  verify_graphics_runtime_notice_file 'Windows installer' "$expected" "$entry" "$actual"
-}
-
-for checksum_and_entry in \
-  '0d1a0472ecc81830e75c20d59b0ea02841e3db21255e0ebad97ab682c54d6615 docs/license.rst' \
-  '7e4d3fba250d15e9e0afa380d4b611828fa2560cc8fdebe95bcf2f01a487de12 licenses/Apache-2.0' \
-  '9b9fea7520a816107fcac2598b7c0155222f16bc430e989706b22f4367f1df7d licenses/BSL-1.0' \
-  '8ff76f1528e6e4e9400c0f6b1f2d19d4979aaac3bcc44bb707a55389132825c4 licenses/GPL-1.0-or-later' \
-  '6667ad4063569cd53b13500550d93fcd3dc11bcf82c5514296af013a0b720ba5 licenses/GPL-2.0-only' \
-  '323c587d0ccf10e376f8bf9a7f31fb4ca6078105194b42e0b1e0ee2bc9bde71f licenses/MIT' \
-  '686bf035a1fd22076416fd3b90370ac67771e884bf57f55693d51f8ce7c710a7 licenses/SGI-B-2.0' \
-  '9b4084655174654608fd037e9ddb4feeadfada01cd042e9c17b05aa7105b2b9f licenses/exceptions/Linux-Syscall-Note'; do
-  read -r expected entry <<<"$checksum_and_entry"
-  verify_portable_graphics_runtime_notice_file "$expected" "$entry"
-  # The installer is verified later, after its NSIS payload has been opened.
-done
-verify_portable_graphics_runtime_notice_root_file "$PAL_LICENSE_SHA256" 'pal1000-LICENSE.txt'
-verify_portable_graphics_runtime_notice_root_file "$DXC_LICENSE_SHA256" 'Microsoft-DXC-LICENSE-MS.txt'
-
-verify_graphics_runtime_notice_manifest() {
-  local artifact_label="$1"
-  local manifest="$2"
-  local expected
-  for expected in \
-    'Ottrin Windows graphics compatibility runtime' \
-    "Mesa archive: $MESA_URL" \
-    "Mesa archive SHA-256: $MESA_SHA256" \
-    "Mesa source archive: $MESA_SOURCE_URL" \
-    "Mesa source archive SHA-256: $MESA_SOURCE_SHA256" \
-    "opengl32.dll SHA-256: $MESA_OPENGL32_SHA256" \
-    "libEGL.dll SHA-256: $MESA_LIBEGL_SHA256" \
-    "libGLESv2.dll SHA-256: $MESA_LIBGLESV2_SHA256" \
-    "libgallium_wgl.dll SHA-256: $MESA_LIBGALLIUM_WGL_SHA256" \
-    "pal1000 license: $PAL_LICENSE_URL" \
-    "pal1000 license SHA-256: $PAL_LICENSE_SHA256" \
-    "Microsoft DXC archive: $DXC_URL" \
-    "Microsoft DXC archive SHA-256: $DXC_SHA256" \
-    "Microsoft DXC license SHA-256: $DXC_LICENSE_SHA256" \
-    "dxil.dll SHA-256: $DXIL_SHA256" \
-    'Included Mesa DLLs: opengl32.dll, libEGL.dll, libGLESv2.dll, libgallium_wgl.dll'; do
-    if ! grep -Fqx "$expected" <<<"$manifest"; then
-      printf '%s graphics-runtime notice manifest is missing: %s\\n' \
-        "$artifact_label" "$expected" >&2
+  for artifact in "$LINUX_APPIMAGE" "$WINDOWS_INSTALLER"; do
+    if [[ ! -s "$artifact" ]]; then
+      printf 'release artifact is empty: %s\n' "$artifact" >&2
       exit 1
     fi
   done
-}
 
-# The compatibility DLLs are deliberately opt-in.  Verify that each shipped
-# Windows artifact carries the exact recovery instructions, so a user who
-# encounters a virtual or remote adapter failure can select the bundled path
-# without changing the normal WGPU default.
-verify_windows_graphics_recovery_instructions() {
-  local artifact_label="$1"
-  local instructions="$2"
-  local expected
-  for expected in \
-    'ottrin.exe --renderer opengl' \
-    'OTTRIN_RENDERER=opengl' \
-    'WGPU with the system graphics driver'; do
-    if ! grep -Fq "$expected" <<<"$instructions"; then
-      printf '%s is missing the graphics recovery instruction: %s\n' \
-        "$artifact_label" "$expected" >&2
+  if ! command -v 7z >/dev/null 2>&1; then
+    printf '7z is required to inspect the Windows installer payload.\n' >&2
+    exit 1
+  fi
+
+  verify_bundled_font_notice 'Windows installer' \
+    <(7z x -so "$WINDOWS_INSTALLER" 'third-party-notices/BUNDLED_FONTS.md' 2>/dev/null)
+
+  if ! INSTALLER_CONTENTS="$(7z l "$WINDOWS_INSTALLER")"; then
+    printf 'Windows installer is not a readable NSIS archive: %s\n' "$WINDOWS_INSTALLER" >&2
+    exit 1
+  fi
+
+  require_installer_entry() {
+    local entry="$1"
+    if ! awk -v entry="$entry" '$NF == entry { found = 1 } END { exit !found }' \
+      <<<"$INSTALLER_CONTENTS"; then
+      printf 'Windows installer is missing: %s\n' "$entry" >&2
+      exit 1
+    fi
+  }
+
+  for entry in \
+    'bin/ottrin.exe' \
+    'bin/ottrin_shell.dll' \
+    'bin/ottrin-indexd.exe' \
+    'bin/ottrin-priv-helper.exe' \
+    'bin/pdfium/pdfium.dll' \
+    'bin/opengl32.dll' \
+    'bin/libEGL.dll' \
+    'bin/libGLESv2.dll' \
+    'bin/libgallium_wgl.dll' \
+    'bin/dxil.dll' \
+    'third-party-notices/MANIFEST.txt' \
+    'third-party-notices/mesa3d-26.1.3/docs/license.rst' \
+    'third-party-notices/mesa3d-26.1.3/licenses/Apache-2.0' \
+    'third-party-notices/mesa3d-26.1.3/licenses/BSL-1.0' \
+    'third-party-notices/mesa3d-26.1.3/licenses/GPL-1.0-or-later' \
+    'third-party-notices/mesa3d-26.1.3/licenses/GPL-2.0-only' \
+    'third-party-notices/mesa3d-26.1.3/licenses/MIT' \
+    'third-party-notices/mesa3d-26.1.3/licenses/SGI-B-2.0' \
+    'third-party-notices/mesa3d-26.1.3/licenses/exceptions/Linux-Syscall-Note' \
+    'third-party-notices/pal1000-LICENSE.txt' \
+    'third-party-notices/Microsoft-DXC-LICENSE-MS.txt' \
+    'SOURCE_REVISION.txt' \
+    'LICENSE' \
+    'README.md' \
+    'RUNNING.md' \
+    'docs/USER_GUIDE.md' \
+    'docs/DEVELOPMENT.md' \
+    'docs/ROADMAP.md' \
+    'docs/RELEASE_NOTES.md' \
+    'docs/RELEASE_CHECKLIST.md'; do
+    require_installer_entry "$entry"
+  done
+
+  verify_source_revision \
+    'Windows installer' \
+    "$(7z x -so "$WINDOWS_INSTALLER" SOURCE_REVISION.txt)"
+
+  for relative_path in \
+    'LICENSE' \
+    'README.md' \
+    'docs/USER_GUIDE.md' \
+    'docs/DEVELOPMENT.md' \
+    'docs/ROADMAP.md' \
+    'docs/RELEASE_NOTES.md' \
+    'docs/RELEASE_CHECKLIST.md'; do
+    if ! 7z x -so "$WINDOWS_INSTALLER" "$relative_path" | cmp -s - "$ROOT/$relative_path"; then
+      printf 'Windows installer contains stale content: %s\n' "$relative_path" >&2
       exit 1
     fi
   done
-}
 
-# The compatibility runtime is not the only safety-critical Windows guidance:
-# the same artifact-local instructions must retain the UAC/helper boundary and
-# make clear that ordinary user-owned operations never require elevation.
-verify_windows_runtime_instructions() {
-  local artifact_label="$1"
-  local instructions="$2"
-  local expected
-  for expected in \
-    '.\bin\ottrin-priv-helper.exe' \
-    'Normal user-owned file operations do not require elevation.' \
-    'Denied operations use the bundled helper through the Windows UAC flow.'; do
-    if ! grep -Fq "$expected" <<<"$instructions"; then
-      printf '%s is missing the Windows runtime instruction: %s\\n' \
-        "$artifact_label" "$expected" >&2
+  verify_installer_graphics_runtime_dll() {
+    local expected="$1"
+    local entry="$2"
+    local actual
+    actual="$(7z x -so "$WINDOWS_INSTALLER" "$entry" | sha256sum | awk '{print $1}')"
+    if [[ "$actual" != "$expected" ]]; then
+      printf 'Windows installer contains an unexpected graphics runtime DLL: %s\n' "$entry" >&2
       exit 1
     fi
+  }
+
+  verify_installer_graphics_runtime_notice_manifest() {
+    local manifest
+    if ! manifest="$(7z x -so "$WINDOWS_INSTALLER" third-party-notices/MANIFEST.txt)"; then
+      printf 'Windows installer is missing the graphics-runtime notice manifest.\\n' >&2
+      exit 1
+    fi
+    verify_graphics_runtime_notice_manifest 'Windows installer' "$manifest"
+  }
+
+  verify_installer_graphics_runtime_dll "$MESA_OPENGL32_SHA256" 'bin/opengl32.dll'
+  verify_installer_graphics_runtime_dll "$MESA_LIBEGL_SHA256" 'bin/libEGL.dll'
+  verify_installer_graphics_runtime_dll "$MESA_LIBGLESV2_SHA256" 'bin/libGLESv2.dll'
+  verify_installer_graphics_runtime_dll "$MESA_LIBGALLIUM_WGL_SHA256" 'bin/libgallium_wgl.dll'
+  verify_installer_graphics_runtime_dll "$DXIL_SHA256" 'bin/dxil.dll'
+  verify_installer_graphics_runtime_notice_manifest
+  for checksum_and_entry in \
+    '0d1a0472ecc81830e75c20d59b0ea02841e3db21255e0ebad97ab682c54d6615 docs/license.rst' \
+    '7e4d3fba250d15e9e0afa380d4b611828fa2560cc8fdebe95bcf2f01a487de12 licenses/Apache-2.0' \
+    '9b9fea7520a816107fcac2598b7c0155222f16bc430e989706b22f4367f1df7d licenses/BSL-1.0' \
+    '8ff76f1528e6e4e9400c0f6b1f2d19d4979aaac3bcc44bb707a55389132825c4 licenses/GPL-1.0-or-later' \
+    '6667ad4063569cd53b13500550d93fcd3dc11bcf82c5514296af013a0b720ba5 licenses/GPL-2.0-only' \
+    '323c587d0ccf10e376f8bf9a7f31fb4ca6078105194b42e0b1e0ee2bc9bde71f licenses/MIT' \
+    '686bf035a1fd22076416fd3b90370ac67771e884bf57f55693d51f8ce7c710a7 licenses/SGI-B-2.0' \
+    '9b4084655174654608fd037e9ddb4feeadfada01cd042e9c17b05aa7105b2b9f licenses/exceptions/Linux-Syscall-Note'; do
+    read -r expected entry <<<"$checksum_and_entry"
+    verify_installer_graphics_runtime_notice_file "$expected" "$entry"
   done
-}
-
-verify_portable_graphics_runtime_notice_manifest() {
-  local manifest
-  if ! manifest="$(unzip -p "$WINDOWS_ARCHIVE" \
-    "Ottrin-$VERSION-windows-x64/third-party-notices/MANIFEST.txt")"; then
-    printf 'Windows portable archive is missing the graphics-runtime notice manifest.\\n' >&2
+  verify_installer_graphics_runtime_notice_root_file "$PAL_LICENSE_SHA256" 'pal1000-LICENSE.txt'
+  verify_installer_graphics_runtime_notice_root_file "$DXC_LICENSE_SHA256" 'Microsoft-DXC-LICENSE-MS.txt'
+  if ! installer_running_instructions="$(7z x -so "$WINDOWS_INSTALLER" RUNNING.md)"; then
+    printf 'Windows installer is missing RUNNING.md.\n' >&2
     exit 1
   fi
-  verify_graphics_runtime_notice_manifest 'Windows portable archive' "$manifest"
+  verify_windows_graphics_recovery_instructions \
+    'Windows installer RUNNING.md' "$installer_running_instructions"
+  verify_windows_runtime_instructions \
+    'Windows installer RUNNING.md' "$installer_running_instructions"
 }
 
-verify_portable_graphics_runtime_dll "$MESA_OPENGL32_SHA256" 'bin/opengl32.dll'
-verify_portable_graphics_runtime_dll "$MESA_LIBEGL_SHA256" 'bin/libEGL.dll'
-verify_portable_graphics_runtime_dll "$MESA_LIBGLESV2_SHA256" 'bin/libGLESv2.dll'
-verify_portable_graphics_runtime_dll "$MESA_LIBGALLIUM_WGL_SHA256" 'bin/libgallium_wgl.dll'
-verify_portable_graphics_runtime_dll "$DXIL_SHA256" 'bin/dxil.dll'
-verify_portable_graphics_runtime_notice_manifest
-if ! portable_running_instructions="$(unzip -p "$WINDOWS_ARCHIVE" \
-  "Ottrin-$VERSION-windows-x64/RUNNING.md")"; then
-  printf 'Windows portable archive is missing RUNNING.md.\n' >&2
-  exit 1
+if [[ "$RELEASE_SCOPE" == all ]]; then
+  verify_windows_release
 fi
-verify_windows_graphics_recovery_instructions \
-  'Windows portable archive RUNNING.md' "$portable_running_instructions"
-verify_windows_runtime_instructions \
-  'Windows portable archive RUNNING.md' "$portable_running_instructions"
-
-for artifact in "$LINUX_APPIMAGE" "$WINDOWS_INSTALLER"; do
-  if [[ ! -s "$artifact" ]]; then
-    printf 'release artifact is empty: %s\n' "$artifact" >&2
-    exit 1
-  fi
-done
-
-if ! command -v 7z >/dev/null 2>&1; then
-  printf '7z is required to inspect the Windows installer payload.\n' >&2
-  exit 1
-fi
-
-verify_bundled_font_notice 'Windows installer' \
-  <(7z x -so "$WINDOWS_INSTALLER" 'third-party-notices/BUNDLED_FONTS.md' 2>/dev/null)
-
-if ! INSTALLER_CONTENTS="$(7z l "$WINDOWS_INSTALLER")"; then
-  printf 'Windows installer is not a readable NSIS archive: %s\n' "$WINDOWS_INSTALLER" >&2
-  exit 1
-fi
-
-require_installer_entry() {
-  local entry="$1"
-  if ! awk -v entry="$entry" '$NF == entry { found = 1 } END { exit !found }' \
-    <<<"$INSTALLER_CONTENTS"; then
-    printf 'Windows installer is missing: %s\n' "$entry" >&2
-    exit 1
-  fi
-}
-
-for entry in \
-  'bin/ottrin.exe' \
-  'bin/ottrin_shell.dll' \
-  'bin/ottrin-indexd.exe' \
-  'bin/ottrin-priv-helper.exe' \
-  'bin/pdfium/pdfium.dll' \
-  'bin/opengl32.dll' \
-  'bin/libEGL.dll' \
-  'bin/libGLESv2.dll' \
-  'bin/libgallium_wgl.dll' \
-  'bin/dxil.dll' \
-  'third-party-notices/MANIFEST.txt' \
-  'third-party-notices/mesa3d-26.1.3/docs/license.rst' \
-  'third-party-notices/mesa3d-26.1.3/licenses/Apache-2.0' \
-  'third-party-notices/mesa3d-26.1.3/licenses/BSL-1.0' \
-  'third-party-notices/mesa3d-26.1.3/licenses/GPL-1.0-or-later' \
-  'third-party-notices/mesa3d-26.1.3/licenses/GPL-2.0-only' \
-  'third-party-notices/mesa3d-26.1.3/licenses/MIT' \
-  'third-party-notices/mesa3d-26.1.3/licenses/SGI-B-2.0' \
-  'third-party-notices/mesa3d-26.1.3/licenses/exceptions/Linux-Syscall-Note' \
-  'third-party-notices/pal1000-LICENSE.txt' \
-  'third-party-notices/Microsoft-DXC-LICENSE-MS.txt' \
-  'SOURCE_REVISION.txt' \
-  'LICENSE' \
-  'README.md' \
-  'RUNNING.md' \
-  'docs/USER_GUIDE.md' \
-  'docs/DEVELOPMENT.md' \
-  'docs/ROADMAP.md' \
-  'docs/RELEASE_NOTES.md' \
-  'docs/RELEASE_CHECKLIST.md'; do
-  require_installer_entry "$entry"
-done
-
-verify_source_revision \
-  'Windows installer' \
-  "$(7z x -so "$WINDOWS_INSTALLER" SOURCE_REVISION.txt)"
-
-for relative_path in \
-  'LICENSE' \
-  'README.md' \
-  'docs/USER_GUIDE.md' \
-  'docs/DEVELOPMENT.md' \
-  'docs/ROADMAP.md' \
-  'docs/RELEASE_NOTES.md' \
-  'docs/RELEASE_CHECKLIST.md'; do
-  if ! 7z x -so "$WINDOWS_INSTALLER" "$relative_path" | cmp -s - "$ROOT/$relative_path"; then
-    printf 'Windows installer contains stale content: %s\n' "$relative_path" >&2
-    exit 1
-  fi
-done
-
-verify_installer_graphics_runtime_dll() {
-  local expected="$1"
-  local entry="$2"
-  local actual
-  actual="$(7z x -so "$WINDOWS_INSTALLER" "$entry" | sha256sum | awk '{print $1}')"
-  if [[ "$actual" != "$expected" ]]; then
-    printf 'Windows installer contains an unexpected graphics runtime DLL: %s\n' "$entry" >&2
-    exit 1
-  fi
-}
-
-verify_installer_graphics_runtime_notice_manifest() {
-  local manifest
-  if ! manifest="$(7z x -so "$WINDOWS_INSTALLER" third-party-notices/MANIFEST.txt)"; then
-    printf 'Windows installer is missing the graphics-runtime notice manifest.\\n' >&2
-    exit 1
-  fi
-  verify_graphics_runtime_notice_manifest 'Windows installer' "$manifest"
-}
-
-verify_installer_graphics_runtime_dll "$MESA_OPENGL32_SHA256" 'bin/opengl32.dll'
-verify_installer_graphics_runtime_dll "$MESA_LIBEGL_SHA256" 'bin/libEGL.dll'
-verify_installer_graphics_runtime_dll "$MESA_LIBGLESV2_SHA256" 'bin/libGLESv2.dll'
-verify_installer_graphics_runtime_dll "$MESA_LIBGALLIUM_WGL_SHA256" 'bin/libgallium_wgl.dll'
-verify_installer_graphics_runtime_dll "$DXIL_SHA256" 'bin/dxil.dll'
-verify_installer_graphics_runtime_notice_manifest
-for checksum_and_entry in \
-  '0d1a0472ecc81830e75c20d59b0ea02841e3db21255e0ebad97ab682c54d6615 docs/license.rst' \
-  '7e4d3fba250d15e9e0afa380d4b611828fa2560cc8fdebe95bcf2f01a487de12 licenses/Apache-2.0' \
-  '9b9fea7520a816107fcac2598b7c0155222f16bc430e989706b22f4367f1df7d licenses/BSL-1.0' \
-  '8ff76f1528e6e4e9400c0f6b1f2d19d4979aaac3bcc44bb707a55389132825c4 licenses/GPL-1.0-or-later' \
-  '6667ad4063569cd53b13500550d93fcd3dc11bcf82c5514296af013a0b720ba5 licenses/GPL-2.0-only' \
-  '323c587d0ccf10e376f8bf9a7f31fb4ca6078105194b42e0b1e0ee2bc9bde71f licenses/MIT' \
-  '686bf035a1fd22076416fd3b90370ac67771e884bf57f55693d51f8ce7c710a7 licenses/SGI-B-2.0' \
-  '9b4084655174654608fd037e9ddb4feeadfada01cd042e9c17b05aa7105b2b9f licenses/exceptions/Linux-Syscall-Note'; do
-  read -r expected entry <<<"$checksum_and_entry"
-  verify_installer_graphics_runtime_notice_file "$expected" "$entry"
-done
-verify_installer_graphics_runtime_notice_root_file "$PAL_LICENSE_SHA256" 'pal1000-LICENSE.txt'
-verify_installer_graphics_runtime_notice_root_file "$DXC_LICENSE_SHA256" 'Microsoft-DXC-LICENSE-MS.txt'
-if ! installer_running_instructions="$(7z x -so "$WINDOWS_INSTALLER" RUNNING.md)"; then
-  printf 'Windows installer is missing RUNNING.md.\n' >&2
-  exit 1
-fi
-verify_windows_graphics_recovery_instructions \
-  'Windows installer RUNNING.md' "$installer_running_instructions"
-verify_windows_runtime_instructions \
-  'Windows installer RUNNING.md' "$installer_running_instructions"
 
 APPIMAGE_EXTRACT_DIR="$(mktemp -d)"
 cleanup() {

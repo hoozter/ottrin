@@ -173,6 +173,16 @@ fn desktop_argument(path: &Path) -> Result<String, String> {
     if text.contains(['\n', '\r', '=']) {
         return Err("Unsupported newline or equal sign in desktop installation path".into());
     }
+    // xdg-mime validates a default handler by unescaping INI backslashes from
+    // the first Exec word without removing quotes, then running `command -v`
+    // on it. A bare path needs no escaping at either layer and survives that
+    // probe, so only quote paths that require it.
+    if text
+        .chars()
+        .all(|c| c.is_ascii_alphanumeric() || matches!(c, '/' | '.' | '_' | '-'))
+    {
+        return Ok(text.to_string());
+    }
     let command = format!(
         "\"{}\"",
         text.replace('\\', "\\\\")
@@ -694,6 +704,112 @@ mod tests {
             fs::read(&record.files[0].path).unwrap(),
             before,
             "An unsupported path must not replace a working entry"
+        );
+    }
+
+    #[test]
+    fn safe_executable_paths_are_written_bare_and_unsafe_paths_remain_quoted() {
+        use gio::prelude::*;
+        let safe = "/usr/bin/ottrin-0.1.0-x86_64.AppImage";
+        assert_eq!(desktop_argument(Path::new(safe)).unwrap(), safe);
+        let unsafe_argument = desktop_argument(Path::new("/opt/My App/Ottrin $USER `%`")).unwrap();
+        assert!(
+            unsafe_argument.starts_with('"') && unsafe_argument.ends_with('"'),
+            "Paths needing escaping keep the existing command-line quoting: {unsafe_argument}"
+        );
+        let root = tempfile::tempdir().unwrap();
+        let d = directories(root.path());
+        let executable = fixture_executable(&d, "ottrin");
+        enable_at(&d, &executable).unwrap();
+        let record = registration(&d).unwrap().unwrap();
+        let installed = fs::read_to_string(&record.files[0].path).unwrap();
+        assert!(
+            installed.contains(&format!("\nExec={} -- %f\n", executable.to_str().unwrap())),
+            "A safe path is written unquoted: {installed}"
+        );
+        let app = gio::DesktopAppInfo::from_filename(&record.files[0].path).unwrap();
+        assert!(app.supports_files());
+        let quoted_fixture = fixture_executable(&d, "unsafe name");
+        enable_at(&d, &quoted_fixture).unwrap();
+        let quoted = fs::read_to_string(&record.files[0].path).unwrap();
+        assert!(quoted.contains(&format!(
+            "Exec=\"{}\" -- %f",
+            quoted_fixture.to_str().unwrap()
+        )));
+    }
+
+    #[test]
+    fn xdg_mime_query_selects_ottrin_only_for_a_bare_safe_executable() {
+        if std::process::Command::new("xdg-mime")
+            .arg("--version")
+            .output()
+            .is_err()
+        {
+            return;
+        }
+        let root = tempfile::tempdir().unwrap();
+        let d = directories(root.path());
+        let executable = fixture_executable(&d, "ottrin");
+        enable_at(&d, &executable).unwrap();
+        let desktop = d.data.join("applications").join(ID);
+        let no_fallback = root.path().join("no-fallback");
+        fs::create_dir_all(&no_fallback).unwrap();
+        let query = || {
+            let output = std::process::Command::new("xdg-mime")
+                .args(["query", "default", MIME])
+                .env("HOME", root.path())
+                .env("XDG_CONFIG_HOME", &d.config)
+                .env("XDG_DATA_HOME", &d.data)
+                .env("XDG_CONFIG_DIRS", &no_fallback)
+                .env("XDG_DATA_DIRS", &no_fallback)
+                .env_remove("XDG_CURRENT_DESKTOP")
+                .env_remove("KDE_FULL_SESSION")
+                .env_remove("KDE_SESSION_VERSION")
+                .output()
+                .unwrap();
+            assert!(output.status.success());
+            String::from_utf8_lossy(&output.stdout).trim().to_string()
+        };
+        let installed = fs::read_to_string(&desktop).unwrap();
+        let exec_line = installed
+            .lines()
+            .find(|line| line.starts_with("Exec="))
+            .unwrap();
+        assert_eq!(
+            exec_line,
+            format!("Exec={} -- %f", executable.to_str().unwrap()),
+            "A safe path stays bare so xdg-mime's first-word binary probe resolves it"
+        );
+        assert_eq!(query(), ID);
+        // The previous quoting behavior: xdg-mime keeps the literal quotes in
+        // the first Exec word, `command -v` fails, and selection falls through
+        // to the next configured candidate even though our desktop file itself
+        // is valid. This mirrors the real Dolphin fallback.
+        let fallback_entry = "[Desktop Entry]\nType=Application\nName=Test fallback\nExec=/bin/true -- %f\nNoDisplay=true\nMimeType=inode/directory;\n";
+        fs::write(
+            d.data
+                .join("applications")
+                .join("xdg-test-fallback.desktop"),
+            fallback_entry,
+        )
+        .unwrap();
+        storage::atomic_write(
+            &d.config.join("mimeapps.list"),
+            format!("[Default Applications]\n{MIME}={ID};xdg-test-fallback.desktop;\n").as_bytes(),
+        )
+        .unwrap();
+        assert_eq!(query(), ID);
+        let quoted = installed.replacen(
+            exec_line,
+            &format!("Exec=\"{}\" -- %f", executable.to_str().unwrap()),
+            1,
+        );
+        assert_ne!(quoted, installed);
+        storage::atomic_write(&desktop, quoted.as_bytes()).unwrap();
+        assert_eq!(
+            query(),
+            "xdg-test-fallback.desktop",
+            "A quoted Exec fails xdg-mime's first-word binary probe and loses the selection"
         );
     }
 }

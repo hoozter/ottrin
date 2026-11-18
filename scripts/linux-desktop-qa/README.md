@@ -18,3 +18,15 @@ startup failure and normal exit all follow the same cleanup path.
 Run-specific requests, input guards, screenshots, assertions and compact receipts
 belong in that run's evidence directory. A source GUI result does not accept a
 packaged artifact or establish cold first-paint/resource performance.
+
+For focused search mouse/keyboard checks, run:
+
+```sh
+/usr/bin/python3 scripts/linux-desktop-qa/search-interactions.py \
+  --binary /absolute/path/to/ottrin \
+  --evidence /tmp/opencode/ottrin-search-qa
+```
+
+This uses the private desktop above, including its own accessibility bus, and
+has a three-minute lease. Inspect the report and teardown result, then remove
+the disposable output; it is not a permanent project receipt.

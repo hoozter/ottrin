@@ -1347,6 +1347,9 @@ fn cli_headless_action(args: &[OsString]) -> Option<HeadlessAction> {
             Some(value) => HeadlessAction::Invalid(format!("unknown drop action: {value}")),
             None => HeadlessAction::Invalid("drop requires status or copy".to_string()),
         }),
+        // Desktop file handlers use `-- %f`. Launching their taskbar icon
+        // without a file leaves only the separator: open the normal GUI.
+        "--" if args.len() == 1 => None,
         "--" => Some(match &args[1..] {
             [path] if !path.is_empty() => HeadlessAction::OpenPath(PathBuf::from(path)),
             _ => HeadlessAction::Invalid("-- requires exactly one file or directory path".into()),
@@ -2698,6 +2701,41 @@ mod tests {
         }
         let parsed = parse_cli_arguments(&["--helper-path=--literal".into()]).unwrap();
         assert_eq!(parsed.helper_path, Some(PathBuf::from("--literal")));
+    }
+
+    #[test]
+    fn desktop_launch_without_a_file_opens_the_gui_even_with_a_separator() {
+        for args in [
+            vec![],
+            vec![OsString::from("--")],
+            vec!["--renderer=opengl".into(), "--".into()],
+        ] {
+            let parsed = parse_cli_arguments(&args).unwrap();
+            assert_eq!(cli_headless_action(&parsed.command), None, "{args:?}");
+        }
+        assert_eq!(
+            cli_headless_action(&["--".into(), "--renderer".into()]),
+            Some(HeadlessAction::OpenPath(PathBuf::from("--renderer")))
+        );
+        assert!(matches!(
+            cli_headless_action(&["--".into(), "/first".into(), "/second".into()]),
+            Some(HeadlessAction::Invalid(_))
+        ));
+        assert!(matches!(
+            cli_headless_action(&["--select".into()]),
+            Some(HeadlessAction::Invalid(_))
+        ));
+        #[cfg(target_os = "linux")]
+        {
+            assert_eq!(
+                cli_headless_action(&["file-manager".into()]),
+                Some(HeadlessAction::FileManager)
+            );
+            assert_eq!(
+                cli_headless_action(&["portal".into()]),
+                Some(HeadlessAction::Portal)
+            );
+        }
     }
 
     #[test]

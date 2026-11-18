@@ -39,7 +39,7 @@ Windows MSIX20 native assembly matches all58 ZIP/NSIS payload files. Its private
 core over30 idle seconds. This is not personal/sustained or full-interface
 acceptance. Actual MSIX19 deployment/login/removal and17-to18 updates remain
 historical; no fresh20 MSIX lifecycle claim. Evidence:
-`.hermes/evidence/entry-label-spacing-delivery-current/`.
+`.evidence/entry-label-spacing-delivery-current/`.
 
 Linux administrator Copy supports **Activity → Load administrator Copy history**
 after restarting. This explicit authenticated scan reads canonical journals;
@@ -54,7 +54,7 @@ Original DAC AppImage/FUSE acceptance covers setup/update cancellation, authenti
 helper replacement, protected Copy, normal GUI restart, cancelled/authenticated
 history loading, live-receipt preservation, fresh Undo, canonical state refresh
 and confirmed cleanup. Twenty original complete-window captures and independent
-root checks are in `.hermes/evidence/recovery-transport-delivery-current/`.
+root checks are in `.evidence/recovery-transport-delivery-current/`.
 Native DEB normal-close and two real LightDM reboot checks pass. Four aa-to-DAC
 AppImage/portable replacement cases preserve startup choice, Grid preference and
 database identity. The mounted daemon passes watcher/query/restart/two-shutdown
@@ -76,14 +76,14 @@ captures were directly reviewed. An installed Ready index shows1002 items withou
 input in all four samples through30seconds; the rendered regression proves the one-shot footer wakeup
 and return to idle. The unchanged helper/service scopes above retain their actual
 DAC source; their matrices were not freshly rerun. Evidence:
-`.hermes/evidence/caption-footer-delivery-current/`.
+`.evidence/caption-footer-delivery-current/`.
 
 The subsequent Services startup-status correction says On, Off or Unavailable,
 separate from the running-index status. It preserves query errors and does not
 show an editable unchecked toggle when inspection is unavailable.250 search and
 506 UI tests, strict Linux/Windows search/UI/app lint and formatting pass. This
 source-only follow-up is not in the deliveredc4 image and still needs native/
-package acceptance. Evidence: `.hermes/evidence/login-startup-wording-current/`.
+package acceptance. Evidence: `.evidence/login-startup-wording-current/`.
 
 Windows helper transport has a separate focused native checkpoint: direct UAC and
 shared local-pipe I/O replace PowerShell and request/response files. Its ten checks

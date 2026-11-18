@@ -1,5 +1,0 @@
-{
-  "status": "pass",
-  "scope": "Elevated option without explicit native file-only builder is refused before any VM/fixture allocation",
-  "exit": 1
-}

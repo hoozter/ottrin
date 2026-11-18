@@ -15,7 +15,7 @@ SHA-256: `1ce4c4249d7232af20ff3935cc74310067fb13d21a5bea7e8cd8f9eae31bce7c`.
 
 All 38 properties were individually edited through the development interface: intended consumer changes, unrelated consumer preservation, property reset, Save/editor reopen and persisted reset passed. The exact AppImage additionally passed native import, Save and process-restart preservation of all 38 values; shared-window pixel/corner checks; and a fresh content edit/reset/Cancel test. Individual property edits were not all repeated in the package. `individual-control-evidence-audit.json` accounts for every stored field without missing entries.
 
-Evidence keys (under `.hermes/evidence/appearance-overhaul/`): **S** = `surface-controls-running-check.json`; **T** = `text-controls-running-check.json`; **I** = `state-controls-running-check.json`; **N** = `number-controls-running-check.json`; **F** = `file-palette-controls-running-check.json`. Each key records the live edit, scope/isolation, reset and persistence results above.
+Evidence keys (under `.evidence/appearance-overhaul/`): **S** = `surface-controls-running-check.json`; **T** = `text-controls-running-check.json`; **I** = `state-controls-running-check.json`; **N** = `number-controls-running-check.json`; **F** = `file-palette-controls-running-check.json`. Each key records the live edit, scope/isolation, reset and persistence results above.
 
 Colors exposes the selected element's roles and separately labels shared defaults. Typography, Shape, States and File colors explicitly describe their application-wide scope. The same `Colors::for_config`, semantic palette, themed button/input helpers and viewport frame renderer supply editor previews and production consumers. Named `custom_themes` records are the sole persisted custom palette; unsaved editor state is separate. Superseded palette caches and unreachable Properties UI were removed.
 
@@ -114,11 +114,11 @@ scale1 Dark/Light originals verify real List/Grid, radius14/0, text1.35 and
 Cancel restoration while retaining an independently changed main Grid view.
 Both disposable desktops and profiles were removed. Exact source/build hashes,
 checks and eighteen reviewed originals are bound in
-`.hermes/evidence/theme-view-layout-current/ACCEPTANCE.json`.
+`.evidence/theme-view-layout-current/ACCEPTANCE.json`.
 
 This List/Grid checkpoint is now delivered in stable Linux source `43ceddd8`;
 the mounted package evidence is in
-`.hermes/evidence/theme-layout-delivery-current/THEME_UI_ACCEPTANCE.json`.
+`.evidence/theme-layout-delivery-current/THEME_UI_ACCEPTANCE.json`.
 It does not renew historical whole-theme acceptance or Windows runtime rendering.
 
 ### Inspector preview and shared divider checkpoint (2026-11-07)
@@ -140,13 +140,13 @@ window corners24/0, button corners14/foreground, interface text1.35, two divider
 colors, preview switching, Cancel restoration and readonly Space close without
 changing guarded fixture bytes. Twenty-eight theme plus six Services originals
 were directly reviewed. All owned QA resources and extraction are removed.
-Evidence: `.hermes/evidence/inspector-delivery-current/`.
+Evidence: `.evidence/inspector-delivery-current/`.
 
 That source21 candidate was superseded and retired after combined sourcec3
 package acceptance. The combined candidate includes shared geometry/reset ownership
 and property scrolling;38 Inspector/editor plus six Services originals were reviewed.
 Its current exact-source hosted CI/publication state is recorded in
-`.hermes/evidence/appearance-delivery-current/` and the active roadmap queue.
+`.evidence/appearance-delivery-current/` and the active roadmap queue.
 Image/Office/PDF-specific editor preview states and the complete theme/property/
 platform audit remain open; these focused checks do not renew the historical
 38-control or whole-preset acceptance.
@@ -171,7 +171,7 @@ were directly reviewed, including default and selected controls, footer color
 wrapper rejected a blank output line; its owned teardown completed, the parser
 was fixed and both complete workflows passed on rerun.
 
-Evidence: `.hermes/evidence/statusbar-presenter-current/ACCEPTANCE.json` and
+Evidence: `.evidence/statusbar-presenter-current/ACCEPTANCE.json` and
 `CLEANUP.json`. Both final and initial-attempt desktops/profiles/processes/mounts
 are removed; eight obsolete incremental sessions reclaimed0.65GiB. This change
 is source verified; current stable packages and the staged sourcec3 package keep
@@ -198,7 +198,7 @@ fallback/text115%, Summary/Overview, panel28546A/interface text1.35/surface14 an
 Cancel/Space restoration with unchanged file bytes. Native review exposed and
 corrected missing selector naming and DOCX fallback before this acceptance.
 
-Evidence: `.hermes/evidence/inspector-samples-current/ACCEPTANCE.json` and
+Evidence: `.evidence/inspector-samples-current/ACCEPTANCE.json` and
 `CLEANUP.json`. All twelve owned desktops/profiles/processes/mounts and fixtures
 are removed; eight superseded incremental sessions reclaimed0.58GiB and discovery
 captures are retired. This follow-up and the footer remain source verified;

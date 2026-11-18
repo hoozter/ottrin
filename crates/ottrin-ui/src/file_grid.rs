@@ -153,6 +153,7 @@ mod tests {
                     symlink_target_is_dir: None,
                     size_bytes: None,
                     modified_unix_secs: None,
+                    created_unix_secs: None,
                 };
                 let output = ctx.run(
                     egui::RawInput {
@@ -221,6 +222,7 @@ mod tests {
                         symlink_target_is_dir: None,
                         size_bytes: None,
                         modified_unix_secs: None,
+                        created_unix_secs: None,
                     };
                     let mut tile = Rect::NOTHING;
                     let output = ctx.run(
@@ -294,6 +296,7 @@ mod tests {
             symlink_target_is_dir: None,
             size_bytes: None,
             modified_unix_secs: None,
+            created_unix_secs: None,
         };
         let config = AppConfig {
             colorize_file_types: false,

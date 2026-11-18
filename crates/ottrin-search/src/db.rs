@@ -1415,11 +1415,17 @@ fn query_simple_term_page_then(
         return Ok((Vec::new(), total));
     }
     let order = match sort {
-        SearchSort::Relevance => "score DESC, i.name ASC",
-        SearchSort::Name => "lower(i.name) ASC, i.name ASC",
+        SearchSort::Relevance => "score DESC, i.name ASC, i.path ASC",
+        SearchSort::Name => "lower(i.name) ASC, i.path ASC",
         SearchSort::Path => "CAST(i.path AS TEXT) ASC",
-        SearchSort::Modified => "i.modified_unix_secs DESC, i.name ASC",
-        SearchSort::Size => "i.size_bytes DESC, i.name ASC",
+        SearchSort::Modified => "i.modified_unix_secs DESC, i.path ASC",
+        SearchSort::Size => "i.size_bytes DESC, i.path ASC",
+        SearchSort::NameDescending => "lower(i.name) DESC, i.path ASC",
+        SearchSort::PathDescending => "CAST(i.path AS TEXT) DESC",
+        SearchSort::Oldest => {
+            "i.modified_unix_secs IS NULL ASC, i.modified_unix_secs ASC, i.path ASC"
+        }
+        SearchSort::Smallest => "i.size_bytes IS NULL ASC, i.size_bytes ASC, i.path ASC",
     };
     let sql = format!(
         "SELECT i.path, i.name, i.kind, i.size_bytes, i.modified_unix_secs,

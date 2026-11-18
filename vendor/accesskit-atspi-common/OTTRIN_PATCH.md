@@ -6,7 +6,7 @@ Backport the disabled-node guard present in upstream `f3026222559c7f5f46d8f25cb7
 `adapters/atspi-common/src/node.rs`. The older backend otherwise reports disabled
 buttons as Enabled and Sensitive. Preserve the existing compatible API and all
 other mappings. Native before/after evidence is in
-`.hermes/evidence/assistive-control-names-current/`.
+`.evidence/assistive-control-names-current/`.
 
 Remove this patch when the supported egui dependency graph incorporates the
 upstream correction. The crate is the sole AT-SPI mapping implementation.

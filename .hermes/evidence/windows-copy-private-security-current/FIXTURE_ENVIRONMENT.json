@@ -1,5 +1,0 @@
-{
-    "scope":  "Owned disposable overlay only",
-    "cleanup":  "Whole overlay disposal",
-    "purpose":  "Native symlink fixtures"
-}

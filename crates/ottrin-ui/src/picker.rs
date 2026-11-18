@@ -10,7 +10,7 @@ use ottrin_core::picker::{
 };
 use ottrin_core::{
     AppConfig, EntryKind, FileEntry, SearchIndexStatus, SearchQuery, SearchScope, SearchSort,
-    SortConfig, default_home_dir,
+    SortBy, SortConfig, default_home_dir,
 };
 use std::collections::BTreeMap;
 use std::ffi::OsString;
@@ -226,17 +226,10 @@ impl Worker {
                         generation,
                         directory,
                         hidden,
-                    } => {
-                        let entries =
-                            listing::list_directory(&directory, hidden).map(|mut entries| {
-                                listing::sort_entries(&mut entries, &SortConfig::default());
-                                entries
-                            });
-                        ResultMessage::Listing {
-                            generation,
-                            entries,
-                        }
-                    }
+                    } => ResultMessage::Listing {
+                        generation,
+                        entries: listing::list_directory(&directory, hidden),
+                    },
                     Work::Validate {
                         generation,
                         paths,
@@ -284,6 +277,114 @@ fn is_directory(entry: &FileEntry) -> bool {
     entry.kind == EntryKind::Directory
         || (entry.kind == EntryKind::Symlink && entry.symlink_target_is_dir == Some(true))
 }
+
+fn sort_label(sort_by: SortBy) -> &'static str {
+    match sort_by {
+        SortBy::Name => "Name",
+        SortBy::Size => "Size",
+        SortBy::Modified => "Date modified",
+        SortBy::Created => "Date created",
+        SortBy::Kind => "Type",
+    }
+}
+
+/// Name keeps the remaining space; optional metadata yields first in narrow
+/// preview layouts. Hidden sort keys remain available on the header menu.
+fn picker_columns(width: f32, scale: f32, colors: Colors, sort: SortBy) -> Vec<(SortBy, f32)> {
+    let unit = scale.sqrt() * colors.font_scale;
+    let date = if sort == SortBy::Created {
+        SortBy::Created
+    } else {
+        SortBy::Modified
+    };
+    let mut metadata = vec![
+        (date, 118.0 * unit),
+        (SortBy::Kind, 108.0 * unit),
+        (SortBy::Size, 76.0 * unit),
+    ];
+    let mut drop_order = [SortBy::Kind, SortBy::Size, date];
+    // Keep the active heading/arrow visible as long as its cell can fit.
+    drop_order.sort_by_key(|key| *key == sort);
+    for key in drop_order {
+        if width - metadata.iter().map(|(_, width)| width).sum::<f32>() >= 150.0 * unit {
+            break;
+        }
+        metadata.retain(|(column, _)| *column != key);
+    }
+    let name_width = (width - metadata.iter().map(|(_, width)| width).sum::<f32>()).max(1.0);
+    let mut columns = vec![(SortBy::Name, name_width)];
+    columns.extend(metadata);
+    columns
+}
+
+fn render_picker_list_row(
+    ui: &mut egui::Ui,
+    entry: &FileEntry,
+    state: EntryVisualState,
+    layout: file_row::FileRowLayout,
+    columns: &[(SortBy, f32)],
+    colors: &Colors,
+    config: &AppConfig,
+) -> egui::Response {
+    let response = file_row::render_file_row_with_name_width(
+        ui,
+        entry,
+        state,
+        layout,
+        columns[0].1,
+        colors,
+        config,
+    );
+    let font =
+        egui::FontId::proportional((12.0 * layout.scale.sqrt()).max(10.0) * colors.font_scale);
+    let mut x = response.rect.left() + columns[0].1;
+    for &(column, width) in &columns[1..] {
+        let text = match column {
+            SortBy::Modified => entry
+                .modified_unix_secs
+                .map(ottrin_core::format_modified)
+                .unwrap_or_default(),
+            SortBy::Created => entry
+                .created_unix_secs
+                .map(ottrin_core::format_modified)
+                .unwrap_or_default(),
+            SortBy::Kind => crate::file_details::file_type_description(&entry.path, entry.kind),
+            SortBy::Size => entry
+                .size_bytes
+                .map(ottrin_core::format_size)
+                .unwrap_or_default(),
+            SortBy::Name => unreachable!("Name is the leading picker column"),
+        };
+        let rect = egui::Rect::from_min_max(
+            egui::pos2(x + 8.0, response.rect.top()),
+            egui::pos2((x + width - 6.0).max(x + 8.0), response.rect.bottom()),
+        );
+        let job = crate::widget_style::single_line_text_job(
+            &text,
+            font.clone(),
+            colors.text_dim,
+            rect.width(),
+        );
+        let galley = ui.painter().layout_job(job);
+        let elided = galley.elided;
+        ui.painter_at(rect).galley(
+            egui::pos2(rect.left(), rect.center().y - galley.size().y * 0.5),
+            galley,
+            colors.text_dim,
+        );
+        if elided {
+            ui.interact(
+                rect,
+                response.id.with(("metadata", column as u8)),
+                egui::Sense::hover(),
+            )
+            .on_hover_text(text);
+        }
+        x += width;
+    }
+    response
+}
+
 fn validate_selection(
     paths: Vec<PathBuf>,
     mode: PickerMode,
@@ -355,10 +456,11 @@ pub(crate) struct PickerDialog {
     focus_location: bool,
     entries: Arc<Vec<FileEntry>>,
     visible: Arc<Vec<usize>>,
-    visible_key: Option<(u64, Option<usize>, String)>,
+    visible_key: Option<(u64, Option<usize>, String, SortConfig)>,
     selected: Vec<PathBuf>,
-    anchor: Option<usize>,
+    anchor_path: Option<PathBuf>,
     focus: Option<PathBuf>,
+    sort: SortConfig,
     preview: Option<crate::picker_preview::PickerPreview>,
     preview_enabled: bool,
     filename: OsString,
@@ -414,8 +516,9 @@ impl PickerDialog {
             visible: Arc::new(Vec::new()),
             visible_key: None,
             selected: Vec::new(),
-            anchor: None,
+            anchor_path: None,
             focus: None,
+            sort: preferences.sort,
             preview: None,
             preview_enabled: false,
             filename,
@@ -453,11 +556,133 @@ impl PickerDialog {
         self.preview = (enabled && self.request.mode != PickerMode::Folder)
             .then(|| crate::picker_preview::PickerPreview::new(ctx));
     }
+    /// Reorder the current scan or indexed result set without touching the
+    /// path-backed selection, focus, or filename. Visible indices are rebuilt
+    /// lazily from the new order.
+    fn set_sort(&mut self, sort: SortConfig) {
+        if self.sort == sort {
+            return;
+        }
+        self.sort = sort;
+        listing::sort_entries(Arc::make_mut(&mut self.entries).as_mut_slice(), &self.sort);
+        self.visible_key = None;
+    }
+    fn sort_context_menu(&mut self, ui: &mut egui::Ui) {
+        let mut sort = self.sort;
+        let previous = sort.by;
+        let mut chosen = false;
+        for option in [
+            SortBy::Name,
+            SortBy::Modified,
+            SortBy::Kind,
+            SortBy::Size,
+            SortBy::Created,
+        ] {
+            chosen |= ui
+                .selectable_value(&mut sort.by, option, sort_label(option))
+                .clicked();
+        }
+        if previous != sort.by {
+            sort.ascending = listing::default_sort_direction(sort.by);
+        }
+        ui.separator();
+        chosen |= ui
+            .selectable_value(&mut sort.ascending, true, "Ascending")
+            .clicked();
+        chosen |= ui
+            .selectable_value(&mut sort.ascending, false, "Descending")
+            .clicked();
+        chosen |= ui
+            .checkbox(&mut sort.folders_first, "Folders first")
+            .changed();
+        self.set_sort(sort);
+        if chosen {
+            ui.close();
+        }
+    }
+
+    fn render_sort_header(
+        &mut self,
+        ui: &mut egui::Ui,
+        width: f32,
+        scale: f32,
+        colors: Colors,
+    ) -> Vec<(SortBy, f32)> {
+        let columns = picker_columns((width - 16.0).max(1.0), scale, colors, self.sort.by);
+        let height = crate::file_list::header_height(scale, colors);
+        let (header, _) = ui.allocate_exact_size(Vec2::new(width, height), egui::Sense::hover());
+        ui.painter().rect_filled(header, 0.0, colors.toolbar_bg);
+        let mut x = header.left();
+        for &(column, width) in &columns {
+            let rect =
+                egui::Rect::from_min_size(egui::pos2(x, header.top()), Vec2::new(width, height));
+            let label = sort_label(column);
+            let response = ui.interact(
+                rect,
+                ui.id().with(("picker-sort-header", column as u8)),
+                egui::Sense::click(),
+            );
+            response.widget_info(|| {
+                egui::WidgetInfo::selected(
+                    egui::WidgetType::Button,
+                    true,
+                    self.sort.by == column,
+                    format!("Sort by {label}"),
+                )
+            });
+            if response.hovered() {
+                ui.painter().rect_filled(rect, 0.0, colors.hover);
+                ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
+            }
+            if response.clicked() {
+                let mut sort = self.sort;
+                sort.ascending = if sort.by == column {
+                    !sort.ascending
+                } else {
+                    listing::default_sort_direction(column)
+                };
+                sort.by = column;
+                self.set_sort(sort);
+            }
+            response.clone().on_hover_text(
+                "Click to sort; click again to reverse. Right-click for more options.",
+            );
+            response.context_menu(|ui| self.sort_context_menu(ui));
+            let mut text_rect = rect;
+            text_rect.min.x += if column == SortBy::Name {
+                10.0 + (16.0 * scale.sqrt()).max(14.0) + file_row::ICON_TEXT_GAP * colors.font_scale
+            } else {
+                8.0
+            };
+            text_rect.max.x -= 6.0;
+            crate::widget_style::paint_sort_header(
+                ui,
+                text_rect,
+                label,
+                (self.sort.by == column).then_some(self.sort.ascending),
+                egui::FontId::proportional((11.5 * scale.sqrt()).max(10.2) * colors.font_scale),
+                if self.sort.by == column {
+                    colors.text
+                } else {
+                    colors.text_muted
+                },
+                false,
+            );
+            x += width;
+        }
+        ui.painter().hline(
+            header.x_range(),
+            header.bottom(),
+            egui::Stroke::new(1.0, colors.border),
+        );
+        columns
+    }
     pub(crate) fn preferences(&self) -> PickerPreferences {
         PickerPreferences {
             grid: self.grid,
             hidden: self.hidden,
             preview: self.preview_enabled,
+            sort: self.sort,
             last_directory: Some(ottrin_core::native_path::NativePath::encode(
                 &self.directory,
             )),
@@ -591,21 +816,22 @@ impl PickerDialog {
                                     notes.push(warning);
                                 }
                                 self.search_note = (!notes.is_empty()).then(|| notes.join(" "));
-                                self.entries = Arc::new(
-                                    response
-                                        .items
-                                        .into_iter()
-                                        .map(|item| FileEntry {
-                                            name: item.name,
-                                            path: item.path,
-                                            kind: item.kind,
-                                            is_executable: item.is_executable,
-                                            symlink_target_is_dir: item.symlink_target_is_dir,
-                                            size_bytes: item.size_bytes,
-                                            modified_unix_secs: item.modified_unix_secs,
-                                        })
-                                        .collect(),
-                                );
+                                let mut entries: Vec<FileEntry> = response
+                                    .items
+                                    .into_iter()
+                                    .map(|item| FileEntry {
+                                        name: item.name,
+                                        path: item.path,
+                                        kind: item.kind,
+                                        is_executable: item.is_executable,
+                                        symlink_target_is_dir: item.symlink_target_is_dir,
+                                        size_bytes: item.size_bytes,
+                                        modified_unix_secs: item.modified_unix_secs,
+                                        created_unix_secs: None,
+                                    })
+                                    .collect();
+                                listing::sort_entries(&mut entries, &self.sort);
+                                self.entries = Arc::new(entries);
                                 self.visible_key = None;
                                 self.listing_valid = true;
                             }
@@ -623,7 +849,8 @@ impl PickerDialog {
                 } if generation == self.generation => {
                     self.loading = false;
                     match entries {
-                        Ok(entries) => {
+                        Ok(mut entries) => {
+                            listing::sort_entries(&mut entries, &self.sort);
                             self.entries = Arc::new(entries);
                             self.visible_key = None;
                             self.listing_valid = true;
@@ -662,6 +889,7 @@ impl PickerDialog {
             self.generation,
             self.request.current_filter,
             self.query.clone(),
+            self.sort,
         );
         if self.visible_key.as_ref() != Some(&key) {
             let query = self.query.to_lowercase();
@@ -693,7 +921,7 @@ impl PickerDialog {
     }
     fn clear_selection(&mut self) {
         self.selected.clear();
-        self.anchor = None;
+        self.anchor_path = None;
         self.focus = None;
         if self.request.mode != PickerMode::Save {
             self.filename.clear();
@@ -719,12 +947,15 @@ impl PickerDialog {
     ) {
         self.cancel_validation();
         if self.request.multiple && modifiers.shift {
-            let start = self.anchor.unwrap_or(index).min(index);
-            let end = self
-                .anchor
-                .unwrap_or(index)
-                .max(index)
-                .min(visible.len() - 1);
+            // The anchor is stored by path so a sort change cannot leave it
+            // pointing at a different entry.
+            let anchor = self
+                .anchor_path
+                .as_ref()
+                .and_then(|path| visible.iter().position(|item| &item.path == path))
+                .unwrap_or(index);
+            let start = anchor.min(index);
+            let end = anchor.max(index).min(visible.len() - 1);
             self.selected = visible
                 .iter()
                 .skip(start)
@@ -750,10 +981,10 @@ impl PickerDialog {
             } else {
                 self.selected.push(entry.path.clone());
             }
-            self.anchor = Some(index);
+            self.anchor_path = Some(entry.path.clone());
         } else {
             self.selected = vec![entry.path.clone()];
-            self.anchor = Some(index);
+            self.anchor_path = Some(entry.path.clone());
         }
         self.focus = if self.selected.contains(&entry.path) {
             Some(entry.path.clone())
@@ -875,10 +1106,7 @@ impl PickerDialog {
                 .map(|entry| entry.path.clone())
                 .collect();
             self.focus = self.selected.last().cloned();
-            self.anchor = self
-                .focus
-                .as_ref()
-                .and_then(|path| visible.iter().position(|entry| &entry.path == path));
+            self.anchor_path = self.focus.clone();
             self.filename.clear();
             self.error = None;
         }
@@ -1237,11 +1465,15 @@ impl PickerDialog {
                         // A sparse grid must still own its whole file column;
                         // otherwise horizontal layout gives that space to Preview.
                         ui.set_min_width(width);
-                        ui.painter().rect_filled(
+                         ui.painter().rect_filled(
                             egui::Rect::from_min_size(ui.cursor().min, Vec2::new(width, height)),
                             0.0,
-                            colors.bg,
-                        );
+                             colors.bg,
+                         );
+                         let list_scale = config.list_view_scale.clamp(0.75, 1.85);
+                         let list_columns = self.render_sort_header(ui, width, list_scale, colors);
+                         let list_height = (height - crate::file_list::header_height(list_scale, colors)
+                             - ui.spacing().item_spacing.y).max(0.0);
                         if self.loading {
                             ui.spinner();
                             ui.label(if self.indexed { "Searching indexed folders…" } else { "Reading folder…" });
@@ -1258,7 +1490,6 @@ impl PickerDialog {
                         } else {
                             visible.len()
                         };
-                        let list_scale = config.list_view_scale.clamp(0.75, 1.85);
                         let row_height = if self.grid {
                             grid_metrics.size.y
                         } else {
@@ -1266,7 +1497,7 @@ impl PickerDialog {
                         };
                         ScrollArea::vertical()
                             .id_salt("picker-files")
-                            .max_height(height)
+                            .max_height(list_height)
                             .show_rows(ui, row_height, row_count, |ui, range| {
                                 if self.grid {
                                     egui::Grid::new("picker-grid")
@@ -1318,7 +1549,7 @@ impl PickerDialog {
                                 } else {
                                     for index in range {
                                         let entry = visible.get(index);
-                                        let response = file_row::render_file_row(
+                                        let response = render_picker_list_row(
                                             ui,
                                             entry,
                                             EntryVisualState {
@@ -1331,6 +1562,7 @@ impl PickerDialog {
                                                 width: ui.available_width(),
                                                 scale: list_scale,
                                             },
+                                            &list_columns,
                                             &colors,
                                             config,
                                         );
@@ -2413,6 +2645,379 @@ mod tests {
     }
 
     #[test]
+    fn sorting_preserves_selection_focus_and_path_backed_shift_anchor() {
+        let root = tempfile::tempdir().unwrap();
+        let folder = root.path().join("folder");
+        std::fs::create_dir(&folder).unwrap();
+        for (name, body) in [("alpha.txt", "a"), ("beta.txt", "bb"), ("gamma.txt", "ggg")] {
+            std::fs::write(root.path().join(name), body).unwrap();
+        }
+        let ctx = Context::default();
+        let mut dialog = PickerDialog::new(
+            PickerRequest {
+                multiple: true,
+                initial_directory: Some(root.path().to_path_buf()),
+                ..Default::default()
+            },
+            &ctx,
+            PickerPreferences::default(),
+        )
+        .unwrap();
+        wait_listing(&mut dialog);
+        let visible = dialog.visible_entries();
+        let alpha = root.path().join("alpha.txt");
+        let alpha_index = visible
+            .iter()
+            .position(|entry| entry.path == alpha)
+            .unwrap();
+        dialog.select(
+            visible.get(alpha_index),
+            alpha_index,
+            &visible,
+            Default::default(),
+        );
+        assert_eq!(dialog.selected, std::slice::from_ref(&alpha));
+        assert_eq!(dialog.focus.as_deref(), Some(alpha.as_path()));
+        assert_eq!(dialog.filename, "alpha.txt");
+
+        dialog.set_sort(SortConfig {
+            by: SortBy::Size,
+            ascending: false,
+            folders_first: true,
+        });
+        let visible = dialog.visible_entries();
+        assert_eq!(
+            visible
+                .iter()
+                .map(|entry| entry.name.as_str())
+                .collect::<Vec<_>>(),
+            ["folder", "gamma.txt", "beta.txt", "alpha.txt"]
+        );
+        assert_eq!(dialog.selected, std::slice::from_ref(&alpha));
+        assert_eq!(dialog.focus.as_deref(), Some(alpha.as_path()));
+        assert_eq!(dialog.filename, "alpha.txt");
+
+        // Alpha moved from index 1 to index 3. A numeric anchor would select
+        // only alpha here; the path-backed anchor spans gamma..alpha.
+        let gamma_index = visible
+            .iter()
+            .position(|entry| entry.name == "gamma.txt")
+            .unwrap();
+        dialog.select(
+            visible.get(gamma_index),
+            gamma_index,
+            &visible,
+            egui::Modifiers::SHIFT,
+        );
+        assert_eq!(
+            dialog.selected,
+            [
+                root.path().join("gamma.txt"),
+                root.path().join("beta.txt"),
+                alpha.clone()
+            ]
+        );
+        assert_eq!(dialog.anchor_path, Some(alpha));
+    }
+
+    #[test]
+    fn sort_applies_to_scans_indexed_results_and_cached_visible_indices() {
+        let root = tempfile::tempdir().unwrap();
+        std::fs::write(root.path().join("small.txt"), "a").unwrap();
+        std::fs::write(root.path().join("large.txt"), "12345678").unwrap();
+        let ctx = Context::default();
+        let mut dialog = PickerDialog::new(
+            PickerRequest {
+                initial_directory: Some(root.path().to_path_buf()),
+                ..Default::default()
+            },
+            &ctx,
+            PickerPreferences {
+                sort: SortConfig {
+                    by: SortBy::Size,
+                    ascending: false,
+                    folders_first: true,
+                },
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        wait_listing(&mut dialog);
+        let visible_names = |dialog: &mut PickerDialog| {
+            dialog
+                .visible_entries()
+                .iter()
+                .map(|entry| entry.name.clone())
+                .collect::<Vec<_>>()
+        };
+        assert_eq!(visible_names(&mut dialog), ["large.txt", "small.txt"]);
+
+        // Re-sorting reuses the scan without another directory read.
+        dialog.set_sort(SortConfig {
+            by: SortBy::Size,
+            ascending: true,
+            folders_first: true,
+        });
+        assert_eq!(visible_names(&mut dialog), ["small.txt", "large.txt"]);
+
+        let (_requests, completed) = capture_work(&mut dialog);
+        dialog.indexed = true;
+        dialog.query = "ext:txt".into();
+        dialog.schedule_search(&ctx);
+        dialog.search_due = None;
+        completed
+            .send(ResultMessage::Search {
+                generation: dialog.generation,
+                result: Ok(search_result_items(
+                    root.path(),
+                    &[("large.txt", 1), ("small.txt", 8)],
+                )),
+            })
+            .unwrap();
+        dialog.poll();
+        assert_eq!(dialog.entries[0].name, "large.txt");
+        assert_eq!(dialog.entries[0].size_bytes, Some(1));
+        assert_eq!(dialog.entries[1].name, "small.txt");
+        assert_eq!(dialog.entries[1].size_bytes, Some(8));
+        assert!(
+            dialog
+                .entries
+                .iter()
+                .all(|entry| entry.created_unix_secs.is_none()),
+            "indexed results do not carry creation metadata"
+        );
+        dialog.set_sort(SortConfig {
+            by: SortBy::Size,
+            ascending: false,
+            folders_first: true,
+        });
+        assert_eq!(visible_names(&mut dialog), ["small.txt", "large.txt"]);
+    }
+
+    #[test]
+    fn picker_uses_column_headers_without_a_sort_toolbar_button() {
+        let root = tempfile::tempdir().unwrap();
+        std::fs::write(root.path().join("alpha.txt"), "a").unwrap();
+        let ctx = Context::default();
+        ctx.enable_accesskit();
+        let mut app = host(
+            &ctx,
+            PickerRequest {
+                initial_directory: Some(root.path().to_path_buf()),
+                ..Default::default()
+            },
+            true,
+            1.0,
+        );
+        let size = Vec2::new(940.0, 640.0);
+        frame(&mut app, &ctx, size, 0.0, vec![]);
+        let output = frame(&mut app, &ctx, size, 0.1, vec![]);
+        for heading in ["Name", "Date modified", "Type", "Size"] {
+            assert!(text_center(&output, heading).is_some(), "{heading}");
+        }
+        assert!(text_center(&output, "Sort: Name").is_none());
+        assert!(text_center(&output, "Open").is_some());
+        assert!(text_center(&output, "Cancel").is_some());
+        let tree = output
+            .platform_output
+            .accesskit_update
+            .as_ref()
+            .expect("accessibility tree");
+        let labels = tree
+            .nodes
+            .iter()
+            .filter_map(|(_, node)| node.label())
+            .collect::<Vec<_>>();
+        for label in [
+            "Sort by Name",
+            "Sort by Date modified",
+            "Sort by Type",
+            "Sort by Size",
+        ] {
+            assert!(labels.contains(&label), "{label}");
+        }
+    }
+
+    #[test]
+    fn picker_header_clicks_toggle_order_and_preserve_selection() {
+        let root = tempfile::tempdir().unwrap();
+        for name in ["alpha.txt", "beta.txt"] {
+            std::fs::write(root.path().join(name), name).unwrap();
+        }
+        let ctx = Context::default();
+        let mut app = host(
+            &ctx,
+            PickerRequest {
+                initial_directory: Some(root.path().into()),
+                ..Default::default()
+            },
+            true,
+            1.0,
+        );
+        for entry in Arc::make_mut(&mut app.dialog.entries) {
+            entry.modified_unix_secs = Some(if entry.name == "alpha.txt" { 100 } else { 200 });
+        }
+        let alpha = root.path().join("alpha.txt");
+        app.dialog.selected = vec![alpha.clone()];
+        app.dialog.focus = Some(alpha.clone());
+        let size = Vec2::new(940.0, 640.0);
+        frame(&mut app, &ctx, size, 0.0, vec![]);
+        let output = frame(&mut app, &ctx, size, 0.1, vec![]);
+        let date = text_center(&output, "Date modified").unwrap();
+        click(&mut app, &ctx, size, 0.2, date);
+        assert_eq!(app.dialog.sort.by, SortBy::Modified);
+        assert!(!app.dialog.sort.ascending);
+        assert_eq!(app.dialog.visible_entries().get(0).name, "beta.txt");
+        click(&mut app, &ctx, size, 0.3, date);
+        assert!(app.dialog.sort.ascending);
+        assert_eq!(app.dialog.visible_entries().get(0).name, "alpha.txt");
+        let output = frame(&mut app, &ctx, size, 0.4, vec![]);
+        let name = text_center(&output, "Name").unwrap();
+        click(&mut app, &ctx, size, 0.5, name);
+        assert_eq!(app.dialog.sort.by, SortBy::Name);
+        assert!(app.dialog.sort.ascending);
+        click(&mut app, &ctx, size, 0.6, name);
+        assert!(!app.dialog.sort.ascending);
+        assert_eq!(app.dialog.visible_entries().get(0).name, "beta.txt");
+        assert_eq!(app.dialog.selected, std::slice::from_ref(&alpha));
+        assert_eq!(app.dialog.focus.as_ref(), Some(&alpha));
+    }
+
+    #[test]
+    fn picker_header_context_menu_owns_extra_options() {
+        let root = tempfile::tempdir().unwrap();
+        let ctx = Context::default();
+        let mut app = host(
+            &ctx,
+            PickerRequest {
+                initial_directory: Some(root.path().into()),
+                ..Default::default()
+            },
+            true,
+            1.0,
+        );
+        let size = Vec2::new(940.0, 640.0);
+        frame(&mut app, &ctx, size, 0.0, vec![]);
+        let output = frame(&mut app, &ctx, size, 0.1, vec![]);
+        let point = text_center(&output, "Name").unwrap();
+        for (time, pressed) in [(0.2, true), (0.22, false)] {
+            frame(
+                &mut app,
+                &ctx,
+                size,
+                time,
+                vec![
+                    egui::Event::PointerMoved(point),
+                    egui::Event::PointerButton {
+                        pos: point,
+                        button: egui::PointerButton::Secondary,
+                        pressed,
+                        modifiers: egui::Modifiers::NONE,
+                    },
+                ],
+            );
+        }
+        let output = frame(&mut app, &ctx, size, 0.3, vec![]);
+        let folders = text_center(&output, "Folders first").expect("header context menu");
+        click(&mut app, &ctx, size, 0.4, folders);
+        assert!(!app.dialog.sort.folders_first);
+        assert_eq!(app.dialog.sort.by, SortBy::Name);
+        frame(&mut app, &ctx, size, 0.8, vec![]);
+        for (time, pressed) in [(1.0, true), (1.02, false)] {
+            frame(
+                &mut app,
+                &ctx,
+                size,
+                time,
+                vec![
+                    egui::Event::PointerMoved(point),
+                    egui::Event::PointerButton {
+                        pos: point,
+                        button: egui::PointerButton::Secondary,
+                        pressed,
+                        modifiers: egui::Modifiers::NONE,
+                    },
+                ],
+            );
+        }
+        let output = frame(&mut app, &ctx, size, 1.1, vec![]);
+        let created = text_center(&output, "Date created").unwrap();
+        click(&mut app, &ctx, size, 1.2, created);
+        assert_eq!(app.dialog.sort.by, SortBy::Created);
+        assert!(!app.dialog.sort.ascending);
+        let output = frame(&mut app, &ctx, size, 1.3, vec![]);
+        assert!(text_center(&output, "Date created").is_some());
+    }
+
+    #[test]
+    fn picker_header_stays_above_scrolling_files() {
+        let root = tempfile::tempdir().unwrap();
+        for number in 0..100 {
+            std::fs::write(root.path().join(format!("file-{number:03}.txt")), "fixture").unwrap();
+        }
+        let ctx = Context::default();
+        let mut app = host(
+            &ctx,
+            PickerRequest {
+                initial_directory: Some(root.path().into()),
+                ..Default::default()
+            },
+            true,
+            1.0,
+        );
+        let size = Vec2::new(940.0, 640.0);
+        frame(&mut app, &ctx, size, 0.0, vec![]);
+        let output = frame(&mut app, &ctx, size, 0.1, vec![]);
+        let heading = text_center(&output, "Name").unwrap();
+        assert!(text_center(&output, "file-000.txt").is_some());
+        frame(
+            &mut app,
+            &ctx,
+            size,
+            0.2,
+            vec![
+                egui::Event::PointerMoved(heading + Vec2::new(0.0, 90.0)),
+                egui::Event::MouseWheel {
+                    unit: egui::MouseWheelUnit::Point,
+                    delta: Vec2::new(0.0, -600.0),
+                    modifiers: egui::Modifiers::NONE,
+                },
+            ],
+        );
+        let output = frame(&mut app, &ctx, size, 0.8, vec![]);
+        assert_eq!(text_center(&output, "Name"), Some(heading));
+        assert!(text_center(&output, "file-000.txt").is_none());
+        assert!(text_center(&output, "Cancel").is_some());
+    }
+
+    #[test]
+    fn picker_columns_fit_narrow_preview_layouts_without_losing_name() {
+        for font_scale in [1.0, 1.35, 1.5] {
+            let mut colors = Colors::preset(ThemePreset::Ottrin, true);
+            colors.font_scale = font_scale;
+            for width in [120.0, 220.0, 400.0, 800.0] {
+                let columns = picker_columns(width, 1.0, colors, SortBy::Name);
+                assert_eq!(columns[0].0, SortBy::Name);
+                assert!(columns[0].1 > 0.0);
+                assert!((columns.iter().map(|(_, width)| width).sum::<f32>() - width).abs() < 0.01);
+            }
+        }
+        let colors = Colors::preset(ThemePreset::Ottrin, true);
+        for active in [
+            SortBy::Modified,
+            SortBy::Kind,
+            SortBy::Size,
+            SortBy::Created,
+        ] {
+            assert!(
+                picker_columns(320.0, 1.0, colors, active)
+                    .iter()
+                    .any(|(column, _)| *column == active)
+            );
+        }
+    }
+
+    #[test]
     fn preview_keeps_its_column_when_grid_contents_are_sparse_or_empty() {
         let root = tempfile::tempdir().unwrap();
         std::fs::write(root.path().join("one.txt"), "preview content").unwrap();
@@ -2923,6 +3528,11 @@ mod tests {
             grid: true,
             hidden: true,
             preview: true,
+            sort: SortConfig {
+                by: SortBy::Size,
+                ascending: false,
+                folders_first: false,
+            },
             last_directory: Some(ottrin_core::native_path::NativePath::encode(
                 remembered.path(),
             )),
@@ -2938,6 +3548,9 @@ mod tests {
         .unwrap();
         assert_eq!(dialog.directory, requested.path());
         assert!(dialog.grid && dialog.hidden && dialog.preview.is_some());
+        assert_eq!(dialog.sort.by, SortBy::Size);
+        assert!(!dialog.sort.ascending);
+        assert!(!dialog.sort.folders_first);
     }
     #[test]
     fn location_shortcut_uses_event_modifiers_when_the_final_snapshot_has_released_ctrl() {
@@ -3020,6 +3633,38 @@ mod tests {
         };
         (requests, completed)
     }
+    fn search_result_items(
+        root: &Path,
+        specifications: &[(&str, u64)],
+    ) -> ottrin_search::SearchQueryResult {
+        let items = specifications
+            .iter()
+            .map(|(name, size)| ottrin_core::SearchResultItem {
+                path: root.join(name),
+                parent_path: root.to_path_buf(),
+                name: (*name).into(),
+                kind: EntryKind::File,
+                is_executable: false,
+                symlink_target_is_dir: None,
+                size_bytes: Some(*size),
+                modified_unix_secs: Some(1),
+                content_snippet: None,
+                name_lower: String::new(),
+                path_str: String::new(),
+                path_lower: String::new(),
+            })
+            .collect::<Vec<_>>();
+        ottrin_search::SearchQueryResult {
+            response: ottrin_core::SearchResponse {
+                total: items.len(),
+                items,
+                status: SearchIndexStatus::Ready,
+                error: None,
+            },
+            warning: None,
+        }
+    }
+
     fn search_result(path: &Path) -> ottrin_search::SearchQueryResult {
         ottrin_search::SearchQueryResult {
             response: ottrin_core::SearchResponse {

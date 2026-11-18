@@ -1,8 +1,0 @@
-{
-  "source_revision": "40effd6fb128fc42220be9670377340a5e37031b",
-  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-desktop-stage",
-  "cleanup_owner": "windows-msix-current",
-  "pending_consumers": [],
-  "cleanup_complete": true,
-  "delivery_status": "Rejected MSIX lifecycle cohort retired; stable8ede candidate preserved"
-}

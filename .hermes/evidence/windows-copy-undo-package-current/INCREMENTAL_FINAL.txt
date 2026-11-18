@@ -1,2 +1,0 @@
-Obsolete/unpublished sessions identified: 0
-Filesystem space recovered: 0.00 GiB

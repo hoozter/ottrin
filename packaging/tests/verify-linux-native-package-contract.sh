@@ -105,6 +105,8 @@ if find "$STAGE/usr/lib" -type f -print -quit 2>/dev/null | grep -q .; then
 fi
 
 grep -Fq 'Exec=ottrin' "$STAGE/usr/share/applications/org.ottrin.Ottrin.desktop"
+grep -Fxq 'StartupWMClass=org.ottrin.Ottrin' "$STAGE/usr/share/applications/org.ottrin.Ottrin.desktop"
+grep -Fxq 'StartupWMClass=org.ottrin.Ottrin' "$ROOT/packaging/linux/package-appimage.sh"
 grep -Fq 'Git revision:' "$STAGE/usr/share/doc/ottrin/SOURCE_REVISION.txt"
 for directory in usr usr/bin usr/share usr/share/doc/ottrin; do
   test "$(stat -c %a "$STAGE/$directory")" = 755

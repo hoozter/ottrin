@@ -25,7 +25,7 @@ The quiet measurement used a private 10,000-file index. The live measurements us
 
 Both the private exact-package test and installed service test passed creation of 1,200 files, modification, rename, and deletion. Create propagation took 1.79 seconds in isolation and 2.27 seconds on the live index. The active SQLite generation stayed unchanged across both bursts: no full rebuild was triggered. The private daemon also restarted successfully from its saved index. The live service remained enabled and running as `ottrin-indexd`, with ready filesystem watches and no reported error. Its executable SHA-256 matched the tested package daemon. Personal settings retained their exact pre-test checksum, and the existing index was reused.
 
-Source validation passed 210 search tests, 22 application tests, one daemon test, strict search Clippy, formatting, and the Linux daemon packaging contract. Two existing FTS storage measurement fixtures remained ignored; they do not exercise the changed scheduling behavior. Raw acceptance is retained in `.hermes/evidence/index-service/ACCEPTANCE.json` and copied to `dist/packages/INDEX_ACCEPTANCE.json`. Test profiles, test files, diagnostic processes, and packaging staging were removed after verification.
+Source validation passed 210 search tests, 22 application tests, one daemon test, strict search Clippy, formatting, and the Linux daemon packaging contract. Two existing FTS storage measurement fixtures remained ignored; they do not exercise the changed scheduling behavior. Raw acceptance is retained in `.evidence/index-service/ACCEPTANCE.json` and copied to `dist/packages/INDEX_ACCEPTANCE.json`. Test profiles, test files, diagnostic processes, and packaging staging were removed after verification.
 
 ## Sustained-activity follow-up on 2026-10-11
 
@@ -86,7 +86,7 @@ normal full rebuild replaced the previous 3.7 GiB derived database with roughly
 
 Validation passed 213 search tests, 22 application tests, one daemon test, and
 strict Clippy. Two existing storage benchmark fixtures remained ignored.
-Current raw acceptance is `.hermes/evidence/index-service/WATCH_RACE_ACCEPTANCE.json`
+Current raw acceptance is `.evidence/index-service/WATCH_RACE_ACCEPTANCE.json`
 and `dist/packages/INDEX_ACCEPTANCE.json`. The earlier partial package was
 rejected after the longer sample exposed directory metadata subtree work;
 its compact diagnostic receipt is retained as `WATCH_RACE_PARTIAL.json`.
@@ -110,7 +110,7 @@ controlled idle workload. Personal settings retained their exact checksum.
 An actual disposable file became searchable in 0.921 seconds and disappeared
 from search in 0.499 seconds after deletion; the fixture was removed.
 The integration receipt is
-`.hermes/evidence/index-service/CURRENT_PACKAGE_INTEGRATION.json`.
+`.evidence/index-service/CURRENT_PACKAGE_INTEGRATION.json`.
 The earlier controlled-burst receipt above remains evidence for the index
 fixes; these fresh measurements verify their integration into the newer package.
 
@@ -172,8 +172,8 @@ In another shell, verify that the configured index is ready:
 Run the controlled full-rebuild sampler:
 
 ```sh
-python3 .hermes/measure-full-index-memory.py \
-  | tee .hermes/evidence/full-index-memory-$(date +%F).json
+python3 .evidence/measure-full-index-memory.py \
+  | tee .evidence/full-index-memory-$(date +%F).json
 ```
 
 The sampler:
@@ -205,7 +205,7 @@ Watcher propagation is measured with a uniquely named disposable file beneath a 
 - Fresh isolated source verification on 2026-08-16 replaced a 25.17 MiB content generation with equal-sized content and ended at 56.12 MiB aggregate database storage, 354,352 bytes canonical WAL, one active derived database, and zero free pages. A separate 12,000-item equal-sized path-heavy replacement reproduced the prior canonical-path amplification RED at 13,152,256 to 23,715,840 aggregate bytes with a 27,826,512-byte WAL; with path FTS moved into the disposable sibling, GREEN measured 13,144,064 initially, 13,230,080 after one replacement, and 13,299,712 after a repeated replacement, with zero retained WAL bytes, one active sibling, and zero free pages. These are isolated source measurements, not a live-cache migration or exact-package claim.
 - No Explorer, Windows Search, Everything, FSearch, or other competitor comparison has yet been accepted. Such a comparison needs the same corpus, query set, cache-state definitions, and freshness checks.
 
-Raw full-rebuild evidence is retained at `.hermes/evidence/full-index-memory-2026-08-15.json`. Direct-delta evidence and historical architecture transitions are retained at `.hermes/evidence/index-direct-delta-2026-08-15.md`. Separate content-store evidence is retained at `.hermes/evidence/fts-separate-store-verification-2026-08-16.md`.
+Raw full-rebuild evidence is retained at `.evidence/full-index-memory-2026-08-15.json`. Direct-delta evidence and historical architecture transitions are retained at `.evidence/index-direct-delta-2026-08-15.md`. Separate content-store evidence is retained at `.evidence/fts-separate-store-verification-2026-08-16.md`.
 
 ## Prior packaged populated-index sample — 2026-10-15 (af78252)
 
@@ -240,13 +240,13 @@ Reproduce from the repository root:
 ```sh
 python3 scripts/index-populated-qa.py \
   dist/packages/Ottrin-0.1.0-x86_64.AppImage \
-  .hermes/evidence/index-populated-current/ACCEPTANCE.json
+  .evidence/index-populated-current/ACCEPTANCE.json
 ```
 
 The runner verifies the exact artifact checksum and embedded clean provenance,
 requires 10,000 actual indexed files before measurement, and rejects quiet CPU
 at or above 0.5% of one core. Receipt:
-`.hermes/evidence/index-populated-current/ACCEPTANCE.json`.
+`.evidence/index-populated-current/ACCEPTANCE.json`.
 These observed timings are not latency guarantees. Longer live-home sampling,
 content-enabled work, larger/adversarial bursts, Windows and competitor comparison
 remain separate gates. No zero-CPU or broad daily-driver claim is inferred.
@@ -254,7 +254,7 @@ remain separate gates. No zero-CPU or broad daily-driver claim is inferred.
 A live cancellation check sends SIGTERM during the populated quiet phase. The
 runner exits 143, stops its private daemon, removes its profile/extraction and
 produces no passing receipt. Evidence:
-`.hermes/evidence/index-populated-current/CANCELLATION_ACCEPTANCE.json`.
+`.evidence/index-populated-current/CANCELLATION_ACCEPTANCE.json`.
 
 
 ## Current packaged offline freshness and return to idle — 2026-10-15
@@ -281,12 +281,12 @@ Startup validation performs a scan even when the saved plan matches, since Linux
 filesystem watches cannot report offline changes. Ordinary live events keep the
 incremental path. These are observed cases, not latency guarantees, content-enabled
 or live-home measurements. The personal running service/profile is unchanged.
-Receipt: `.hermes/evidence/index-populated-current/OFFLINE_FIXED_PACKAGE.json`.
+Receipt: `.evidence/index-populated-current/OFFLINE_FIXED_PACKAGE.json`.
 
 ```sh
 python3 scripts/index-populated-qa.py \
   dist/packages/Ottrin-0.1.0-x86_64.AppImage \
-  .hermes/evidence/index-populated-current/OFFLINE_FIXED_PACKAGE.json \
+  .evidence/index-populated-current/OFFLINE_FIXED_PACKAGE.json \
   --offline-changes
 ```
 
@@ -320,7 +320,7 @@ update. Watches were ready and the startup scan completed. Packaged cleanup
 stopped the restarted daemon, exited zero and removed the private database.
 
 Raw results, payload identity and teardown are recorded in
-`.hermes/evidence/windows-20261011/WINDOWS_OFFLINE_INDEX_ACCEPTANCE.json`,
+`.evidence/windows-20261011/WINDOWS_OFFLINE_INDEX_ACCEPTANCE.json`,
 `WINDOWS_OFFLINE_CANDIDATE_PAYLOAD.json` and `WINDOWS_OFFLINE_INDEX_CLEANUP.json`.
 The test task exited zero; its fixtures, extracted packages and compiler runtime
 were removed, account preferences/source hashes were preserved, and the owned
@@ -369,12 +369,12 @@ The shared runner now exports observations and teardown even when cancelled or
 failing. An actual SIGTERM during a live 600-second quiet sample verifies its
 daemon exits and private profile is removed. A metadata-only control also passes
 with CPU sampling explicitly skipped. Evidence:
-`.hermes/evidence/index-content-package-current/ACCEPTANCE.json`.
+`.evidence/index-content-package-current/ACCEPTANCE.json`.
 
 ```sh
 python3 scripts/index-populated-qa.py \
   dist/packages/Ottrin-0.1.0-x86_64.AppImage \
-  .hermes/evidence/index-content-package-current/CONTENT.json \
+  .evidence/index-content-package-current/CONTENT.json \
   --content --offline-changes
 ```
 
@@ -417,7 +417,7 @@ were removed; the personal daemon stayed unchanged during those source-only
 runs. That initial checkpoint did not establish packaged or installed-service
 acceptance; the follow-up below records those separately. Exact binary/source hashes,
 phase samples, daemon measurements and teardown are recorded in
-`.hermes/evidence/index-fts-build-probe-current/ACCEPTANCE.json`.
+`.evidence/index-fts-build-probe-current/ACCEPTANCE.json`.
 
 ### Exact packaged and configured-service follow-up
 
@@ -447,5 +447,5 @@ package staging/extractions are removed. Full hosted Linux verification passes
 and production HTML confinement/setup checks on `3ee5f7c9`; `defc1ada` changes
 only roadmap spacing and compressed logs. Latest Windows hosted verification
 remains in progress. Receipts:
-`.hermes/evidence/linux-filename-index-package-current/ACCEPTANCE.json` and
-`.hermes/evidence/personal-index-filename-current/ACCEPTANCE.json`.
+`.evidence/linux-filename-index-package-current/ACCEPTANCE.json` and
+`.evidence/personal-index-filename-current/ACCEPTANCE.json`.

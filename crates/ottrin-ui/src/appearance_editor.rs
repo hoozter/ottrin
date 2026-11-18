@@ -2418,6 +2418,148 @@ mod tests {
     }
 
     #[test]
+    fn column_headers_share_compact_file_view_styling_with_appearance_preview() {
+        for dark in [false, true] {
+            for scale in [1.0, 1.35] {
+                let mut colors = Colors::preset(ThemePreset::Ottrin, dark);
+                colors.font_scale = scale;
+                colors.bg = Color32::from_rgb(25, 55, 67);
+                colors.panel_raised = Color32::from_rgb(155, 40, 90);
+                let mut app = OttrinApp::default();
+                app.colors = colors;
+                app.state.config.miller_columns.clear();
+                let live_ctx = Context::default();
+                install_application_fonts(&live_ctx);
+                live_ctx.enable_accesskit();
+                let live = live_ctx.run(Default::default(), |ctx| {
+                    egui::CentralPanel::default().show(ctx, |ui| {
+                        app.render_folder_sort_header(ui, Path::new("/preview-sort-fixture"));
+                    });
+                });
+                assert!(
+                    live.platform_output.accesskit_update.as_ref().unwrap().nodes.iter().any(
+                        |(_, node)| node.label() == Some("Sort /preview-sort-fixture by Name")
+                    ),
+                    "Styling must preserve the live header's accessible action"
+                );
+                let live_name = live
+                    .shapes
+                    .iter()
+                    .find_map(|shape| match &shape.shape {
+                        egui::Shape::Text(text) if text.galley.job.text == "Name" => Some(text),
+                        _ => None,
+                    })
+                    .unwrap();
+                let ctx = Context::default();
+                install_application_fonts(&ctx);
+                let render = |events| {
+                    let mut picked = None;
+                    let output = ctx.run(
+                        egui::RawInput {
+                            screen_rect: Some(Rect::from_min_size(
+                                egui::Pos2::ZERO,
+                                Vec2::new(1200.0, 800.0),
+                            )),
+                            events,
+                            ..Default::default()
+                        },
+                        |ctx| {
+                            egui::CentralPanel::default().show(ctx, |ui| {
+                                picked = theme_editor_large_preview(
+                                    ui,
+                                    colors,
+                                    ThemePreviewRegion::ColumnBackground,
+                                    &mut ViewMode::Miller,
+                                )
+                                .1;
+                            });
+                        },
+                    );
+                    (output, picked)
+                };
+                let (output, _) = render(vec![]);
+                let names: Vec<_> = output
+                    .shapes
+                    .iter()
+                    .filter_map(|shape| match &shape.shape {
+                        egui::Shape::Text(text) if text.galley.job.text == "Name" => Some(text),
+                        _ => None,
+                    })
+                    .collect();
+                assert_eq!(
+                    names.len(),
+                    3,
+                    "Every Name-only preview column needs its actual heading"
+                );
+                let mut headers = Vec::new();
+                for name in names {
+                    assert_eq!(name.galley.job.sections, live_name.galley.job.sections);
+                    let center = name.pos + name.galley.rect.center().to_vec2();
+                    let header = output
+                        .shapes
+                        .iter()
+                        .find_map(|shape| match &shape.shape {
+                            egui::Shape::Rect(rect)
+                                if rect.fill == colors.bg
+                                    && rect.rect.contains(center)
+                                    && (rect.rect.height()
+                                        - miller_columns::header_height(&colors))
+                                    .abs()
+                                        < 0.1 =>
+                            {
+                                Some(rect.rect)
+                            }
+                            _ => None,
+                        })
+                        .expect(
+                            "Preview heading inherits File view background, not raised surfaces",
+                        );
+                    assert!(header.height() < file_row::file_row_height(1.0, &colors));
+                    let first_row = output
+                        .shapes
+                        .iter()
+                        .filter_map(|shape| match &shape.shape {
+                            egui::Shape::Text(text)
+                                if ["Documents", "src", "photo.png"]
+                                    .contains(&text.galley.job.text.as_str())
+                                    && text.pos.x >= header.left()
+                                    && text.pos.x < header.right()
+                                    && text.pos.y >= header.top() =>
+                            {
+                                Some(text.pos.y)
+                            }
+                            _ => None,
+                        })
+                        .min_by(f32::total_cmp)
+                        .expect("Preview contains file rows");
+                    assert!(
+                        first_row >= header.bottom(),
+                        "Headers must not overlap filenames"
+                    );
+                    headers.push(header);
+                }
+                for header in headers {
+                    let point = header.center();
+                    for pressed in [true, false] {
+                        let (_, picked) = render(vec![
+                            egui::Event::PointerMoved(point),
+                            egui::Event::PointerButton {
+                                pos: point,
+                                button: egui::PointerButton::Primary,
+                                pressed,
+                                modifiers: egui::Modifiers::NONE,
+                            },
+                        ]);
+                        if !pressed {
+                            assert_eq!(picked, Some(ThemePreviewRegion::ColumnBackground));
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
     fn appearance_preview_selection_matches_painted_row_and_square_canvas() {
         let ctx = Context::default();
         let colors = Colors::preset(ThemePreset::Ottrin, true);

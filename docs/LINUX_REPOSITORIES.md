@@ -15,16 +15,16 @@ The package manager owns its imported keys.
 
 ## Public release status
 
-As of 2026-11-13, GitHub has no published Ottrin release. The update host
+As of 2026-11-18, GitHub has no published Ottrin release. The update host
 returns HTTP 404 for the release receipt, APT InRelease, and RPM repository
-metadata. GitHub has the storage credentials and signing fingerprint
-configured. The signing subkey secret and repository enable switches are
-pending.
+metadata. GitHub has the storage credentials, signing fingerprint, signing
+subkey secret, and update URL configured. The repository enable switches
+are pending.
 
-Local AppImages are standalone downloads. The local DEB and RPM packages
-install without registering an Ottrin update source. After a signed bootstrap
-release and successful Ubuntu and Fedora upgrade checks against the live
-repository, subsequent official packages can install
+Local AppImages are standalone downloads. Local development DEB and RPM
+packages built without the update URL install without registering a source.
+Official DEB and RPM packages install the signed update source starting with
+the first public release. The source paths are
 `/etc/apt/sources.list.d/ottrin.sources` or
 `/etc/yum.repos.d/ottrin.repo`.
 
@@ -53,24 +53,23 @@ repository, subsequent official packages can install
   cached. Use a bucket-scoped Object Read & Write token. Actions uses
   `R2_ACCESS_KEY_ID` and `R2_SECRET_ACCESS_KEY` as secrets and
   `R2_ACCOUNT_ID` as a repository variable.
-- Set `LINUX_REPOSITORY_PUBLIC_ORIGIN` to the HTTPS origin used by the
-  publisher. Enable `LINUX_REPOSITORY_STAGING_ENABLED` to build and inspect
-  signed snapshots in Actions. Enable `LINUX_REPOSITORY_PUBLISH_ENABLED`
-  only after verifying publication and native updates in isolation. Set
-  `LINUX_REPOSITORY_URL` for the official package builds only after the
-  production endpoint is verified. That separate switch adds the update
-  source to new DEB and RPM packages.
+- Set `LINUX_REPOSITORY_PUBLIC_ORIGIN` and `LINUX_REPOSITORY_URL` to the same
+  HTTPS origin before tagging the first official release. The latter embeds the
+  update source and its public key in the DEB and RPM. Enable
+  `LINUX_REPOSITORY_STAGING_ENABLED` and `LINUX_REPOSITORY_PUBLISH_ENABLED`
+  before publishing the GitHub draft so it triggers R2 publication.
 
 ## Release and recovery
 
-For the first stable release, leave `LINUX_REPOSITORY_URL` unset. Publish the
-approved, signed bootstrap release to GitHub and let the repository job seed
-R2. From clean Ubuntu and Fedora guests, use temporary sources with the same
-trust and package restrictions as the intended official packages. Verify
-anonymous HTTPS access, signature verification, and a native upgrade from a
-lower-version fixture to the published package. Retire the temporary sources.
-After both checks pass, set `LINUX_REPOSITORY_URL` for the next stable tag and
-verify that its exact DEB and RPM install the source before approving the draft.
+Before publishing the first GitHub draft, verify that its exact DEB and RPM
+install the expected production source and signing key on clean Ubuntu and
+Fedora guests. Exercise signed upgrades in isolation. Publish the draft and
+wait for the R2 job to verify both repositories. Using the sources installed
+by those packages, confirm that APT and DNF refresh successfully over HTTPS,
+accept the signatures, and can fetch the exact published packages. Announce
+the release after these live checks pass. During first publication, a refresh
+can fail until the job uploads the signed metadata. The installed source will
+be used on the next refresh.
 
 The release workflow builds signed artifacts for a version tag and creates a
 GitHub draft. Review and publish that draft on GitHub to start the repository

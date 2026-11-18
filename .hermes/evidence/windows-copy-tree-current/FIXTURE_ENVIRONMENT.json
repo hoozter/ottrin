@@ -1,5 +1,0 @@
-{
-    "scope":  "Owned COW only; symlink fixtures",
-    "cleanup":  "Whole overlay disposal",
-    "previous":  null
-}

@@ -46,7 +46,7 @@ replacement while a window from the old image stayed open. All four
 formats passed content inspection and their stable paths verified by
 checksum after promotion. The running index kept its process, ready
 state and database identity. The consumed stage and superseded Linux
-packages were removed. [Promotion receipt](../.hermes/evidence/linux-picker-density-delivery/PROMOTION.json).
+packages were removed. [Promotion receipt](../.evidence/linux-picker-density-delivery/PROMOTION.json).
 
 The delivered Windows `b545bd2e` ZIP and NSIS installer passed the same
 26-to-37-pixel List-density change and exact file selection in an
@@ -57,7 +57,7 @@ Cancel in Dark and Light, preserving the saved theme. Uninstall and
 owned VM teardown passed. Development MSIX 39 passed native assembly,
 the 38-to-39 upgrade, sign-in index startup, Explorer background,
 multiple-folder and drive actions, and removal. All three stable
-checksums passed after promotion. [Windows delivery receipt](../.hermes/evidence/windows-picker-density-candidate/WINDOWS_DELIVERY.json).
+checksums passed after promotion. [Windows delivery receipt](../.evidence/windows-picker-density-candidate/WINDOWS_DELIVERY.json).
 
 The exact delivered Linux AppImage and portable launcher then each
 passed 27 private desktop checks. The run covered navigation, List
@@ -66,7 +66,7 @@ actual Copy, Rename, Trash and permanent deletion of disposable files.
 File bytes and process health passed verification. Both profiles and the
 portable extraction were removed. Cross-volume workflows and
 personal acceptance have separate gates.
-[Linux desktop receipt](../.hermes/evidence/release-audit-current/LINUX_B545BD2E_DESKTOP_WORKFLOWS.json).
+[Linux desktop receipt](../.evidence/release-audit-current/LINUX_B545BD2E_DESKTOP_WORKFLOWS.json).
 
 The exact delivered DEB and RPM passed native installation and removal
 in fresh Ubuntu and Fedora guests. Each passed 12 user systemd state
@@ -77,7 +77,7 @@ matched the corresponding package bytes. The Ubuntu run used HTTPS
 after the HTTP dependency download timed out. The guests, disks, seeds,
 test keys and result archives were removed. Signed repository updates
 and native installed GUI acceptance retain separate scopes.
-[Native package receipt](../.hermes/evidence/linux-b545bd2e-native/ACCEPTANCE.json).
+[Native package receipt](../.evidence/linux-b545bd2e-native/ACCEPTANCE.json).
 
 The exact delivered Windows ZIP passed same-volume Move Replace and
 Keep Both after reuse of the source name. Both destination files
@@ -87,7 +87,7 @@ Inspector, Right and Left navigated between files and Space closed
 the window. Both source files remained unchanged. The ordinary test
 account, profile and fixture were removed, and the retained VM is off
 with its definition unchanged.
-[Windows desktop receipt](../.hermes/evidence/windows-b545bd2e-desktop/ACCEPTANCE.json).
+[Windows desktop receipt](../.evidence/windows-b545bd2e-desktop/ACCEPTANCE.json).
 
 The same Windows ZIP passed cross-volume Move Replace and Keep Both
 after reuse of the source name. Both files had the expected bytes on
@@ -95,7 +95,7 @@ the separate NTFS volume. The completed journals and displaced
 original stayed unchanged. The disposable volume and account were
 removed, the guest's original disk inventory was restored, and the
 retained VM is off with its definition unchanged.
-[Cross-volume Move receipt](../.hermes/evidence/windows-b545bd2e-cross-volume/ACCEPTANCE.json).
+[Cross-volume Move receipt](../.evidence/windows-b545bd2e-cross-volume/ACCEPTANCE.json).
 
 The Linux `d7726c9b` packages are staged. The mounted AppImage exposes
 the named Theme component selector through AT-SPI. Dark at 100% and
@@ -104,22 +104,22 @@ numeric controls. The source fixtures and saved theme survived. The
 same image passed a private AppImage replacement trial. These checks
 cover control behavior. Visual coverage of each property's consumers
 and installed Windows acceptance remain separate.
-[Theme control receipt](../.hermes/evidence/linux-theme-component-delivery/THEME_COMPONENT_ACCEPTANCE.json).
+[Theme control receipt](../.evidence/linux-theme-component-delivery/THEME_COMPONENT_ACCEPTANCE.json).
 The staged editor's real Cancel button also rounded when Button corners
 changed from 0 to 14 px and returned to its original shape after Restore.
 The fill and bounds stayed the same in both palettes.
-[Rendered button receipt](../.hermes/evidence/linux-theme-component-delivery/RENDERED_BUTTON_CORNERS.json).
+[Rendered button receipt](../.evidence/linux-theme-component-delivery/RENDERED_BUTTON_CORNERS.json).
 The same mounted editor passed a paired pixel check in both palettes.
 Surface corners rounded the Theme name input while Cancel retained
 its original shape. Button corners rounded Cancel while the input
 retained its original shape. Both named Restore actions returned the
 sampled controls to their starting shapes.
-[Geometry isolation receipt](../.hermes/evidence/linux-theme-component-delivery/RENDERED_GEOMETRY_ISOLATION.json).
+[Geometry isolation receipt](../.evidence/linux-theme-component-delivery/RENDERED_GEOMETRY_ISOLATION.json).
 Text size increased the sampled Theme name glyph bounds without
 changing border pixels. Window border thickness increased the sampled
 edge coverage while retaining the border color and glyph dimensions.
 Both properties restored their original measurements in both palettes.
-[Text and border receipt](../.hermes/evidence/linux-theme-component-delivery/RENDERED_TEXT_AND_BORDER.json).
+[Text and border receipt](../.evidence/linux-theme-component-delivery/RENDERED_TEXT_AND_BORDER.json).
 Window corners changed the mounted editor's sampled corner without
 changing its straight edge. Neutral text blend shifted the preview's
 image filename toward neutral while the plain-text filename remained
@@ -127,34 +127,34 @@ unchanged. Both properties restored their starting measurements in
 Dark and Light. All six numeric controls now have a scoped pixel
 check on this AppImage. Additional consumers and color controls
 retain separate acceptance scopes.
-[Window and file label receipt](../.hermes/evidence/linux-theme-component-delivery/RENDERED_WINDOW_AND_LABELS.json).
+[Window and file label receipt](../.evidence/linux-theme-component-delivery/RENDERED_WINDOW_AND_LABELS.json).
 Native hex edits also changed the sampled Title bar, Toolbar + tabs,
 and Content background independently in Dark and Light. The active
 tab matched the production toolbar/title blend and stayed unchanged
 when the canvas color changed. Restore and Cancel passed.
-[Chrome color receipt](../.hermes/evidence/linux-theme-component-delivery/RENDERED_CHROME_COLORS.json).
+[Chrome color receipt](../.evidence/linux-theme-component-delivery/RENDERED_CHROME_COLORS.json).
 The mounted editor also verified the panel, raised input, Locations
 rail, Status bar, and collapsed Smart Panel colors in both palettes.
 The collapsed strip follows its production blend of Smart Panel and
 raised surface colors. The other sampled surfaces retained their own
 colors. Restore and Cancel passed.
-[Shared surface color receipt](../.hermes/evidence/linux-theme-component-delivery/RENDERED_SHARED_SURFACE_COLORS.json).
+[Shared surface color receipt](../.evidence/linux-theme-component-delivery/RENDERED_SHARED_SURFACE_COLORS.json).
 The real Cancel button's fill and text, and the editor's window edge,
 also passed independent hex edits in Dark and Light. Each sampled
 role retained its color when either of the other two controls changed.
 Restore and Cancel passed.
-[Button and window color receipt](../.hermes/evidence/linux-theme-component-delivery/RENDERED_BUTTON_AND_WINDOW_COLORS.json).
+[Button and window color receipt](../.evidence/linux-theme-component-delivery/RENDERED_BUTTON_AND_WINDOW_COLORS.json).
 
 The staged Windows `d7726c9b` installer passed UI Automation
 activation and selection readback for Theme component in both
 palettes. Button corners accepted 14 px and restored its initial
 value. Cancel, picker regressions, uninstall and teardown passed.
-[Windows theme selector receipt](../.hermes/evidence/windows-theme-component-candidate/ACCEPTANCE.json).
+[Windows theme selector receipt](../.evidence/windows-theme-component-candidate/ACCEPTANCE.json).
 Development MSIX 40 also passed the native 39-to-40 upgrade, index
 startup at sign-in, Explorer commands, and removal. The owned VM and
 volumes were removed, and temporarily relocated build files were
 restored and verified by hash.
-[MSIX acceptance](../.hermes/evidence/windows-theme-component-candidate/runtime40-upgrade/ACCEPTANCE.json).
+[MSIX acceptance](../.evidence/windows-theme-component-candidate/runtime40-upgrade/ACCEPTANCE.json).
 
 The full desktop pass on the staged `d7726c9b` AppImage reached Quick
 Inspector, then Ottrin exited with SIGSEGV while opening the first PDF
@@ -162,7 +162,7 @@ after an image. The system crash report places the fault in the bundled
 PDFium library. Keep the staged build out of the stable paths while
 the corrected candidate is built and rerun the desktop pass with PDF
 previews enabled.
-[Desktop failure](../.hermes/evidence/release-audit-current/linux-d7726c9b-appimage/workflow-failure.json).
+[Desktop failure](../.evidence/release-audit-current/linux-d7726c9b-appimage/workflow-failure.json).
 An eight-worker test using the staged PDFium library also terminated
 inside the native runtime before the fix. Serializing PDFium initialization,
 rendering and document teardown passed the same test and the other six PDF
@@ -175,9 +175,9 @@ in the same process and continued through the remaining preview and file
 operations. Fixture integrity passed. Both private profiles and the
 portable extraction were removed. Private AppImage replacement, focused theme
 checks and both Linux CI jobs passed. The verified packages are now at their
-stable paths. [Promotion receipt](../.hermes/evidence/linux-pdf-concurrency-delivery/PROMOTION.json).
-[AppImage desktop receipt](../.hermes/evidence/release-audit-current/linux-974b5dee-appimage/CONTROL.json)
-and [portable desktop receipt](../.hermes/evidence/release-audit-current/linux-974b5dee-portable/CONTROL.json).
+stable paths. [Promotion receipt](../.evidence/linux-pdf-concurrency-delivery/PROMOTION.json).
+[AppImage desktop receipt](../.evidence/release-audit-current/linux-974b5dee-appimage/CONTROL.json)
+and [portable desktop receipt](../.evidence/release-audit-current/linux-974b5dee-portable/CONTROL.json).
 
 Windows portable and NSIS builds enable administrator Copy. The installed
 Copy and Undo lifecycle was verified on `49748824`. The current `b545bd2e`
@@ -203,7 +203,7 @@ and Light Save. Each same-name, same-size, same-mtime replacement
 required a second confirmation before returning the exact Windows
 path. Uninstall preserved both original and replacement files in
 both variants. The standard Windows candidate is now delivered below.
-[Installed Windows Save verification](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_SAVE_IDENTITY.json).
+[Installed Windows Save verification](../.evidence/windows-admin-copy-package-current/INSTALLED_SAVE_IDENTITY.json).
 
 The private old-to-new index transition preserved the database inode and
 preferences, passed watcher and restart checks, and averaged 0.067% of
@@ -212,10 +212,10 @@ managed index with the verified binary and confirmed Ready with an
 active watcher. Startup, preferences, database identity, and stable
 Windows package hashes were preserved. The stage, superseded Linux
 packages and previous managed mount were removed.
-See [GTK acceptance](../.hermes/evidence/picker-overwrite-identity-delivery-current/gtk-save-dark/RESULT.json),
-[native Windows test](../.hermes/evidence/picker-overwrite-identity-delivery-current/WINDOWS_NATIVE_SAVE_IDENTITY.json),
-[index transition](../.hermes/evidence/picker-overwrite-identity-delivery-current/LINUX_DAEMON_RUNTIME.json),
-[promotion](../.hermes/evidence/picker-overwrite-identity-delivery-current/PROMOTION.json)
+See [GTK acceptance](../.evidence/picker-overwrite-identity-delivery-current/gtk-save-dark/RESULT.json),
+[native Windows test](../.evidence/picker-overwrite-identity-delivery-current/WINDOWS_NATIVE_SAVE_IDENTITY.json),
+[index transition](../.evidence/picker-overwrite-identity-delivery-current/LINUX_DAEMON_RUNTIME.json),
+[promotion](../.evidence/picker-overwrite-identity-delivery-current/PROMOTION.json)
 and `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`.
 
 The preceding Linux AppImage, portable archive, DEB and RPM used
@@ -234,9 +234,9 @@ and HTML renderer match the previous cohort byte for byte. The stage and
 superseded package files were removed. A read-only preflight sample
 recorded 20 snapshot revisions, 2.42% of one CPU core on average and
 0.3–0.4% during the last three ten-second intervals.
-See [mounted acceptance](../.hermes/evidence/appearance-page-delivery-current/ACCEPTANCE.json),
-[promotion](../.hermes/evidence/appearance-page-delivery-current/PROMOTION.json),
-[service sample](../.hermes/evidence/appearance-page-delivery-current/INDEX_PREPROMOTION_OBSERVATION.json)
+See [mounted acceptance](../.evidence/appearance-page-delivery-current/ACCEPTANCE.json),
+[promotion](../.evidence/appearance-page-delivery-current/PROMOTION.json),
+[service sample](../.evidence/appearance-page-delivery-current/INDEX_PREPROMOTION_OBSERVATION.json)
 and `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`.
 
 The previous Linux cohort used source
@@ -254,9 +254,9 @@ Linux packages, consumed stage and previous managed mount were removed.
 A two-minute read-only sample of the delivered daemon stayed Ready with the
 watcher active and about 248,640 indexed items. It averaged 0.19% of one
 CPU core and peaked at 0.20% per ten-second interval.
-See [steady index observation](../.hermes/evidence/vivaldi-picker-delivery-current/MANAGED_INDEX_STEADY.json).
-See [CI evidence mapping](../.hermes/evidence/vivaldi-picker-delivery-current/CI_EQUIVALENCE.json),
-[promotion receipt](../.hermes/evidence/vivaldi-picker-delivery-current/PROMOTION.json).
+See [steady index observation](../.evidence/vivaldi-picker-delivery-current/MANAGED_INDEX_STEADY.json).
+See [CI evidence mapping](../.evidence/vivaldi-picker-delivery-current/CI_EQUIVALENCE.json),
+[promotion receipt](../.evidence/vivaldi-picker-delivery-current/PROMOTION.json).
 
 The preceding Linux cohort used `0eec7cb4`. Its four
 [hosted jobs](https://github.com/hoozter/ottrin/actions/runs/42461840752)
@@ -288,8 +288,8 @@ content. XLSX displayed the chart and formula totals in the page viewport.
 The heading OCR check stopped before the XLSX label capture. All three
 fixture files retained their original bytes. The later package checks below
 cover the XLSX label, DOCX page-two content and cancellation.
-See [DOCX acceptance](../.hermes/evidence/current-linux-installed-office/ACCEPTANCE.json)
-and [direct-file acceptance](../.hermes/evidence/current-linux-office-pages/ACCEPTANCE.json).
+See [DOCX acceptance](../.evidence/current-linux-installed-office/ACCEPTANCE.json)
+and [direct-file acceptance](../.evidence/current-linux-office-pages/ACCEPTANCE.json).
 
 Quick Inspector places the renderer label above the scrolling document area.
 The delivered `e2c1b926` AppImage showed the label in Fit Width for DOCX, XLSX
@@ -311,18 +311,18 @@ the original bytes were preserved and reopening rendered with LibreOffice.
 A separate native run held a conversion already requested by Miller. Closing
 Inspector preserved the original unit and PID, and the conversion could be
 resumed. The staged AppImage also passed isolated mounted path replacement.
-See [shared render acceptance](../.hermes/evidence/office-cancel-shared-current/ACCEPTANCE.json).
+See [shared render acceptance](../.evidence/office-cancel-shared-current/ACCEPTANCE.json).
 The same staged AppImage passed mounted native fallback for DOCX, XLSX and
 PPTX in Dark and Light with installed previews enabled and LibreOffice
 unavailable. All six fixture launches exited normally and preserved the
-files. See [fallback acceptance](../.hermes/evidence/office-cancel-fallback-current/ACCEPTANCE.json).
+files. See [fallback acceptance](../.evidence/office-cancel-fallback-current/ACCEPTANCE.json).
 The four formats passed content verification and the source-equivalent
-CI run before local promotion. See [failure reproduction](../.hermes/evidence/office-cancel-current/ACCEPTANCE.json)
-and [packaged retest](../.hermes/evidence/office-cancel-delivery-current/ACCEPTANCE.json).
+CI run before local promotion. See [failure reproduction](../.evidence/office-cancel-current/ACCEPTANCE.json)
+and [packaged retest](../.evidence/office-cancel-delivery-current/ACCEPTANCE.json).
 The label cohort passed content verification and isolated mounted AppImage
 replacement. The cancellation cohort passed replacement against the preceding label cohort
 and is now stable.
-See [label acceptance](../.hermes/evidence/office-label-delivery-current/OFFICE_GUI.json).
+See [label acceptance](../.evidence/office-label-delivery-current/OFFICE_GUI.json).
 
 The preceding `e2171c3b` cohort passed all four hosted jobs in
 [run 42446285622](https://github.com/hoozter/ottrin/actions/runs/42446285622).
@@ -331,7 +331,7 @@ Borders while retaining border thickness and shared typography. Package
 contents and isolated atomic replacement passed. Promotion preserved the
 running index process, startup settings, preferences and database identity.
 The consumed stage and superseded packages were removed. See the
-[Borders editor acceptance](../.hermes/evidence/borders-group-delivery-current/BORDERS_GUI.json)
+[Borders editor acceptance](../.evidence/borders-group-delivery-current/BORDERS_GUI.json)
 and `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`.
 
 The preceding `45a89d62` cohort passed all four hosted jobs in
@@ -346,17 +346,17 @@ The same AppImage passed Firefox Open and Save in an isolated X11 desktop
 session. Both requests carried Firefox's portal identity, Save preserved the
 document bytes, and no index process started. The private profile and scope
 were removed. See
-[Firefox acceptance](../.hermes/evidence/current-firefox-picker/ACCEPTANCE.json).
+[Firefox acceptance](../.evidence/current-firefox-picker/ACCEPTANCE.json).
 Physical desktop and other caller coverage remain separate.
 The same mounted AppImage passed private-bus FileManager1 ShowFolders,
 ShowItems, and ShowItemProperties with exact native path bytes. Repair
 reactivated the backend while preserving the open Properties window.
 Disable removed the private registration. See
-[FileManager1 acceptance](../.hermes/evidence/current-filemanager/ACCEPTANCE.json).
+[FileManager1 acceptance](../.evidence/current-filemanager/ACCEPTANCE.json).
 A separate private GIO session resolved Ottrin as the registered directory
 handler and launched the mounted AppImage with the original path bytes.
 Disabling restored the previous handler and preserved an unrelated MIME edit.
-See [GIO acceptance](../.hermes/evidence/current-gio-folder/ACCEPTANCE.json).
+See [GIO acceptance](../.evidence/current-gio-folder/ACCEPTANCE.json).
 
 The preceding Windows candidate used `67d3cbe1`, with all four hosted jobs
 passing in [run 42416812531](https://github.com/hoozter/ottrin/actions/runs/42416812531).
@@ -377,7 +377,7 @@ The byte-identical managed index stayed Ready on the same process. Startup
 settings, preferences and database identity were preserved. The consumed stage
 and superseded package paths were removed. Current authority:
 `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`. Promotion evidence:
-`.hermes/evidence/picker-confirmation-delivery-current/PROMOTION.json`.
+`.evidence/picker-confirmation-delivery-current/PROMOTION.json`.
 Previous List/Grid, Inspector and native distro-lifecycle receipts retain their
 original scopes.
 
@@ -391,8 +391,8 @@ development MSIX passed fresh deployment and 30-to-31 upgrade with index
 startup enabled and disabled. The guest and volume were removed, all 25
 borrowed test executables were restored by hash, and promotion removed the
 superseded cohort and staging. The Linux packages and held MSI were preserved.
-[Windows delivery](../.hermes/evidence/theme-editor-pointer-fix-current/WINDOWS_DELIVERY.json)
-and [NSIS lifecycle](../.hermes/evidence/theme-editor-pointer-fix-current/nsis31-lifecycle-headroom/ACCEPTANCE.json).
+[Windows delivery](../.evidence/theme-editor-pointer-fix-current/WINDOWS_DELIVERY.json)
+and [NSIS lifecycle](../.evidence/theme-editor-pointer-fix-current/nsis31-lifecycle-headroom/ACCEPTANCE.json).
 
 The preceding Windows portable ZIP, NSIS installer and development MSIX 30
 used `381ef193`.
@@ -416,18 +416,18 @@ averaged 0.31% of one core over 30 idle seconds in the disposable guest.
 All four exact-source [hosted jobs](https://github.com/hoozter/ottrin/actions/runs/42582687209)
 passed. Local promotion removed the staged copy and superseded cohort and
 preserved the Linux artifacts and held MSI. See
-[Windows delivery](../.hermes/evidence/windows-save-identity-delivery-current/WINDOWS_DELIVERY.json),
-[installed Save](../.hermes/evidence/windows-save-identity-delivery-current/INSTALLED_SAVE_IDENTITY.json),
-[NSIS lifecycle](../.hermes/evidence/windows-save-identity-delivery-current/nsis30-lifecycle-retry/ACCEPTANCE.json),
-[fresh MSIX](../.hermes/evidence/windows-save-identity-delivery-current/runtime30-fresh/ACCEPTANCE.json),
-[enabled MSIX upgrade](../.hermes/evidence/windows-save-identity-delivery-current/runtime30-upgrade-full-headroom/ACCEPTANCE.json)
-and [disabled MSIX upgrade](../.hermes/evidence/windows-save-identity-delivery-current/runtime30-disabled/ACCEPTANCE.json).
+[Windows delivery](../.evidence/windows-save-identity-delivery-current/WINDOWS_DELIVERY.json),
+[installed Save](../.evidence/windows-save-identity-delivery-current/INSTALLED_SAVE_IDENTITY.json),
+[NSIS lifecycle](../.evidence/windows-save-identity-delivery-current/nsis30-lifecycle-retry/ACCEPTANCE.json),
+[fresh MSIX](../.evidence/windows-save-identity-delivery-current/runtime30-fresh/ACCEPTANCE.json),
+[enabled MSIX upgrade](../.evidence/windows-save-identity-delivery-current/runtime30-upgrade-full-headroom/ACCEPTANCE.json)
+and [disabled MSIX upgrade](../.evidence/windows-save-identity-delivery-current/runtime30-disabled/ACCEPTANCE.json).
 The initial fixture and storage interruptions retain their scoped receipts.
 
 The preceding `d2031d5e` Windows cohort with development MSIX 29 passed
 installed UI, portable picker, NSIS lifecycle and all three MSIX deployment
 cases in the software Windows guest. Its
-[delivery receipt](../.hermes/evidence/windows-shared-ui-current/WINDOWS_DELIVERY.json)
+[delivery receipt](../.evidence/windows-shared-ui-current/WINDOWS_DELIVERY.json)
 keeps the original source and verification scope.
 
 The preceding Windows cohort used `7992ad1e` and development MSIX 28.
@@ -442,7 +442,7 @@ preserves the existing default folder app.
 The source-equivalent hosted checks all passed. Promotion removed the
 superseded Windows cohort and consumed staging directory. Linux artifacts
 and the held MSI were preserved. See
-[preceding Windows delivery](../.hermes/evidence/windows-picker-keyboard-current/WINDOWS_DELIVERY.json).
+[preceding Windows delivery](../.evidence/windows-picker-keyboard-current/WINDOWS_DELIVERY.json).
 
 **Delivered Windows Save checkpoint.** Exact staged `7992ad1e` NSIS passed
 fresh install, Save shortcut ownership and exact UTF-16 selection in both
@@ -457,11 +457,11 @@ ordinary runtime, Explorer actions, real sign-in and removal. The first
 fixture expected outdated notice text. The corrected assertion verified
 the full current notice and unchanged host defaults. Guarded promotion
 delivered the three formats to the stable Windows path. See
-[MSIX runtime acceptance](../.hermes/evidence/windows-picker-keyboard-current/MSIX_RUNTIME_ACCEPTANCE.json),
-[MSIX assembly](../.hermes/evidence/windows-picker-keyboard-current/ASSEMBLY_ACCEPTANCE.json),
-[native Save acceptance](../.hermes/evidence/windows-picker-keyboard-current/native-save/ACCEPTANCE.json),
-[upgrade acceptance](../.hermes/evidence/windows-picker-keyboard-current/native-upgrade-attempt-2/ACCEPTANCE.json)
-and [first-run timeout](../.hermes/evidence/windows-picker-keyboard-current/native-upgrade/ACCEPTANCE.json).
+[MSIX runtime acceptance](../.evidence/windows-picker-keyboard-current/MSIX_RUNTIME_ACCEPTANCE.json),
+[MSIX assembly](../.evidence/windows-picker-keyboard-current/ASSEMBLY_ACCEPTANCE.json),
+[native Save acceptance](../.evidence/windows-picker-keyboard-current/native-save/ACCEPTANCE.json),
+[upgrade acceptance](../.evidence/windows-picker-keyboard-current/native-upgrade-attempt-2/ACCEPTANCE.json)
+and [first-run timeout](../.evidence/windows-picker-keyboard-current/native-upgrade/ACCEPTANCE.json).
 
 ### Current ordered work
 
@@ -510,8 +510,8 @@ and [first-run timeout](../.hermes/evidence/windows-picker-keyboard-current/nati
    showed the interrupted attempt as Ended and the original data was
    preserved. The stable package remains on `4d3f11a3` while the
    candidate goes through the remaining package gates.
-   [Candidate package verification](../.hermes/evidence/windows-admin-copy-delivery-current/HOST_PAYLOAD.json).
-   [Installed Copy and recovery verification](../.hermes/evidence/windows-admin-copy-delivery-current/INSTALLED_ACCEPTANCE.json).
+   [Candidate package verification](../.evidence/windows-admin-copy-delivery-current/HOST_PAYLOAD.json).
+   [Installed Copy and recovery verification](../.evidence/windows-admin-copy-delivery-current/INSTALLED_ACCEPTANCE.json).
    Native MakeAppx assembled development MSIX 33 from the same source
    and verified all 59 payload files. Its daemon passed watcher and
    restart checks and averaged 0.16% of one core during the private
@@ -531,7 +531,7 @@ and [first-run timeout](../.hermes/evidence/windows-picker-keyboard-current/nati
    check is the helper's caller capture and pipe connection, before any
    filesystem request. The diagnostic guest and overlay were removed and
    the borrowed test executables restored by hash.
-   [MSIX helper launch observation](../.hermes/evidence/windows-admin-copy-delivery-current/msix-copy-undo/HELPER_LAUNCH_OBSERVATION.json).
+   [MSIX helper launch observation](../.evidence/windows-admin-copy-delivery-current/msix-copy-undo/HELPER_LAUNCH_OBSERVATION.json).
    Eight live samples from the packaged helper landed at the same
    `ntdll.dll` instruction. The only helper address in the sampled
    stack range was its startup entry point. The helper extracted
@@ -602,24 +602,24 @@ and [first-run timeout](../.hermes/evidence/windows-picker-keyboard-current/nati
    Linux packages and held MSI, and removed the Windows stage and
    superseded packages. Continue the single-user MSIX investigation
    separately.
-   [Desktop Copy package contents](../.hermes/evidence/windows-admin-copy-desktop-current/HOST_PAYLOAD.json).
-   [Installed desktop Copy lifecycle](../.hermes/evidence/windows-admin-copy-desktop-current/INSTALLED_ACCEPTANCE.json).
-   [Native MSIX 35 assembly](../.hermes/evidence/windows-admin-copy-desktop-current/ASSEMBLY_ACCEPTANCE.json).
-   [Native MSIX 34-to-35 upgrade](../.hermes/evidence/windows-admin-copy-desktop-current/runtime35-upgrade/ACCEPTANCE.json).
-   [Windows promotion](../.hermes/evidence/windows-admin-copy-desktop-current/WINDOWS_DELIVERY.json).
+   [Desktop Copy package contents](../.evidence/windows-admin-copy-desktop-current/HOST_PAYLOAD.json).
+   [Installed desktop Copy lifecycle](../.evidence/windows-admin-copy-desktop-current/INSTALLED_ACCEPTANCE.json).
+   [Native MSIX 35 assembly](../.evidence/windows-admin-copy-desktop-current/ASSEMBLY_ACCEPTANCE.json).
+   [Native MSIX 34-to-35 upgrade](../.evidence/windows-admin-copy-desktop-current/runtime35-upgrade/ACCEPTANCE.json).
+   [Windows promotion](../.evidence/windows-admin-copy-desktop-current/WINDOWS_DELIVERY.json).
    [Hosted checks](https://github.com/hoozter/ottrin/actions/runs/42742694725).
-   [MSIX helper startup sample](../.hermes/evidence/windows-admin-copy-delivery-current/MSIX_HELPER_STARTUP_FINDING.json).
-   [Loader image and symbol](../.hermes/evidence/windows-admin-copy-delivery-current/WINDOWS_LOADER_IMAGE.json).
-   [Native DLL initialization failure](../.hermes/evidence/windows-admin-copy-delivery-current/MSIX_HELPER_DLL_INIT_FAILURE.json).
-   [Loader trace result](../.hermes/evidence/windows-admin-copy-delivery-current/MSIX_HELPER_LOADER_TRACE.json).
-   [Alternate administrator registration comparison](../.hermes/evidence/windows-admin-copy-delivery-current/MSIX_HELPER_ADMIN_REGISTRATION_COMPARISON.json).
-   [Packaged caller journal path comparison](../.hermes/evidence/windows-admin-copy-delivery-current/MSIX_HELPER_CALLER_JOURNAL_LOOKUP.json).
-   [SYSTEM journal disk scan](../.hermes/evidence/windows-admin-copy-delivery-current/MSIX_HELPER_JOURNAL_DISK_SCAN.json).
-   [Two-account MSIX Copy lifecycle](../.hermes/evidence/windows-admin-copy-delivery-current/MSIX_ADMIN_COPY_JOURNAL_LIFECYCLE.json).
-   [MSIX 33 assembly](../.hermes/evidence/windows-admin-copy-delivery-current/ASSEMBLY_ACCEPTANCE.json).
-   [Fresh deployment](../.hermes/evidence/windows-admin-copy-delivery-current/runtime33-fresh/ACCEPTANCE.json),
-   [enabled upgrade](../.hermes/evidence/windows-admin-copy-delivery-current/runtime33-upgrade/ACCEPTANCE.json)
-   and [disabled upgrade](../.hermes/evidence/windows-admin-copy-delivery-current/runtime33-disabled/ACCEPTANCE.json).
+   [MSIX helper startup sample](../.evidence/windows-admin-copy-delivery-current/MSIX_HELPER_STARTUP_FINDING.json).
+   [Loader image and symbol](../.evidence/windows-admin-copy-delivery-current/WINDOWS_LOADER_IMAGE.json).
+   [Native DLL initialization failure](../.evidence/windows-admin-copy-delivery-current/MSIX_HELPER_DLL_INIT_FAILURE.json).
+   [Loader trace result](../.evidence/windows-admin-copy-delivery-current/MSIX_HELPER_LOADER_TRACE.json).
+   [Alternate administrator registration comparison](../.evidence/windows-admin-copy-delivery-current/MSIX_HELPER_ADMIN_REGISTRATION_COMPARISON.json).
+   [Packaged caller journal path comparison](../.evidence/windows-admin-copy-delivery-current/MSIX_HELPER_CALLER_JOURNAL_LOOKUP.json).
+   [SYSTEM journal disk scan](../.evidence/windows-admin-copy-delivery-current/MSIX_HELPER_JOURNAL_DISK_SCAN.json).
+   [Two-account MSIX Copy lifecycle](../.evidence/windows-admin-copy-delivery-current/MSIX_ADMIN_COPY_JOURNAL_LIFECYCLE.json).
+   [MSIX 33 assembly](../.evidence/windows-admin-copy-delivery-current/ASSEMBLY_ACCEPTANCE.json).
+   [Fresh deployment](../.evidence/windows-admin-copy-delivery-current/runtime33-fresh/ACCEPTANCE.json),
+   [enabled upgrade](../.evidence/windows-admin-copy-delivery-current/runtime33-upgrade/ACCEPTANCE.json)
+   and [disabled upgrade](../.evidence/windows-admin-copy-delivery-current/runtime33-disabled/ACCEPTANCE.json).
    Earlier private revision `94549b87` changes the shared capability
    gate relative to the delivered `d2031d5e` build. Its ZIP and NSIS matched
    across all 59 payload files. The installer ran as a standard user, and
@@ -639,13 +639,13 @@ and [first-run timeout](../.hermes/evidence/windows-picker-keyboard-current/nati
    exposed Undo for the copied file. The Undo attempt did not reach the
    completed state, and a SYSTEM check found the exact publication and
    original source intact. See
-   `.hermes/evidence/windows-admin-copy-package-current/INSTALLED_COPY_RESTART.json`.
+   `.evidence/windows-admin-copy-package-current/INSTALLED_COPY_RESTART.json`.
    A second native run passed the authenticated history load. Activity
    reported that it overlapped an existing ordinary Copy row. Undo took
    the ordinary path, displayed Resume copy Undo and never opened the
    expected administrator prompt. A SYSTEM check confirmed the source
    and caller-owned publication stayed intact. See the
-   [route failure receipt](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_COPY_ROUTE_FAILURE.json).
+   [route failure receipt](../.evidence/windows-admin-copy-package-current/INSTALLED_COPY_ROUTE_FAILURE.json).
    Windows Copy journals now record the administrator route for new
    administrator operations. Discovery separates the two routes while
    retaining read-only peer checks for dependency validation. Ordinary
@@ -654,20 +654,20 @@ and [first-run timeout](../.hermes/evidence/windows-picker-keyboard-current/nati
    rebuilds the capability-enabled app and helper with this fix. The exact
    NSIS matches its 59 staged files, the uninstaller, the index controller
    and the installer transaction script. See the
-   [host package receipt](../.hermes/evidence/windows-admin-copy-package-current/ROUTED_HOST_PAYLOAD.json).
+   [host package receipt](../.evidence/windows-admin-copy-package-current/ROUTED_HOST_PAYLOAD.json).
    The rebuilt private NSIS passed ordinary Paste denial, administrator
    Copy, normal exit, authenticated history and a separate administrator
    Undo, followed by rediscovery as Undone in a third process. Native
    checks verified caller ownership, unchanged source bytes and removal
    of the exact publication. See the
-   [installed recovery receipt](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_COPY_RECOVERY.json).
+   [installed recovery receipt](../.evidence/windows-admin-copy-package-current/INSTALLED_COPY_RECOVERY.json).
    A fresh run of the same private installer passed administrator-approved
    retained-data cleanup after Undo. The original standard user saw one
    caller journal before cleanup and zero afterward. A SYSTEM observer
    checked that protected destination recovery files were removed and the
    unrelated marker and original source were preserved. A fourth process
    authenticated, loaded empty history and exited normally. See the
-   [installed cleanup receipt](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_COPY_CLEANUP.json).
+   [installed cleanup receipt](../.evidence/windows-admin-copy-package-current/INSTALLED_COPY_CLEANUP.json).
    The same private installer passed a real helper interruption during
    a 512 MiB Copy. The observer terminated only the installed administrator
    helper bound to the test process after the caller journal and matching
@@ -676,27 +676,27 @@ and [first-run timeout](../.hermes/evidence/windows-picker-keyboard-current/nati
    administrator approval. A third process reported the ended attempt
    with its journal and stage intact. All three clients exited normally.
    The source hash and unrelated destination file were preserved. See the
-   [installed interruption receipt](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_COPY_INTERRUPTION.json).
+   [installed interruption receipt](../.evidence/windows-admin-copy-package-current/INSTALLED_COPY_INTERRUPTION.json).
    The same private installer passed a rendered Stop on a two-file Copy
    after the first item published and the second acquired its own journal.
    Activity showed Stopped and one of two completed, with Undo available for
    the completed item. Native checks verified the first file's bytes and
    caller ownership, absence of the second target, and preservation of
    both sources, both stages and an unrelated file. See the
-   [installed Stop receipt](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_COPY_STOP.json).
+   [installed Stop receipt](../.evidence/windows-admin-copy-package-current/INSTALLED_COPY_STOP.json).
    A repeat reopened authenticated history and undid the completed member.
    In a third process the UI showed Copy undone separately from the
    incomplete attempt. Both sources and the unrelated destination file
    stayed intact. Neither target remained, both stages were retained and
    the incomplete journal stayed byte-for-byte unchanged. See the
-   [stopped-batch Undo receipt](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_STOP_UNDO.json).
+   [stopped-batch Undo receipt](../.evidence/windows-admin-copy-package-current/INSTALLED_STOP_UNDO.json).
    The same installer passed Resume of a verified 192-file directory after
    terminating the installed helper before publication. The second process
    used separate administrator approval to resume. All 192 names and file
    hashes matched, and the directory retained caller ownership. The third
    process offered Undo and no longer offered Resume. The source and the
    unrelated destination marker were preserved. See the
-   [installed Resume receipt](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_COPY_RESUME.json).
+   [installed Resume receipt](../.evidence/windows-admin-copy-package-current/INSTALLED_COPY_RESUME.json).
    The exact fix revision passed Windows source tests for late successful
    results at the transport and Activity layers. See the
    [hosted Windows verification](https://github.com/hoozter/ottrin/actions/runs/42532646750/job/128890027357).
@@ -705,7 +705,7 @@ and [first-run timeout](../.hermes/evidence/windows-picker-keyboard-current/nati
    response rather than dropping a committed receipt. All ten focused
    named-pipe tests passed on native Windows build 26100, including the
    new case that closes the helper end before sending Stop. See the
-   [native transport receipt](../.hermes/evidence/windows-admin-copy-package-current/LATE_STOP_NATIVE.json).
+   [native transport receipt](../.evidence/windows-admin-copy-package-current/LATE_STOP_NATIVE.json).
    Rebuilt private NSIS `318438ac` matched all 59 portable payload files
    and passed the installed late-Stop race. The fixture paused only the
    app's result worker while the helper published a 96-file directory
@@ -714,7 +714,7 @@ and [first-run timeout](../.hermes/evidence/windows-picker-keyboard-current/nati
    same Undo entry. Every copied file matched, the directory retained
    caller ownership and the original and unrelated destination file were
    preserved. See the
-   [installed late-Stop receipt](../.hermes/evidence/windows-admin-copy-package-current/LATE_STOP_INSTALLED.json).
+   [installed late-Stop receipt](../.evidence/windows-admin-copy-package-current/LATE_STOP_INSTALLED.json).
    The Stopped badge now uses the theme's normal text color. The command
    area points to Activity, where the original diagnostic is available in
    expandable details. The visible row keeps the count of items already
@@ -724,13 +724,13 @@ and [first-run timeout](../.hermes/evidence/windows-picker-keyboard-current/nati
    UAC and stopped after the first of two files. Activity showed the readable
    Stopped badge, the exact count and Undo. The published file matched the
    source and was owned by the original standard user. See the
-   [installed Stop presentation receipt](../.hermes/evidence/windows-admin-copy-package-current/STOPPED_UI_INSTALLED.json).
+   [installed Stop presentation receipt](../.evidence/windows-admin-copy-package-current/STOPPED_UI_INSTALLED.json).
    The expanded original-caller regression reached both fresh recovery
    cases but was interrupted before the test reported a result. The
    disposable guest grew past 20 GB and host free space fell below 3 GiB.
    Teardown removed the guest, overlay and fixture media and restored the
    temporarily moved compiler file by hash. See the
-   [interruption receipt](../.hermes/evidence/caller-profile-init-current/CURRENT_AUTHENTICATED_RECOVERY_INTERRUPTED.json).
+   [interruption receipt](../.evidence/caller-profile-init-current/CURRENT_AUTHENTICATED_RECOVERY_INTERRUPTED.json).
    The full repeat passed on Windows 11 build 26300 using the exact
    platform test executable built from `1469f98c`. One ordinary-client and
    25 SYSTEM checks passed, including fresh-context Resume and Undo for
@@ -738,28 +738,28 @@ and [first-run timeout](../.hermes/evidence/windows-picker-keyboard-current/nati
    The clone used discard and temporarily borrowed compiler space above
    the runtime floor. All five moved files were restored by hash and the
    clone and its media were removed. See the
-   [native original-caller receipt](../.hermes/evidence/caller-profile-init-current/CURRENT_AUTHENTICATED_RECOVERY_PASS.json).
+   [native original-caller receipt](../.evidence/caller-profile-init-current/CURRENT_AUTHENTICATED_RECOVERY_PASS.json).
    All four [hosted jobs](https://github.com/hoozter/ottrin/actions/runs/42541958483)
    passed on the stopped Copy count revision `94c25f54`. The private
    installer for that work is staged under
-   `.hermes/packaging-tmp/.windows-admin-copy-stopped-ui/`. The build worktree,
+   `.evidence/packaging-tmp/.windows-admin-copy-stopped-ui/`. The build worktree,
    unpacked payload, duplicate ZIP, superseded installer and disposable
    guest were removed.
-   See [private package verification](../.hermes/evidence/windows-admin-copy-package-current/HOST_PAYLOAD.json)
-   and [installed navigation observation](../.hermes/evidence/windows-admin-copy-package-current/NAVIGATION_ATTEMPT.json).
-   See [installed Copy publication](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_COPY_PUBLICATION.json).
-   See [fresh-process Undo acceptance](../.hermes/evidence/windows-uac-copy-restart-current-retry/ACCEPTANCE.json),
-   [alternate-account Undo acceptance](../.hermes/evidence/windows-uac-copy-alternate-restart-current/ACCEPTANCE.json),
-   [alternate-account acceptance](../.hermes/evidence/windows-uac-copy-alternate-current/ACCEPTANCE.json),
-   [UAC transport acceptance](../.hermes/evidence/windows-uac-copy-current/ACCEPTANCE.json),
-   [after-root acceptance](../.hermes/evidence/caller-profile-init-current/matrix-after-root/ACCEPTANCE.json),
-   [before-root acceptance](../.hermes/evidence/caller-profile-init-current/matrix-before-root/ACCEPTANCE.json),
-   [after-anchor acceptance](../.hermes/evidence/caller-profile-init-current/matrix-after-anchor-attempt-2/ACCEPTANCE.json),
-   [before-anchor acceptance](../.hermes/evidence/caller-profile-init-current/matrix-before-anchor/ACCEPTANCE.json),
-   [after-state acceptance](../.hermes/evidence/caller-profile-init-current/matrix-after-state/ACCEPTANCE.json),
-   [before-state acceptance](../.hermes/evidence/caller-profile-init-current/matrix-before-state-attempt-2/ACCEPTANCE.json), [first-directory acceptance](../.hermes/evidence/caller-profile-init-current/matrix-first-directory/ACCEPTANCE.json),
-   [truncated-anchor acceptance](../.hermes/evidence/caller-profile-init-current/matrix-partial-anchor-write/ACCEPTANCE.json)
-   and [before-flush acceptance](../.hermes/evidence/caller-profile-init-current/matrix-before-anchor-flush/ACCEPTANCE.json).
+   See [private package verification](../.evidence/windows-admin-copy-package-current/HOST_PAYLOAD.json)
+   and [installed navigation observation](../.evidence/windows-admin-copy-package-current/NAVIGATION_ATTEMPT.json).
+   See [installed Copy publication](../.evidence/windows-admin-copy-package-current/INSTALLED_COPY_PUBLICATION.json).
+   See [fresh-process Undo acceptance](../.evidence/windows-uac-copy-restart-current-retry/ACCEPTANCE.json),
+   [alternate-account Undo acceptance](../.evidence/windows-uac-copy-alternate-restart-current/ACCEPTANCE.json),
+   [alternate-account acceptance](../.evidence/windows-uac-copy-alternate-current/ACCEPTANCE.json),
+   [UAC transport acceptance](../.evidence/windows-uac-copy-current/ACCEPTANCE.json),
+   [after-root acceptance](../.evidence/caller-profile-init-current/matrix-after-root/ACCEPTANCE.json),
+   [before-root acceptance](../.evidence/caller-profile-init-current/matrix-before-root/ACCEPTANCE.json),
+   [after-anchor acceptance](../.evidence/caller-profile-init-current/matrix-after-anchor-attempt-2/ACCEPTANCE.json),
+   [before-anchor acceptance](../.evidence/caller-profile-init-current/matrix-before-anchor/ACCEPTANCE.json),
+   [after-state acceptance](../.evidence/caller-profile-init-current/matrix-after-state/ACCEPTANCE.json),
+   [before-state acceptance](../.evidence/caller-profile-init-current/matrix-before-state-attempt-2/ACCEPTANCE.json), [first-directory acceptance](../.evidence/caller-profile-init-current/matrix-first-directory/ACCEPTANCE.json),
+   [truncated-anchor acceptance](../.evidence/caller-profile-init-current/matrix-partial-anchor-write/ACCEPTANCE.json)
+   and [before-flush acceptance](../.evidence/caller-profile-init-current/matrix-before-anchor-flush/ACCEPTANCE.json).
 2. **Close Windows desktop integration and theme acceptance.** The
    read-only MSIX comparison confirmed transacted opens fail under package
    identity. Verify supported folder actions, picker behavior, and remaining theme
@@ -810,14 +810,14 @@ and [first-run timeout](../.hermes/evidence/windows-picker-keyboard-current/nati
    daemon, and retry after releasing the lock passed. All four hosted jobs
    passed on source-equivalent `121962fe`. Promotion replaced the three
    stable package paths and removed the old packages and consumed stage.
-   See [staged payload verification](../.hermes/evidence/windows-shared-ui-current/HOST_PAYLOAD.json).
-   See [installed Borders acceptance](../.hermes/evidence/windows-shared-ui-current/BORDERS_ACCEPTANCE.json)
-   and [native MSIX assembly](../.hermes/evidence/windows-shared-ui-current/ASSEMBLY_ACCEPTANCE.json).
-   See [native MSIX upgrade](../.hermes/evidence/windows-shared-ui-current/MSIX_UPGRADE_ACCEPTANCE.json).
-   See [disabled MSIX upgrade](../.hermes/evidence/windows-shared-ui-current/MSIX_DISABLED_ACCEPTANCE.json).
-   See [fresh MSIX deployment](../.hermes/evidence/windows-shared-ui-current/MSIX_FRESH_ACCEPTANCE.json).
-   See [installed Search and Inspector acceptance](../.hermes/evidence/windows-shared-ui-current/SEARCH_INSPECTOR_ACCEPTANCE.json).
-   See [portable picker and NSIS lifecycle acceptance](../.hermes/evidence/windows-shared-ui-current/NSIS_LIFECYCLE_ACCEPTANCE.json).
+   See [staged payload verification](../.evidence/windows-shared-ui-current/HOST_PAYLOAD.json).
+   See [installed Borders acceptance](../.evidence/windows-shared-ui-current/BORDERS_ACCEPTANCE.json)
+   and [native MSIX assembly](../.evidence/windows-shared-ui-current/ASSEMBLY_ACCEPTANCE.json).
+   See [native MSIX upgrade](../.evidence/windows-shared-ui-current/MSIX_UPGRADE_ACCEPTANCE.json).
+   See [disabled MSIX upgrade](../.evidence/windows-shared-ui-current/MSIX_DISABLED_ACCEPTANCE.json).
+   See [fresh MSIX deployment](../.evidence/windows-shared-ui-current/MSIX_FRESH_ACCEPTANCE.json).
+   See [installed Search and Inspector acceptance](../.evidence/windows-shared-ui-current/SEARCH_INSPECTOR_ACCEPTANCE.json).
+   See [portable picker and NSIS lifecycle acceptance](../.evidence/windows-shared-ui-current/NSIS_LIFECYCLE_ACCEPTANCE.json).
 
 The records below identify the exact source and package coverage behind
 this queue.
@@ -840,7 +840,7 @@ after a real write denial. A mounted AppImage replacement also kept the old
 window usable while a fresh launch used the candidate. Guarded promotion
 completed after all four exact-source jobs passed in
 [run 42405483643](https://github.com/hoozter/ottrin/actions/runs/42405483643).
-Candidate evidence is in `.hermes/evidence/picker-folders-delivery-current/`.
+Candidate evidence is in `.evidence/picker-folders-delivery-current/`.
 
 The status bar geometry update, delivered with `0298384d`, exposes shared window and button corners from
 the status bar selection. Footer utility buttons paint their themed backgrounds
@@ -890,7 +890,7 @@ passed content and runtime checks for all four formats. Seven mounted AppImage
 workflows covered live and sample Image/PDF controls, More menu frame styling,
 sample action isolation, Cancel restoration, and Services recovery. Forty
 Dark/Light captures and runtime teardown are recorded in
-`.hermes/evidence/inspector-visual-delivery-current/`. All four hosted checks
+`.evidence/inspector-visual-delivery-current/`. All four hosted checks
 passed and guarded promotion moved these packages to the stable local paths.
 The managed index returned to Ready with preferences, startup configuration,
 and database identity preserved. The consumed stage was removed.
@@ -916,7 +916,7 @@ The exact `2bb6da96` Linux candidate passed content checks in all four formats.
 Mounted Dark/Light checks verified rail expansion, sample selection, separate
 card and button corners, named Info activation selecting Smart Panel properties,
 and Cancel preserving the original configuration. The mounted QA evidence is in
-`.hermes/evidence/locations-rail-delivery-current/`. All four hosted jobs passed
+`.evidence/locations-rail-delivery-current/`. All four hosted jobs passed
 in [run 42381144527](https://github.com/hoozter/ottrin/actions/runs/42381144527).
 The Locations packages were promoted to the stable paths after an isolated
 AppImage replacement test proved the old window remained usable and a fresh
@@ -1017,7 +1017,7 @@ Current source, test, package and owner/external scopes stay separate.
      identity and empty contents, verifies unchanged source and destination,
      then retires the empty directory as the original caller. Windows-target
      strict test lint passed, followed by the
-     [native first-directory case](../.hermes/evidence/caller-profile-init-current/matrix-first-directory/ACCEPTANCE.json).
+     [native first-directory case](../.evidence/caller-profile-init-current/matrix-first-directory/ACCEPTANCE.json).
      Source `515c0d18` adds one selectable case per fresh owned profile for
      before/after State-directory, anchor-file and recovery-root creation.
      Set `OTTRIN_TEST_COPY_PROFILE_FAULT` only on the ignored SYSTEM companion
@@ -1052,32 +1052,32 @@ Current source, test, package and owner/external scopes stay separate.
      signed-in standard user with Developer Mode disabled. Windows refused
      installation, the private candidate kept its named data and owner-only
      security, and the target bytes were unchanged. See the
-     [ordinary-user policy receipt](../.hermes/evidence/caller-profile-init-current/ORDINARY_SYMLINK_POLICY_NATIVE.json).
+     [ordinary-user policy receipt](../.evidence/caller-profile-init-current/ORDINARY_SYMLINK_POLICY_NATIVE.json).
      The authenticated caller regression also passed file and directory
      symbolic-link Overwrite, Undo and Cleanup on Windows build 26300.
      Publications belonged to the original caller, Undo restored the original
      link identities and permissions, and both target contents were preserved.
-     See the [authenticated symbolic-link receipt](../.hermes/evidence/caller-profile-init-current/AUTHENTICATED_SYMLINK_NATIVE.json).
+     See the [authenticated symbolic-link receipt](../.evidence/caller-profile-init-current/AUTHENTICATED_SYMLINK_NATIVE.json).
      The exact private NSIS also passed file symbolic-link publication,
      restart, authenticated Undo and cleanup with a standard user and
      alternate-administrator UAC. The source link and target bytes remained
-     intact. See the [installed file-link receipt](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_SYMLINK_COPY.json).
+     intact. See the [installed file-link receipt](../.evidence/windows-admin-copy-package-current/INSTALLED_SYMLINK_COPY.json).
      The same NSIS passed the directory-link case through four fresh app
      launches. The published link pointed to the original target directory,
      and Undo and cleanup preserved the source link and target member.
-     See the [installed directory-link receipt](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_DIRECTORY_SYMLINK_COPY.json).
+     See the [installed directory-link receipt](../.evidence/windows-admin-copy-package-current/INSTALLED_DIRECTORY_SYMLINK_COPY.json).
      Installed file-link Replace also passed through four fresh launches.
      Undo restored the original link target and cleanup preserved both
      external target files and the original source link. The first fixture
      attempted to focus Ottrin while UAC still owned the foreground because
      the destination already existed. The retry waited for the replacement
      link before opening Activity. See the
-     [installed file-link Replace receipt](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_SYMLINK_OVERWRITE.json).
+     [installed file-link Replace receipt](../.evidence/windows-admin-copy-package-current/INSTALLED_SYMLINK_OVERWRITE.json).
      The exact private NSIS also passed installed directory-link Replace
      through four app launches. Undo restored the original link target,
      cleanup cleared the retained data, and both target directories kept
      their original member contents. See the
-     [installed directory-link Replace receipt](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_DIRECTORY_SYMLINK_OVERWRITE.json).
+     [installed directory-link Replace receipt](../.evidence/windows-admin-copy-package-current/INSTALLED_DIRECTORY_SYMLINK_OVERWRITE.json).
      Read-only original-root behavior remains open. A native NTFS probe on
      Windows build 26100 under SYSTEM found that the read-only file opened
      with maximum allowed access, but both FlushFileBuffers and
@@ -1134,8 +1134,8 @@ Current source, test, package and owner/external scopes stay separate.
      owner/group/DACL, attributes and bytes. A final history load found no
      remaining activity or transaction journal. The private installer is
      retained for the next launched-helper lifetime checks.
-     [Installed pass receipt](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_READONLY_OVERWRITE.json).
-     [Installed refusal receipt](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_READONLY_FIRST_REFUSAL.json).
+     [Installed pass receipt](../.evidence/windows-admin-copy-package-current/INSTALLED_READONLY_OVERWRITE.json).
+     [Installed refusal receipt](../.evidence/windows-admin-copy-package-current/INSTALLED_READONLY_FIRST_REFUSAL.json).
      Keep read-only alias behavior open separately.
      Preserve edited or unknown payloads and refuse divergent journals.
      [Hosted Windows verification](https://github.com/hoozter/ottrin/actions/runs/42451117154/job/128640353389).
@@ -1149,7 +1149,7 @@ Current source, test, package and owner/external scopes stay separate.
      124 ms, with the source and staging preserved and the target
      unpublished. A fresh authenticated Activity session ended the
      retained attempt, and another launch confirmed the ended state.
-     [Installed client-disconnect receipt](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_CLIENT_DISCONNECT.json).
+     [Installed client-disconnect receipt](../.evidence/windows-admin-copy-package-current/INSTALLED_CLIENT_DISCONNECT.json).
      The same private installer passed the lost terminal reply case.
      The app's response reader was suspended before publication and stayed
      suspended through the helper's successful exit. Terminating the app
@@ -1158,13 +1158,13 @@ Current source, test, package and owner/external scopes stay separate.
      launches recovered the completed transaction, undid it, and cleared
      the retained data. The source and unrelated destination marker were
      preserved.
-     [Installed lost-reply receipt](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_LOST_TERMINAL_REPLY.json).
+     [Installed lost-reply receipt](../.evidence/windows-admin-copy-package-current/INSTALLED_LOST_TERMINAL_REPLY.json).
    - The native Windows build 26100 token-mutation check changes a disposable
      child's live primary TokenOwner. The original query handle observes the
      new owner while TokenUser, primary group and process generation stay
      the same. The captured caller rejects both revalidation and profile
      lookup. See the
-     [native token-owner receipt](../.hermes/evidence/windows-admin-copy-package-current/TOKEN_OWNER_MUTATION_NATIVE.json).
+     [native token-owner receipt](../.evidence/windows-admin-copy-package-current/TOKEN_OWNER_MUTATION_NATIVE.json).
    - The previous packaged caller-profile check found an admission blocker. In a
      fresh installed `732b9d43` run, Windows gave the standard caller's
      registered Local AppData directory a BUILTIN\Administrators owner
@@ -1175,7 +1175,7 @@ Current source, test, package and owner/external scopes stay separate.
      path and only after a writable open under that token. It pins the
      original directory identity and security and leaves the ownership
      requirements on the application registry ancestry in place.
-     [Installed profile-owner refusal](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_PROFILE_OWNER_REFUSAL.json).
+     [Installed profile-owner refusal](../.evidence/windows-admin-copy-package-current/INSTALLED_PROFILE_OWNER_REFUSAL.json).
      A rebuilt private installer passed Copy, history reload, Undo and
      cleanup through four launches with alternate-administrator UAC.
      The fixture set only the disposable Local AppData owner to BUILTIN\Administrators
@@ -1187,8 +1187,8 @@ Current source, test, package and owner/external scopes stay separate.
      create a directory. Real alternate-administrator UAC ran in both
      cases. Source and destination bytes were unchanged and the caller
      acquired no recovery journal.
-     [Installed profile-owner pass](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_PROFILE_OWNER_PASS.json).
-     [Installed profile refusal controls](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_PROFILE_REFUSAL_CONTROLS.json).
+     [Installed profile-owner pass](../.evidence/windows-admin-copy-package-current/INSTALLED_PROFILE_OWNER_PASS.json).
+     [Installed profile refusal controls](../.evidence/windows-admin-copy-package-current/INSTALLED_PROFILE_REFUSAL_CONTROLS.json).
      A native Windows build 26100 NTFS probe for read-only hard-link originals refused
      writable opens through both the default stream and an existing named
      stream, including through the alias. Under SYSTEM, a volume handle
@@ -1209,14 +1209,14 @@ Current source, test, package and owner/external scopes stay separate.
      Both names retained the file ID, read-only flag, unnamed data and
      named stream. The guest fixture directory was empty afterward and
      the disposable guest and overlay were removed.
-     [Relative-rename native receipt](../.hermes/evidence/windows-admin-copy-package-current/READONLY_ALIAS_RELATIVE_RENAME_NATIVE.json).
+     [Relative-rename native receipt](../.evidence/windows-admin-copy-package-current/READONLY_ALIAS_RELATIVE_RENAME_NATIVE.json).
      A native standard-user process also authenticated to a SYSTEM
      helper over the local pipe. The production caller-bound command
      handlers passed Replace and cleanup both with and without Undo.
      The alias retained its file ID, security descriptor, read-only flag
      and both streams. The helper preserved its original token state.
      Both processes passed and their offline guest was removed.
-     [Native caller command receipt](../.hermes/evidence/windows-admin-copy-package-current/READONLY_ALIAS_CALLER_COMMANDS_NATIVE.json).
+     [Native caller command receipt](../.evidence/windows-admin-copy-package-current/READONLY_ALIAS_CALLER_COMMANDS_NATIVE.json).
      The private capability-enabled NSIS installer from `6dd568dc`
      is built. The installer extraction, ZIP and native installation
      agree on all 59 payload files. The installed standard-user fixture
@@ -1230,7 +1230,7 @@ Current source, test, package and owner/external scopes stay separate.
      was retained through the repeat. The guest and overlay were removed, the temporary
      compression stage was removed, and all four borrowed test binaries
      were restored by hash. The fixture met the 24 GiB allocation floor.
-     [Installed failure](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_READONLY_ALIAS_FAILURE.json).
+     [Installed failure](../.evidence/windows-admin-copy-package-current/INSTALLED_READONLY_ALIAS_FAILURE.json).
      An instrumented helper, with the exact original installer verified
      before substitution, reproduced the failure after real UAC. The
      root attributes changed after stream reads. On disk the retained
@@ -1241,13 +1241,13 @@ Current source, test, package and owner/external scopes stay separate.
      reported late after rename or set during stream observation before
      changing the paired metadata repair. The guest, overlay, private
      worktree and diagnostic build output were removed.
-     [Installed diagnostic](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_READONLY_ALIAS_DIAGNOSTIC.json).
+     [Installed diagnostic](../.evidence/windows-admin-copy-package-current/INSTALLED_READONLY_ALIAS_DIAGNOSTIC.json).
      The previous native test retained the existing archive bit when
      setting read-only. A strengthened ordinary-caller/SYSTEM fixture
      started with the archive bit clear and reproduced the same failure
      through the production bound Copy handler. This gives a repeatable
      native regression before the installed UAC gate.
-     [Native reproduction](../.hermes/evidence/windows-admin-copy-package-current/READONLY_ALIAS_ARCHIVE_NATIVE.json).
+     [Native reproduction](../.evidence/windows-admin-copy-package-current/READONLY_ALIAS_ARCHIVE_NATIVE.json).
      The source repair closes the volume-flushed rename handle before
      observing settled metadata on an independent read handle. It
      rechecks the complete original evidence under the reacquired writer
@@ -1257,7 +1257,7 @@ Current source, test, package and owner/external scopes stay separate.
      cleanup, and Replace followed by cleanup alone. Both names retain
      the exact original attributes, identity, security and streams.
      Windows-target strict Clippy and formatting passed.
-     [Native repair](../.hermes/evidence/windows-admin-copy-package-current/READONLY_ALIAS_REPAIR_NATIVE.json).
+     [Native repair](../.evidence/windows-admin-copy-package-current/READONLY_ALIAS_REPAIR_NATIVE.json).
      The rebuilt private NSIS from `15579628` on `381ef193` matched
      all 59 ZIP payload files. Upstream returned HTTP 504, so the
      build reused verified provider bytes from the preceding installer
@@ -1270,10 +1270,10 @@ Current source, test, package and owner/external scopes stay separate.
      ownership passed. The old installer, guest, overlay, temporary
      compression and private compiler executables were removed.
      The accepted private installer remains in
-     `.hermes/packaging-tmp/.windows-readonly-alias-repair-qa/`.
+     `.evidence/packaging-tmp/.windows-readonly-alias-repair-qa/`.
      Stable Windows delivery, crash recovery, cancellation and power
      loss retain separate acceptance gates.
-     [Installed repair](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_READONLY_ALIAS_REPAIR.json).
+     [Installed repair](../.evidence/windows-admin-copy-package-current/INSTALLED_READONLY_ALIAS_REPAIR.json).
      A second installed fixture kept the replacement and discarded
      Undo from recovered history. The pointer-driven action passed
      through four real UAC prompts and three fresh processes. Cleanup
@@ -1287,9 +1287,9 @@ Current source, test, package and owner/external scopes stay separate.
      passed. The application-level accessibility event also opens
      confirmation without starting cleanup. Invocation without
      foreground focus remains unverified.
-     [Accessible installed cleanup](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_READONLY_ALIAS_ACCESSIBLE_CLEANUP.json).
-     [Installed cleanup with replacement kept](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_READONLY_ALIAS_KEEP_REPLACEMENT.json).
-     [Private installer receipt](../.hermes/evidence/windows-admin-copy-package-current/READONLY_ALIAS_HOST_PAYLOAD.json).
+     [Accessible installed cleanup](../.evidence/windows-admin-copy-package-current/INSTALLED_READONLY_ALIAS_ACCESSIBLE_CLEANUP.json).
+     [Installed cleanup with replacement kept](../.evidence/windows-admin-copy-package-current/INSTALLED_READONLY_ALIAS_KEEP_REPLACEMENT.json).
+     [Private installer receipt](../.evidence/windows-admin-copy-package-current/READONLY_ALIAS_HOST_PAYLOAD.json).
      The same private installer passed cancellation at the real UAC
      prompt during protected Replace. Ottrin showed the cancellation
      message and closed normally. The original and its hard link kept
@@ -1297,7 +1297,7 @@ Current source, test, package and owner/external scopes stay separate.
      The source and unrelated marker were preserved, and no transaction
      data or caller recovery journal appeared. The owned guest and
      overlay were removed.
-     [Installed elevation cancellation](../.hermes/evidence/windows-alias-cancel-current/ACCEPTANCE.json).
+     [Installed elevation cancellation](../.evidence/windows-alias-cancel-current/ACCEPTANCE.json).
      The private NSIS also passed Stop during staging of a 512 MiB
      replacement after real UAC approval. Ottrin showed Stopped and
      closed normally. The caller saw one journal for the stopped
@@ -1307,7 +1307,7 @@ Current source, test, package and owner/external scopes stay separate.
      named stream. The SYSTEM enumeration did not observe the caller
      journal, so that part of the result uses the caller's evidence.
      Both disposable guests were removed.
-     [Installed Stop](../.hermes/evidence/windows-alias-stop-retry-current/ACCEPTANCE.json).
+     [Installed Stop](../.evidence/windows-alias-stop-retry-current/ACCEPTANCE.json).
      The exact private NSIS passed helper process termination during
      staging of an approved 512 MiB Replace. The standard user's
      installed app retained the matching journal. Two fresh app
@@ -1315,14 +1315,14 @@ Current source, test, package and owner/external scopes stay separate.
      confirmed Ended on another reload. The original and hard link
      retained their identity, security, attributes, bytes and named
      stream at every phase, and the source and marker stayed intact.
-     [Installed helper crash recovery](../.hermes/evidence/windows-alias-helper-crash-current/ACCEPTANCE.json).
+     [Installed helper crash recovery](../.evidence/windows-alias-helper-crash-current/ACCEPTANCE.json).
      The same package passed application process termination during
      staging. The helper exited 57 ms after the bound caller process
      was killed in this run. The standard user retained the matching
      recovery journal, ended the attempt in a fresh process and saw
      Ended in another. The original and hard-link metadata and named
      stream, source and unrelated marker passed each disk check.
-     [Installed application crash recovery](../.hermes/evidence/windows-alias-app-crash-current/ACCEPTANCE.json).
+     [Installed application crash recovery](../.evidence/windows-alias-app-crash-current/ACCEPTANCE.json).
      The exact private NSIS passed an abrupt guest power cut while
      staging a 1 GiB protected replacement. After cold boot on the
      same overlay, a fresh Ottrin process loaded and ended the
@@ -1330,7 +1330,7 @@ Current source, test, package and owner/external scopes stay separate.
      checks preserved the source, destination marker, original and
      hard-link metadata and named stream. The guest and overlay
      were removed.
-     [Installed guest power-cut recovery](../.hermes/evidence/windows-alias-power-cut-current/ACCEPTANCE.json).
+     [Installed guest power-cut recovery](../.evidence/windows-alias-power-cut-current/ACCEPTANCE.json).
      This checks the observed pre-publication staging boundary.
      Physical storage power loss and production latency remain
      separate gates.
@@ -1356,10 +1356,10 @@ Current source, test, package and owner/external scopes stay separate.
      while preserving authority and journal checks at mutation
      boundaries. Verify the original large Replace fixture and native
      binding-change and cancellation cases before enabling the feature.
-     [Initial timing attempt](../.hermes/evidence/windows-alias-performance-current/ATTEMPT.json).
-     [Diagnostic attempt](../.hermes/evidence/windows-alias-performance-diagnostic-current/ATTEMPT.json).
-     [Post-staging timing evidence](../.hermes/evidence/windows-alias-performance-retry-current/FINDING.json).
-     [Installed helper profile](../.hermes/evidence/windows-alias-performance-profile-current/FINDING.json).
+     [Initial timing attempt](../.evidence/windows-alias-performance-current/ATTEMPT.json).
+     [Diagnostic attempt](../.evidence/windows-alias-performance-diagnostic-current/ATTEMPT.json).
+     [Post-staging timing evidence](../.evidence/windows-alias-performance-retry-current/FINDING.json).
+     [Installed helper profile](../.evidence/windows-alias-performance-profile-current/FINDING.json).
      The Windows stream engine now coalesces callbacks during data
      reads and writes on held handles. The first chunk and each record
      boundary still report, with additional checks after 8 MiB or
@@ -1382,10 +1382,10 @@ Current source, test, package and owner/external scopes stay separate.
      journaling. Treat that time as context for this sample. Profile
      finalization cost before enabling Administrator Copy in the
      standard package.
-     [Native stream checks](../.hermes/evidence/windows-alias-stream-progress-current/native/NATIVE_TEST.json).
-     [Rebuilt helper publication observation](../.hermes/evidence/windows-alias-performance-fixed-current/FINDING.json).
-     [Installed terminal timing](../.hermes/evidence/windows-alias-performance-terminal-current/ACCEPTANCE.json).
-     [Native read-only alias probe](../.hermes/evidence/windows-admin-copy-package-current/READONLY_ALIAS_VOLUME_PROBE.json).
+     [Native stream checks](../.evidence/windows-alias-stream-progress-current/native/NATIVE_TEST.json).
+     [Rebuilt helper publication observation](../.evidence/windows-alias-performance-fixed-current/FINDING.json).
+     [Installed terminal timing](../.evidence/windows-alias-performance-terminal-current/ACCEPTANCE.json).
+     [Native read-only alias probe](../.evidence/windows-admin-copy-package-current/READONLY_ALIAS_VOLUME_PROBE.json).
 
      Copy receipt creation now binds the original completed journal and
      delegates payload verification to the existing Undo admission, removing
@@ -1432,12 +1432,12 @@ Current source, test, package and owner/external scopes stay separate.
      checks confirmed ownership and preservation of the retained original
      and hard link. Keep promotion open and use phase-specific measurements
      and a matched control to evaluate further reductions.
-     [Native receipt checks](../.hermes/evidence/windows-alias-receipt-current/native/NATIVE_TEST.json).
-     [Installed receipt timing](../.hermes/evidence/windows-alias-receipt-installed-current/ACCEPTANCE.json).
-     [Post-publication helper profile](../.hermes/evidence/windows-alias-finalization-profile-current/FINDING.json).
-     [Installed finalization timing](../.hermes/evidence/windows-alias-finalization-timing-current/FINDING.json).
-     [Native permission finalization checks](../.hermes/evidence/windows-alias-permission-finalization-current/native/NATIVE_TEST.json).
-     [Installed permission finalization retest](../.hermes/evidence/windows-alias-permission-installed-current/ACCEPTANCE.json).
+     [Native receipt checks](../.evidence/windows-alias-receipt-current/native/NATIVE_TEST.json).
+     [Installed receipt timing](../.evidence/windows-alias-receipt-installed-current/ACCEPTANCE.json).
+     [Post-publication helper profile](../.evidence/windows-alias-finalization-profile-current/FINDING.json).
+     [Installed finalization timing](../.evidence/windows-alias-finalization-timing-current/FINDING.json).
+     [Native permission finalization checks](../.evidence/windows-alias-permission-finalization-current/native/NATIVE_TEST.json).
+     [Installed permission finalization retest](../.evidence/windows-alias-permission-installed-current/ACCEPTANCE.json).
      A matched offline VM comparison used the same private installer,
      actor and 1 GiB payload for both release helpers. Both passed
      caller ownership, published hash, retained original and hard-link
@@ -1448,7 +1448,7 @@ Current source, test, package and owner/external scopes stay separate.
      evidence for an end-to-end speedup. Both test guests and overlays
      were removed and borrowed compiler executables were restored by
      hash. The currently delivered Windows capability remains disabled.
-     [Matched Windows Replace timing](../.hermes/evidence/windows-alias-matched-timing-current/ACCEPTANCE.json).
+     [Matched Windows Replace timing](../.evidence/windows-alias-matched-timing-current/ACCEPTANCE.json).
 
    Missing member IDs never license deletion or a completed original-batch claim.
    These are implementation/QA tasks, not owner waits. Personal authentication,
@@ -1471,7 +1471,7 @@ Current source, test, package and owner/external scopes stay separate.
    extraction were removed. All four hosted jobs passed. The Linux
    promotion preserved the sign-in setting, preferences and database
    identity and confirmed the managed index was Ready.
-   [Mounted More menu verification](../.hermes/evidence/theme-editor-more-menu-current/PACKAGED_MORE_MENU_ACCEPTANCE.json).
+   [Mounted More menu verification](../.evidence/theme-editor-more-menu-current/PACKAGED_MORE_MENU_ACCEPTANCE.json).
    The exact Windows portable candidate from the same source rendered
    the three icons and aligned labels in Dark and Light at 100%.
    Physical Cancel preserved saved preferences. The installer and ZIP
@@ -1490,24 +1490,24 @@ Current source, test, package and owner/external scopes stay separate.
    promoted after the hosted matrix passed. All seven Linux and Windows
    artifact hashes passed at their stable paths. Both stages and the
    superseded packages were removed.
-   [Native Windows More menu verification](../.hermes/evidence/theme-editor-more-menu-current/WINDOWS_MORE_ACCEPTANCE.json).
-   [Native MSIX 34 assembly](../.hermes/evidence/theme-editor-more-menu-current/ASSEMBLY_ACCEPTANCE.json).
-   [Native MSIX 32-to-34 upgrade](../.hermes/evidence/theme-editor-more-menu-current/runtime34-upgrade/ACCEPTANCE.json).
-   [Linux promotion](../.hermes/evidence/theme-editor-more-menu-current/PROMOTION.json).
-   [Windows promotion](../.hermes/evidence/theme-editor-more-menu-current/WINDOWS_DELIVERY.json).
+   [Native Windows More menu verification](../.evidence/theme-editor-more-menu-current/WINDOWS_MORE_ACCEPTANCE.json).
+   [Native MSIX 34 assembly](../.evidence/theme-editor-more-menu-current/ASSEMBLY_ACCEPTANCE.json).
+   [Native MSIX 32-to-34 upgrade](../.evidence/theme-editor-more-menu-current/runtime34-upgrade/ACCEPTANCE.json).
+   [Linux promotion](../.evidence/theme-editor-more-menu-current/PROMOTION.json).
+   [Windows promotion](../.evidence/theme-editor-more-menu-current/WINDOWS_DELIVERY.json).
    Live navigation/menu/view/breadcrumb, tab/window-control and Miller presenters
    have bounded acceptance; List/Grid now has source and actual mounted Linux package checks described
    above, with original package acceptance at Linux source43. The stable
    `a9c718a2` AppImage also cycles Column → List → Grid → Column in
    Dark and Light at 150% X11 scaling. The actual List headers and Grid
    tiles stay readable, and Cancel preserves the saved view and theme.
-   Both private profiles were removed. [Scaled preview receipt](../.hermes/evidence/theme-editor-pointer-fix-linux-current/view-scale150/ACCEPTANCE.json).
+   Both private profiles were removed. [Scaled preview receipt](../.evidence/theme-editor-pointer-fix-linux-current/view-scale150/ACCEPTANCE.json).
    On that same AppImage at 150%, clicking the selected List row or Grid
    tile opens Selected files and outlines the clicked item. In both palettes,
    changing Selection background changes the row fill, and changing the
    shared Surface corners from 14 to 0 squares the selected Grid tile.
    Cancel preserves the saved theme and view.
-   [Selection and property receipt](../.hermes/evidence/theme-editor-pointer-fix-linux-current/selection-scale150/ACCEPTANCE.json).
+   [Selection and property receipt](../.evidence/theme-editor-pointer-fix-linux-current/selection-scale150/ACCEPTANCE.json).
    The Smart Panel editor now exposes shared Secondary text alongside
    Heading text. Its real Search header icon uses Secondary text in the
    app and preview. All 37 focused Appearance tests passed, including
@@ -1532,8 +1532,8 @@ Current source, test, package and owner/external scopes stay separate.
    index returned to Ready with startup, preferences and database
    identity preserved. The stage and superseded package files were
    removed.
-   [Linux Smart Panel delivery](../.hermes/evidence/smart-panel-secondary-text-current/PROMOTION.json).
-   [Packaged Smart Panel result](../.hermes/evidence/smart-panel-secondary-text-current/THEME_UI_ACCEPTANCE.json).
+   [Linux Smart Panel delivery](../.evidence/smart-panel-secondary-text-current/PROMOTION.json).
+   [Packaged Smart Panel result](../.evidence/smart-panel-secondary-text-current/THEME_UI_ACCEPTANCE.json).
    Strict local lint passed for both Linux and Windows targets. The
    exact portable index passed watcher and restart checks and averaged
    0.067% of one core over 60 seconds without clients. The daemon,
@@ -1550,25 +1550,25 @@ Current source, test, package and owner/external scopes stay separate.
    all three divider lines in the real main menu, View Options and
    the editor preview after a color edit. Cancel preserved preferences.
    The private desktops were removed.
-   [Menu divider source result](../.hermes/evidence/view-options-alignment-current/ACCEPTANCE.json).
+   [Menu divider source result](../.evidence/view-options-alignment-current/ACCEPTANCE.json).
    The four Linux formats from `4d3f11a3` are now staged and passed
    package-content verification. The exact mounted AppImage reproduced
    the same divider pixels and saved-state behavior at 150% in Dark
    and Light. The same AppImage passed Smart Panel color editing,
    FileManager1 dispatch and the Save caller workflow. All private
    profiles and the package extraction were removed.
-   [Packaged menu divider result](../.hermes/evidence/view-options-alignment-current/PACKAGED_MENU_ACCEPTANCE.json).
+   [Packaged menu divider result](../.evidence/view-options-alignment-current/PACKAGED_MENU_ACCEPTANCE.json).
    All four source-equivalent hosted jobs passed. The four packages were
    promoted and rechecked by hash. The managed index returned to Ready
    with its sign-in setting, preferences and database identity preserved.
    The stage, superseded packages and previous managed mount were removed.
-   [Linux promotion receipt](../.hermes/evidence/view-options-alignment-current/PROMOTION.json).
+   [Linux promotion receipt](../.evidence/view-options-alignment-current/PROMOTION.json).
 
    The Windows ZIP and NSIS from the same source are staged. All 59
    files match across the two payloads and both artifact hashes were
    verified. The detached build worktree and temporary installer
    extraction were removed.
-   [Windows package content receipt](../.hermes/evidence/windows-menu-divider-delivery-current/HOST_PAYLOAD.json).
+   [Windows package content receipt](../.evidence/windows-menu-divider-delivery-current/HOST_PAYLOAD.json).
    Native MakeAppx assembled development MSIX 32 and independently
    verified all 59 payload files. The bundled daemon passed watcher
    and restart checks on a 1,000-file fixture and averaged 0.21% of
@@ -1576,7 +1576,7 @@ Current source, test, package and owner/external scopes stay separate.
    archive and clone were removed, and all 18 borrowed compiler
    executables were restored by hash. Native UI, deployment and
    lifecycle acceptance remain open.
-   [MSIX 32 assembly receipt](../.hermes/evidence/windows-menu-divider-delivery-current/ASSEMBLY_ACCEPTANCE.json).
+   [MSIX 32 assembly receipt](../.evidence/windows-menu-divider-delivery-current/ASSEMBLY_ACCEPTANCE.json).
    The exact development MSIX 32 passed fresh deployment as a standard
    Windows user, index startup after real sign-in, Explorer background,
    multiple-folder and drive actions, and removal. The fixture verified
@@ -1586,9 +1586,9 @@ Current source, test, package and owner/external scopes stay separate.
    passed. Real sign-in preserved the user's automatic indexing choice
    in each case, and the index database and preferences survived.
    Both upgrade guests, their volumes and duplicate exports were removed.
-   [Fresh MSIX 32 acceptance](../.hermes/evidence/windows-menu-divider-delivery-current/runtime32-fresh/ACCEPTANCE.json).
-   [Upgrade with automatic indexing](../.hermes/evidence/windows-menu-divider-delivery-current/runtime32-upgrade/ACCEPTANCE.json).
-   [Upgrade with automatic indexing disabled](../.hermes/evidence/windows-menu-divider-delivery-current/runtime32-disabled/ACCEPTANCE.json).
+   [Fresh MSIX 32 acceptance](../.evidence/windows-menu-divider-delivery-current/runtime32-fresh/ACCEPTANCE.json).
+   [Upgrade with automatic indexing](../.evidence/windows-menu-divider-delivery-current/runtime32-upgrade/ACCEPTANCE.json).
+   [Upgrade with automatic indexing disabled](../.evidence/windows-menu-divider-delivery-current/runtime32-disabled/ACCEPTANCE.json).
    The exact portable Windows actor completed both variants and
    preserved preferences after physical Cancel. The native capture
    review did not verify the requested colors in both variants or all
@@ -1599,8 +1599,8 @@ Current source, test, package and owner/external scopes stay separate.
    dividers and the Smart Panel Search header icon. Physical Cancel
    preserved saved preferences. The guest, its two volumes and duplicate
    desktop captures were removed. This is portable Windows evidence.
-   [Windows theme capture review](../.hermes/evidence/windows-menu-divider-delivery-current/NATIVE_THEME_VISUAL_REVIEW.json).
-   [Windows theme retest](../.hermes/evidence/windows-menu-divider-delivery-current/native-theme-retry/ACCEPTANCE.json).
+   [Windows theme capture review](../.evidence/windows-menu-divider-delivery-current/NATIVE_THEME_VISUAL_REVIEW.json).
+   [Windows theme retest](../.evidence/windows-menu-divider-delivery-current/native-theme-retry/ACCEPTANCE.json).
    The exact NSIS and portable ZIP passed the lifecycle checks across
    two native runs. The first reached the host disk-space floor after
    the picker, fresh install and uninstall, running-index upgrade and
@@ -1611,8 +1611,8 @@ Current source, test, package and owner/external scopes stay separate.
    the old candidate and stage, and preserved the Linux delivery and
    held MSI. Both guests, their volumes and temporary exports were
    removed, and the borrowed test executables were restored by hash.
-   [NSIS lifecycle](../.hermes/evidence/windows-menu-divider-delivery-current/nsis32-completion/ACCEPTANCE.json).
-   [Windows promotion](../.hermes/evidence/windows-menu-divider-delivery-current/WINDOWS_DELIVERY.json).
+   [NSIS lifecycle](../.evidence/windows-menu-divider-delivery-current/nsis32-completion/ACCEPTANCE.json).
+   [Windows promotion](../.evidence/windows-menu-divider-delivery-current/WINDOWS_DELIVERY.json).
    Broader platform and theme-property coverage and whole-interface
    alignment/grouping remain open. The theme-library miniature now
    paints square selected-row fills, rounds only outer title/status corners and
@@ -1873,7 +1873,7 @@ Current source, test, package and owner/external scopes stay separate.
    Windows-target UI lint and formatting passed. The source-built X11 app
    was reviewed in Dark at scale 1 and Light at scale 1.5, including scrolling
    to the lower sections. Both private desktops were retired.
-   [Appearance page receipt](../.hermes/evidence/appearance-page-groups-final/ACCEPTANCE.json).
+   [Appearance page receipt](../.evidence/appearance-page-groups-final/ACCEPTANCE.json).
    The mounted Linux AppImage passed and is delivered. Native Windows
    Appearance acceptance remains open.
 
@@ -1891,8 +1891,8 @@ Current source, test, package and owner/external scopes stay separate.
    seconds without clients. All four hosted jobs passed. The managed index
    returned to Ready with its database and preferences preserved, and
    the consumed stage and previous cohort were retired.
-   [Menu preview receipt](../.hermes/evidence/appearance-live-menu-current/ACCEPTANCE.json).
-   [Linux delivery receipt](../.hermes/evidence/appearance-live-menu-delivery-current/PROMOTION.json).
+   [Menu preview receipt](../.evidence/appearance-live-menu-current/ACCEPTANCE.json).
+   [Linux delivery receipt](../.evidence/appearance-live-menu-delivery-current/PROMOTION.json).
 
    The private Windows installer and portable archive match across 59
    payload files. Native installed Dark passed, and the real Light palette
@@ -1901,7 +1901,7 @@ Current source, test, package and owner/external scopes stay separate.
    disposable guests and their volumes were removed, and borrowed test
    binaries were restored by hash. Investigate the native Cancel behavior
    before accepting the Windows appearance change.
-   [Native Windows menu receipt](../.hermes/evidence/windows-live-menu-delivery-current/MENU_NATIVE_ACCEPTANCE.json).
+   [Native Windows menu receipt](../.evidence/windows-live-menu-delivery-current/MENU_NATIVE_ACCEPTANCE.json).
 
    Cancel now clears the draft and queues the native editor close directly,
    then wakes the root viewport to restore the active theme. A rendered
@@ -1916,7 +1916,7 @@ Current source, test, package and owner/external scopes stay separate.
    delivery and invocation of Cancel before further lifecycle changes.
    The owned guest and overlay were removed and borrowed executables
    restored by hash. The current Windows packages remain available.
-   [Native repeat](../.hermes/evidence/theme-editor-close-current/native-close/GUEST_RESULT.json).
+   [Native repeat](../.evidence/theme-editor-close-current/native-close/GUEST_RESULT.json).
 
    The exact same NSIS passed both palettes in an instrumented repeat.
    Hit-testing and cursor position matched Cancel, and both clicks closed
@@ -1928,7 +1928,7 @@ Current source, test, package and owner/external scopes stay separate.
    regression checks menu dismissal and the native Cancel request in both
    palettes. All 553 active Linux UI tests and strict lint on Linux and the
    Windows target pass. Exact rebuilt Windows acceptance is pending.
-   [Native input diagnostic](../.hermes/evidence/theme-editor-close-current/native-cancel-diagnostic/GUEST_RESULT.json).
+   [Native input diagnostic](../.evidence/theme-editor-close-current/native-cancel-diagnostic/GUEST_RESULT.json).
 
    The rebuilt `9f27ece1` Linux AppImage passed real Dark and Light
    sample-action dismissal, Escape, outside clicks, draft menu styling,
@@ -1942,8 +1942,8 @@ Current source, test, package and owner/external scopes stay separate.
    and database identity. The consumed stage, prior package cohort and
    previous managed mount were removed.
    [Hosted verification](https://github.com/hoozter/ottrin/actions/runs/42637304102).
-   [Linux promotion receipt](../.hermes/evidence/theme-preview-popup-linux-current/PROMOTION.json).
-   [Linux package and UI evidence](../.hermes/evidence/theme-preview-popup-linux-current/MENU_UI_ACCEPTANCE.json).
+   [Linux promotion receipt](../.evidence/theme-preview-popup-linux-current/PROMOTION.json).
+   [Linux package and UI evidence](../.evidence/theme-preview-popup-linux-current/MENU_UI_ACCEPTANCE.json).
 
    The same exact AppImage passed private D-Bus activation for
    FileManager1 ShowFolders, ShowItems and ShowItemProperties, including
@@ -1953,7 +1953,7 @@ Current source, test, package and owner/external scopes stay separate.
    private profile and app mount checks passed. Properties started no
    index and the idle backend used zero CPU ticks over five seconds.
    The temporary AppImage copy was removed.
-   [FileManager1 receipt](../.hermes/evidence/theme-preview-popup-linux-current/FILE_MANAGER_DBUS_ACCEPTANCE.json).
+   [FileManager1 receipt](../.evidence/theme-preview-popup-linux-current/FILE_MANAGER_DBUS_ACCEPTANCE.json).
 
    The exact staged AppImage also passed the cooperating-caller Save
    flow with a non-UTF-8 filename. The chooser required confirmation
@@ -1962,7 +1962,7 @@ Current source, test, package and owner/external scopes stay separate.
    cancellation and closed the chooser. Neither request started an
    index or wrote main application configuration. The private display,
    profile and AppImage copy were removed.
-   [Picker caller receipt](../.hermes/evidence/theme-preview-popup-linux-current/picker-save/RESULT.json).
+   [Picker caller receipt](../.evidence/theme-preview-popup-linux-current/picker-save/RESULT.json).
 
    The exact rebuilt `9f27ece1` Windows NSIS, SHA-256
    `96a68d5907fd359c3f584991591602b7e6ebbe4ad66265a6a449f1b0c47209c3`,
@@ -1973,7 +1973,7 @@ Current source, test, package and owner/external scopes stay separate.
    and release and compare accessible Cancel on the same native window
    to distinguish pointer activation from viewport close handling.
    The guest and overlay were retired and borrowed binaries restored.
-   [Windows native result](../.hermes/evidence/theme-preview-popup-current/native-close/GUEST_RESULT.json).
+   [Windows native result](../.evidence/theme-preview-popup-current/native-close/GUEST_RESULT.json).
 
    A separate installed trace of the same NSIS closed the editor by
    physical Cancel in both palettes. Win32 hit testing, focus and the
@@ -1984,7 +1984,7 @@ Current source, test, package and owner/external scopes stay separate.
    uninstrumented failure. Next compare short and paced presses on the
    same artifact and preserve their actual timing. The trace guest and
    overlay were removed and all borrowed executables restored by hash.
-   [Native pointer trace](../.hermes/evidence/theme-preview-popup-current/native-cancel-trace/GUEST_RESULT.json).
+   [Native pointer trace](../.evidence/theme-preview-popup-current/native-cancel-trace/GUEST_RESULT.json).
 
    A four-case comparison installed the same NSIS once and launched a
    fresh process per case. Physical Cancel closed Dark after an 87 ms
@@ -1996,7 +1996,7 @@ Current source, test, package and owner/external scopes stay separate.
    ones, so order and duration still need to be separated before
    attributing a cause. The guest and overlay were removed, and all
    borrowed executables were restored by hash.
-   [Native timing comparison](../.hermes/evidence/theme-preview-popup-current/native-cancel-timing/GUEST_RESULT.json).
+   [Native timing comparison](../.evidence/theme-preview-popup-current/native-cancel-timing/GUEST_RESULT.json).
 
    Reversing the test order did not reproduce a consistent duration
    effect. Physical Cancel passed at 419 ms in Dark and 387 ms in Light,
@@ -2007,7 +2007,7 @@ Current source, test, package and owner/external scopes stay separate.
    build records the pointer events and the Cancel button's interaction
    state inside the editor. The reversed-comparison guest and overlay
    were removed and borrowed executables restored by hash.
-   [Reversed timing comparison](../.hermes/evidence/theme-preview-popup-current/native-cancel-timing-reverse/GUEST_RESULT.json).
+   [Reversed timing comparison](../.evidence/theme-preview-popup-current/native-cancel-timing-reverse/GUEST_RESULT.json).
 
    The private diagnostic build completed and the NSIS and portable
    payloads matched. The first native guest timed out in silent install
@@ -2017,7 +2017,7 @@ Current source, test, package and owner/external scopes stay separate.
    the same instrumented executable from the verified portable archive
    in a fresh guest, with installer lifecycle acceptance tracked
    separately.
-   [Diagnostic installer result](../.hermes/evidence/theme-editor-app-trace-current/native-close/GUEST_RESULT.json).
+   [Diagnostic installer result](../.evidence/theme-editor-app-trace-current/native-close/GUEST_RESULT.json).
 
    The portable diagnostic captured both mouse events inside the real
    Cancel button in all four cases. The app observed 0.87–1.25 seconds
@@ -2031,7 +2031,7 @@ Current source, test, package and owner/external scopes stay separate.
    active Linux UI tests passed. Exact rebuilt Windows package checks
    remain pending. The private diagnostic guest, overlay and packages
    were removed, and borrowed executables were restored by hash.
-   [Portable app trace](../.hermes/evidence/theme-editor-app-trace-current/native-portable-user-root/GUEST_RESULT.json).
+   [Portable app trace](../.evidence/theme-editor-app-trace-current/native-portable-user-root/GUEST_RESULT.json).
 
    The exact rebuilt Linux AppImage from `a9c718a2` stayed open while
    Cancel was held and closed on release after 1.28 seconds in both
@@ -2043,7 +2043,7 @@ Current source, test, package and owner/external scopes stay separate.
    promotion is queued behind exact-source hosted CI and native guest
    teardown. The Windows rebuild resumed from the same source after
    removal of the interrupted build's detached worktree and scratch.
-   [Delayed-click AppImage receipt](../.hermes/evidence/theme-editor-pointer-fix-linux-current/MENU_UI_ACCEPTANCE.json).
+   [Delayed-click AppImage receipt](../.evidence/theme-editor-pointer-fix-linux-current/MENU_UI_ACCEPTANCE.json).
 
    The same AppImage passed the three private FileManager1 methods,
    backend repair with a live Properties window, and registration
@@ -2052,8 +2052,8 @@ Current source, test, package and owner/external scopes stay separate.
    Test files, preferences and the temporary AppImage copy were
    preserved or retired as appropriate. Guarded promotion checks both
    receipts against the delivered image hash.
-   [Folder integration](../.hermes/evidence/theme-editor-pointer-fix-linux-current/FILE_MANAGER_DBUS_ACCEPTANCE.json).
-   [Picker caller](../.hermes/evidence/theme-editor-pointer-fix-linux-current/picker-save/RESULT.json).
+   [Folder integration](../.evidence/theme-editor-pointer-fix-linux-current/FILE_MANAGER_DBUS_ACCEPTANCE.json).
+   [Picker caller](../.evidence/theme-editor-pointer-fix-linux-current/picker-save/RESULT.json).
 
    The exact `a9c718a2` Windows NSIS and portable ZIP matched across
    59 payload files. The installed delayed-click run reached the host
@@ -2063,8 +2063,8 @@ Current source, test, package and owner/external scopes stay separate.
    superseded popup package stage were retired. A fresh portable test
    of the same executable is running. Installed lifecycle acceptance
    remains separate.
-   [Windows package identity](../.hermes/evidence/theme-editor-pointer-fix-current/HOST_PAYLOAD.json).
-   [Interrupted guest and cleanup](../.hermes/evidence/theme-editor-pointer-fix-current/native-close/OWNER.json).
+   [Windows package identity](../.evidence/theme-editor-pointer-fix-current/HOST_PAYLOAD.json).
+   [Interrupted guest and cleanup](../.evidence/theme-editor-pointer-fix-current/native-close/OWNER.json).
 
    Native ordinary-user execution from the exact `a9c718a2` portable
    ZIP passed physical Cancel after measured 1.86-second Dark and
@@ -2074,7 +2074,7 @@ Current source, test, package and owner/external scopes stay separate.
    The NSIS retry uses a fresh guest and a 27 GiB preflight minimum
    after the earlier storage interruption. Portable evidence does not
    close the installer or MSIX lifecycle gates.
-   [Windows portable acceptance](../.hermes/evidence/theme-editor-pointer-fix-current/native-portable/GUEST_RESULT.json).
+   [Windows portable acceptance](../.evidence/theme-editor-pointer-fix-current/native-portable/GUEST_RESULT.json).
 
    All four hosted jobs passed on `a9c718a2`. The four Linux formats
    were promoted to their stable paths and rechecked by hash. The
@@ -2082,7 +2082,7 @@ Current source, test, package and owner/external scopes stay separate.
    and database identity preserved. The stage, old artifacts and old
    mount were removed. The exact folder and picker receipts are linked
    in the current package manifest.
-   [Linux promotion](../.hermes/evidence/theme-editor-pointer-fix-linux-current/PROMOTION.json).
+   [Linux promotion](../.evidence/theme-editor-pointer-fix-linux-current/PROMOTION.json).
 
    The fresh NSIS retry cleared the storage gate but exceeded the
    actor's 180-second install deadline before reaching the editor.
@@ -2093,7 +2093,7 @@ Current source, test, package and owner/external scopes stay separate.
    extended observation with the same installer to distinguish a slow
    finish from a stuck transaction. Native development MSIX assembly
    and deployment checks proceed independently.
-   [Installer retry result](../.hermes/evidence/theme-editor-pointer-fix-current/native-installed-retry/GUEST_RESULT.json).
+   [Installer retry result](../.evidence/theme-editor-pointer-fix-current/native-installed-retry/GUEST_RESULT.json).
 
    The bounded ordinary-user retest of the same `a9c718a2` NSIS
    installed successfully in 131 seconds. Physical delayed Cancel
@@ -2102,7 +2102,7 @@ Current source, test, package and owner/external scopes stay separate.
    Paste disabled. Both sessions exited normally and preserved the
    test source. The guest, two volumes and discovery captures were
    retired. The broader NSIS lifecycle remains a separate gate.
-   [Installed UI receipt](../.hermes/evidence/theme-editor-pointer-fix-current/native-installed-bounded/ACCEPTANCE.json).
+   [Installed UI receipt](../.evidence/theme-editor-pointer-fix-current/native-installed-bounded/ACCEPTANCE.json).
 
    Native MakeAppx assembled unsigned development MSIX 31 from the
    exact `a9c718a2` portable payload. Native unpack and independent
@@ -2114,8 +2114,8 @@ Current source, test, package and owner/external scopes stay separate.
    Fresh deployment and both MSIX 30-to-31 startup choices are
    queued before the bounded NSIS retest. The full NSIS lifecycle
    fixture is prepared to follow a passing installed UI check.
-   [Native MSIX assembly](../.hermes/evidence/theme-editor-pointer-fix-current/ASSEMBLY_ACCEPTANCE.json).
-   [Packaged Windows daemon](../.hermes/evidence/theme-editor-pointer-fix-current/WINDOWS_DAEMON_RUNTIME.json).
+   [Native MSIX assembly](../.evidence/theme-editor-pointer-fix-current/ASSEMBLY_ACCEPTANCE.json).
+   [Packaged Windows daemon](../.evidence/theme-editor-pointer-fix-current/WINDOWS_DAEMON_RUNTIME.json).
 
    Fresh development MSIX 31 deployment passed under an ordinary
    Windows account. The actual sign-in started the packaged daemon
@@ -2124,7 +2124,7 @@ Current source, test, package and owner/external scopes stay separate.
    COM registration while preserving preferences and fixture bytes.
    The result export matched the exact assembly hash and the guest
    and volumes were removed.
-   [Fresh deployment result](../.hermes/evidence/theme-editor-pointer-fix-current/runtime31-fresh/RUNTIME_RESULT.json).
+   [Fresh deployment result](../.evidence/theme-editor-pointer-fix-current/runtime31-fresh/RUNTIME_RESULT.json).
 
    The same development MSIX passed the 30-to-31 upgrade with index
    startup enabled. Windows stopped the old daemon during the update
@@ -2133,13 +2133,13 @@ Current source, test, package and owner/external scopes stay separate.
    preferences and fixture bytes. Removal cleared the package, its
    processes, tasks and COM registration. The disposable guest, two
    volumes and duplicate export were removed.
-   [Enabled upgrade receipt](../.hermes/evidence/theme-editor-pointer-fix-current/runtime31-upgrade/ACCEPTANCE.json).
+   [Enabled upgrade receipt](../.evidence/theme-editor-pointer-fix-current/runtime31-upgrade/ACCEPTANCE.json).
 
    The startup-disabled upgrade passed on the same candidate. No daemon
    appeared during 180 seconds after an actual sign-in and before any
    Ottrin command ran. Ordinary-user runtime, index identity, preference
    preservation, removal and owned teardown passed.
-   [Disabled upgrade receipt](../.hermes/evidence/theme-editor-pointer-fix-current/runtime31-disabled/ACCEPTANCE.json).
+   [Disabled upgrade receipt](../.evidence/theme-editor-pointer-fix-current/runtime31-disabled/ACCEPTANCE.json).
 
    The NSIS lifecycle guest passed ten portable picker cases, fresh
    install and removal, and upgrade with the running index. The host
@@ -2148,7 +2148,7 @@ Current source, test, package and owner/external scopes stay separate.
    two volumes and private desktop were removed. The higher-headroom
    retry then completed all reinstall states and locked-cache recovery,
    and the exact cohort was promoted to the stable Windows path.
-   [Interrupted lifecycle export](../.hermes/evidence/theme-editor-pointer-fix-current/nsis31-lifecycle/INTERRUPTED_ARCHIVE_TRANSFER.json).
+   [Interrupted lifecycle export](../.evidence/theme-editor-pointer-fix-current/nsis31-lifecycle/INTERRUPTED_ARCHIVE_TRANSFER.json).
 
    Verify every supported role/control against the actual interface and logical
    hierarchy; field-map/test/capture counts do not close this audit.
@@ -2171,7 +2171,7 @@ Current source, test, package and owner/external scopes stay separate.
    Save wrote identical bytes and no index started. Escape closed the chooser
    while Vivaldi stayed open. On a second request, stopping the private
    Vivaldi scope also closed the chooser and its process.
-   See [caller lifetime acceptance](../.hermes/evidence/vivaldi-caller-exit-current/ACCEPTANCE.json).
+   See [caller lifetime acceptance](../.evidence/vivaldi-caller-exit-current/ACCEPTANCE.json).
    All four Linux formats
    passed package checks. The changed index and helper passed isolated
    verification. The stable daemon populated a 10,000-file private content
@@ -2188,11 +2188,11 @@ Current source, test, package and owner/external scopes stay separate.
    restarted the installed index on the new bytes, preserved enablement,
    settings, service definition and database identity, and passed the
    installed helper protocol check. The two guests and their volumes were
-   removed. See [native replacement](../.hermes/evidence/vivaldi-native-transition-current/ACCEPTANCE.json).
-   See [managed transition](../.hermes/evidence/vivaldi-picker-delivery-current/MANAGED_INDEX_TRANSITION.json),
-   [runtime transition](../.hermes/evidence/vivaldi-picker-delivery-current/RUNTIME_TRANSITION.json),
-   [Vivaldi reproduction](../.hermes/evidence/current-vivaldi-picker/REPRODUCTION.json)
-   and [Vivaldi acceptance](../.hermes/evidence/current-vivaldi-picker/ACCEPTANCE.json).
+   removed. See [native replacement](../.evidence/vivaldi-native-transition-current/ACCEPTANCE.json).
+   See [managed transition](../.evidence/vivaldi-picker-delivery-current/MANAGED_INDEX_TRANSITION.json),
+   [runtime transition](../.evidence/vivaldi-picker-delivery-current/RUNTIME_TRANSITION.json),
+   [Vivaldi reproduction](../.evidence/current-vivaldi-picker/REPRODUCTION.json)
+   and [Vivaldi acceptance](../.evidence/current-vivaldi-picker/ACCEPTANCE.json).
 
    The same staged AppImage passed one 30-check private desktop workflow
    covering file and folder creation, views, search, menus, previews,
@@ -2200,7 +2200,7 @@ Current source, test, package and owner/external scopes stay separate.
    separate tmpfs filesystem preserved both byte sequences. The private
    desktop and second-filesystem fixture were removed. Physical removable
    volumes and personal acceptance remain separate.
-   See [daily-driver software acceptance](../.hermes/evidence/staged-linux-daily-driver-current/ACCEPTANCE.json).
+   See [daily-driver software acceptance](../.evidence/staged-linux-daily-driver-current/ACCEPTANCE.json).
 
    MSIX status now separates default-folder support from the Explorer menu
    toggle. Settings explains the limitation and the CLI refuses the
@@ -2223,7 +2223,7 @@ Current source, test, package and owner/external scopes stay separate.
    failure boundary for the diagnostic token. The lifecycle wrapper timed
    out after exporting complete probe rows. The cause and a supported
    restoration-preserving implementation remain open.
-   See [native comparison](../.hermes/evidence/windows-picker-keyboard-current/registry-diagnostic28/ACCEPTANCE.json)
+   See [native comparison](../.evidence/windows-picker-keyboard-current/registry-diagnostic28/ACCEPTANCE.json)
    and [Windows error codes](https://learn.microsoft.com/en-us/windows/win32/debug/system-error-codes--6000-8199-).
 
    Windows documents selective HKCU exclusions under the restricted
@@ -2250,7 +2250,7 @@ Current source, test, package and owner/external scopes stay separate.
    outputs were restored by hash after the host wrapper was interrupted.
    This closes the portable Windows multi-folder workflow. Broader caller
    acceptance retains its separate scope.
-   [Native folder-picker receipt](../.hermes/evidence/windows-native-picker-folders-current/ACCEPTANCE.json).
+   [Native folder-picker receipt](../.evidence/windows-native-picker-folders-current/ACCEPTANCE.json).
 
    Source `1464c6c2` binds Save overwrite confirmation to the displayed
    destination. The regression changes the destination before confirming
@@ -2312,7 +2312,7 @@ Current source, test, package and owner/external scopes stay separate.
    returned the exact non-UTF-8 path and preserved both files. The chooser
    started no index and wrote no main configuration. All 550 active Linux
    UI tests, strict Linux/Windows-target lint and formatting passed.
-   [Native Save acceptance](../.hermes/evidence/picker-overwrite-identity-current/ACCEPTANCE.json).
+   [Native Save acceptance](../.evidence/picker-overwrite-identity-current/ACCEPTANCE.json).
    The mounted Linux portal, native Windows model and installed NSIS
    Save checks are recorded above. The installed receipt verifies the
    same-name replacement confirmation in both palettes at its exact
@@ -2349,14 +2349,14 @@ Current source, test, package and owner/external scopes stay separate.
    their stable paths and removed the Windows stage and superseded
    packages. The older installed administrator Copy acceptance
    retains its original scope.
-   [Mounted Dark picker](../.hermes/evidence/picker-edit-location-current/linux-dark/ACCEPTANCE.json).
-   [Mounted Light picker](../.hermes/evidence/picker-edit-location-current/linux-light/ACCEPTANCE.json).
-   [Mounted daemon transition](../.hermes/evidence/picker-edit-location-current/LINUX_DAEMON_RUNTIME.json).
-   [Linux picker delivery](../.hermes/evidence/picker-edit-location-current/PROMOTION.json).
-   [Native Windows picker](../.hermes/evidence/picker-edit-location-current/WINDOWS_PICKER_ACCEPTANCE.json).
-   [Native MSIX 36 assembly](../.hermes/evidence/picker-edit-location-current/ASSEMBLY_ACCEPTANCE.json).
-   [Native MSIX 35-to-36 upgrade](../.hermes/evidence/picker-edit-location-current/runtime36-upgrade/ACCEPTANCE.json).
-   [Windows picker delivery](../.hermes/evidence/picker-edit-location-current/WINDOWS_DELIVERY.json).
+   [Mounted Dark picker](../.evidence/picker-edit-location-current/linux-dark/ACCEPTANCE.json).
+   [Mounted Light picker](../.evidence/picker-edit-location-current/linux-light/ACCEPTANCE.json).
+   [Mounted daemon transition](../.evidence/picker-edit-location-current/LINUX_DAEMON_RUNTIME.json).
+   [Linux picker delivery](../.evidence/picker-edit-location-current/PROMOTION.json).
+   [Native Windows picker](../.evidence/picker-edit-location-current/WINDOWS_PICKER_ACCEPTANCE.json).
+   [Native MSIX 36 assembly](../.evidence/picker-edit-location-current/ASSEMBLY_ACCEPTANCE.json).
+   [Native MSIX 35-to-36 upgrade](../.evidence/picker-edit-location-current/runtime36-upgrade/ACCEPTANCE.json).
+   [Windows picker delivery](../.evidence/picker-edit-location-current/WINDOWS_DELIVERY.json).
    The delivered Linux AppImage mapped its first picker window in
    890 ms and its repeat in 579 ms in private software X11 with shared
    OS caches. The first picker averaged 0.033% of one core over
@@ -2364,7 +2364,7 @@ Current source, test, package and owner/external scopes stay separate.
    cancelled independently. All four launches exited normally, and
    no private index socket or main configuration appeared. This is
    window mapping evidence.
-   [Delivered Linux picker resource check](../.hermes/evidence/picker-current-runtime-audit/ACCEPTANCE.json).
+   [Delivered Linux picker resource check](../.evidence/picker-current-runtime-audit/ACCEPTANCE.json).
    The same source's delivered Windows portable picker returned clean
    cancellations for first, repeat, and two overlapping requests without
    starting the index or changing the fixture file or preferences. The
@@ -2443,16 +2443,16 @@ Current source, test, package and owner/external scopes stay separate.
    package set and held MSI, and removed the consumed stage and old
    Windows packages. Portable cold startup remains open.
    Broader theme and caller acceptance also remain open.
-   [Delivered Windows picker resource check](../.hermes/evidence/windows-picker-current-runtime-audit/ACCEPTANCE.json).
-   [Windows picker startup comparison](../.hermes/evidence/windows-picker-startup-comparison/ACCEPTANCE.json).
-   [Installed Windows picker startup](../.hermes/evidence/windows-picker-installed-startup/ACCEPTANCE.json).
-   [Native Windows startup phases](../.hermes/evidence/windows-picker-phase-trace/ACCEPTANCE.json).
-   [Native Windows loader observation](../.hermes/evidence/windows-picker-loader-observation/ACCEPTANCE.json).
-   [Native deferred OpenGL verification](../.hermes/evidence/windows-picker-deferred-opengl/ACCEPTANCE.json).
-   [Staged Windows ZIP and NSIS verification](../.hermes/evidence/windows-deferred-mesa-delivery/PACKAGED_RENDERERS.json).
-   [MSIX 37 assembly](../.hermes/evidence/windows-deferred-mesa-delivery/ASSEMBLY_ACCEPTANCE.json),
-   [native MSIX upgrade](../.hermes/evidence/windows-deferred-mesa-delivery/runtime37-upgrade/ACCEPTANCE.json)
-   and [Windows package delivery](../.hermes/evidence/windows-deferred-mesa-delivery/WINDOWS_DELIVERY.json).
+   [Delivered Windows picker resource check](../.evidence/windows-picker-current-runtime-audit/ACCEPTANCE.json).
+   [Windows picker startup comparison](../.evidence/windows-picker-startup-comparison/ACCEPTANCE.json).
+   [Installed Windows picker startup](../.evidence/windows-picker-installed-startup/ACCEPTANCE.json).
+   [Native Windows startup phases](../.evidence/windows-picker-phase-trace/ACCEPTANCE.json).
+   [Native Windows loader observation](../.evidence/windows-picker-loader-observation/ACCEPTANCE.json).
+   [Native deferred OpenGL verification](../.evidence/windows-picker-deferred-opengl/ACCEPTANCE.json).
+   [Staged Windows ZIP and NSIS verification](../.evidence/windows-deferred-mesa-delivery/PACKAGED_RENDERERS.json).
+   [MSIX 37 assembly](../.evidence/windows-deferred-mesa-delivery/ASSEMBLY_ACCEPTANCE.json),
+   [native MSIX upgrade](../.evidence/windows-deferred-mesa-delivery/runtime37-upgrade/ACCEPTANCE.json)
+   and [Windows package delivery](../.evidence/windows-deferred-mesa-delivery/WINDOWS_DELIVERY.json).
 
    The standalone picker now uses one settings snapshot for renderer
    selection and theme construction. Previously it read the same
@@ -2473,8 +2473,8 @@ Current source, test, package and owner/external scopes stay separate.
    Promotion preserved the open AppImage holder and the running Ready
    index, including its database identity, preferences and startup setting.
    The Linux staging and superseded packages were removed.
-   [Mounted picker preference check](../.hermes/evidence/linux-picker-preferences-delivery/mounted-overlap/ACCEPTANCE.json).
-   [Linux package delivery](../.hermes/evidence/linux-picker-preferences-delivery/PROMOTION.json).
+   [Mounted picker preference check](../.evidence/linux-picker-preferences-delivery/mounted-overlap/ACCEPTANCE.json).
+   [Linux package delivery](../.evidence/linux-picker-preferences-delivery/PROMOTION.json).
    The matching Windows ZIP and NSIS from `f62ec5e4` are also delivered.
    The archives match across 59 payload files and pass the deferred
    OpenGL loader check. The staged ZIP and installed EXE passed the
@@ -2490,10 +2490,10 @@ Current source, test, package and owner/external scopes stay separate.
    and preserved the Linux set and held MSI. The superseded private
    `4c88e968` menu test packages were removed after the ownership and
    consumer checks. Their historical receipts remain available.
-   [Staged Windows package contents](../.hermes/evidence/windows-picker-preferences-delivery/HOST_PAYLOAD.json).
-   [Native Windows picker preference check](../.hermes/evidence/windows-picker-preferences-delivery/ACCEPTANCE.json).
-   [MSIX 38 upgrade and sign-in](../.hermes/evidence/windows-picker-preferences-delivery/runtime38-upgrade/ACCEPTANCE.json).
-   [Windows package delivery](../.hermes/evidence/windows-picker-preferences-delivery/WINDOWS_DELIVERY.json).
+   [Staged Windows package contents](../.evidence/windows-picker-preferences-delivery/HOST_PAYLOAD.json).
+   [Native Windows picker preference check](../.evidence/windows-picker-preferences-delivery/ACCEPTANCE.json).
+   [MSIX 38 upgrade and sign-in](../.evidence/windows-picker-preferences-delivery/runtime38-upgrade/ACCEPTANCE.json).
+   [Windows package delivery](../.evidence/windows-picker-preferences-delivery/WINDOWS_DELIVERY.json).
 
    The standalone Save picker now has a rendered Dark and Light
    regression for the title bar, toolbar, Places surface, input
@@ -2554,7 +2554,7 @@ The following notes retain earlier source/artifact scopes. Their historical
 ordered work and usable paths above. Current25 acceptance and delivery receipts
 are `MSIX_CONTEXTS_ACCEPTANCE.json`, `MSIX_ENABLED_UPDATE_ACCEPTANCE.json`,
 `NATIVE_WINDOWS_UI_ACCEPTANCE.json` and `WINDOWS_DELIVERY.json` in
-`.hermes/evidence/packaged-shell-current/`.
+`.evidence/packaged-shell-current/`.
 
 #### Windows caller authority checkpoints through `1ba0d8d3`
 
@@ -2662,7 +2662,7 @@ This identifies a package-context failure, not its internal Windows mechanism or
 a successful integration fix. The original Settings diagnostic overflows the
 right edge; the actor's vertical-bounds check did not prove full visibility.
 Four originals were directly reviewed. Evidence and exact scopes:
-`.hermes/evidence/windows-folder-msix-current/MSIX_RUNTIME_ACCEPTANCE.json`.
+`.evidence/windows-folder-msix-current/MSIX_RUNTIME_ACCEPTANCE.json`.
 That historical MSIX23 was an investigation candidate; current stable delivery
 is the separately accepted MSIX25 described above.
 
@@ -2691,7 +2691,7 @@ all516 UI tests pass (one existing ignored), strict native/Windows UI lint passe
 and actual source GUI success→stopped→error→Ready checks pass. Four Ready/error
 originals were reviewed. Its desktop/state are removed; five obsolete incremental
 sessions (0.33GiB) were retired with current caches retained. This correction is
-now in the delivered Linux bee cohort; Windows now has its own relevant8e NSIS package acceptance. Evidence: `.hermes/evidence/service-feedback-current/ACCEPTANCE.json`.
+now in the delivered Linux bee cohort; Windows now has its own relevant8e NSIS package acceptance. Evidence: `.evidence/service-feedback-current/ACCEPTANCE.json`.
 
 The MSIX23 capture also reproduced a shared status-label overflow. A newer
 source correction wraps complete diagnostics and aligns the status dot to the
@@ -2703,7 +2703,7 @@ Four source originals were reviewed; the later Linux bee cohort adds mounted
 package acceptance. Native Windows long-diagnostic wrapping remains separate. Exact source `8c209530` also passes all four hosted jobs in
 [run42020187483](https://github.com/hoozter/ottrin/actions/runs/42020187483). Seven obsolete incremental sessions were retired (0.39GiB);
 private test processes/display/bus/profile are removed. Evidence:
-`.hermes/evidence/service-status-wrap-current/ACCEPTANCE.json`.
+`.evidence/service-status-wrap-current/ACCEPTANCE.json`.
 
 A package-owned MSIX Explorer COM command on source `bee15669` passes strict
 Windows shell/platform/UI lint, the native COM/manifest/Unicode contract and
@@ -2785,7 +2785,7 @@ the newest finalized replacements. Completed fresh25 VM/disks/desktop/profile,
 consumed export and redundant setup frames are removed; the NSIS case also completed and removed its separate owned resources. `CURRENT_STATE.json` is the sole live case-state record.
 Compact prior24 receipts remain in `baseline24/`; current stable Windows
 packages are the separately accepted8e cohort. Exact current receipts:
-`.hermes/evidence/packaged-shell-current/MSIX_RUNTIME_ACCEPTANCE.json`,
+`.evidence/packaged-shell-current/MSIX_RUNTIME_ACCEPTANCE.json`,
 `MSIX_UPDATE_ACCEPTANCE.json`, `OPEN_UI_FINDINGS.json`, and
 `UPDATE_CLEANUP_ACCEPTANCE.json` in the same evidence directory.
 
@@ -2799,7 +2799,7 @@ All four exact-source hosted jobs in
 [run42033104462](https://github.com/hoozter/ottrin/actions/runs/42033104462) pass.
 Guarded stable-path publication and managed-daemon restart are complete;
 Windows stable dist now has its separate accepted8e cohort. Evidence:
-`.hermes/evidence/service-ui-delivery-current/`.
+`.evidence/service-ui-delivery-current/`.
 
 ### Previous delivery receipts — historical source and artifact scopes
 
@@ -2858,9 +2858,9 @@ previous fresh18 Settings images were occluded, requiring newly visible19 captur
 
 All four hosted jobs passed for `7fa0e46c`, `fb717b03` and current24af
 run41956606124, including Windows tests, strict lint and release build. Evidence:
-`.hermes/evidence/list-density-delivery-current/` (current staged cohort),
-`.hermes/evidence/list-caption-current/` (source regressions), and
-`.hermes/evidence/status-error-delivery-current/` (retired prior cohort).
+`.evidence/list-density-delivery-current/` (current staged cohort),
+`.evidence/list-caption-current/` (source regressions), and
+`.evidence/status-error-delivery-current/` (retired prior cohort).
 Linux and Windows24af previews are delivered. Full roadmap acceptance is open.
 
 Earlierc4 run41929773433 passed all four hosted jobs. Current Linux retains
@@ -2869,7 +2869,7 @@ with helper protocol3 readiness/update checks. Original DAC AppImage/FUSE protec
 restart/history/Undo/cleanup, native DEB two-reboot and four aa-to-DAC replacement
 cases pass at their explicit scopes. The private1000-file mounted-daemon idle
 sample is0.0333% of one core over30seconds; no personal/large-corpus guarantee is
-inferred. Receipts: `.hermes/evidence/recovery-transport-delivery-current/`.
+inferred. Receipts: `.evidence/recovery-transport-delivery-current/`.
 The managed personal daemon is Ready on the matching binary with exact preferences,
 startup choice and database identity preserved. Superseded packages and consumed
 staging are removed. The personal system helper still needs owner authentication
@@ -2999,7 +2999,7 @@ Administrator Copy remains gated; this investigation is not implementation.
 ### Earlier delivered cohort: event-driven Services
 
 Runtime source: `f463ff268f1c0850360fb3d1d81da18a3d3240ec`.
-Evidence/producers: `.hermes/evidence/service-wake-current/`.
+Evidence/producers: `.evidence/service-wake-current/`.
 This historical f463 cohort promoted seven artifacts. Its four Linux packages
 were subsequently replaced by the061 delivery above; original receipts keep
 their f463 hashes/scopes.
@@ -3046,7 +3046,7 @@ stopped services, explicit restart and removal. A guest-only seven-second
 `ExecStartPre` delay verifies that the first `index ensure` call succeeds after
 7.06/7.10seconds. A daemon remains running after the CLI client exits. Source and
 preferences remain byte-identical. Evidence and frozen producers:
-`.hermes/evidence/linux-service-acceptance-current/ACCEPTANCE.json`.
+`.evidence/linux-service-acceptance-current/ACCEPTANCE.json`.
 
 This is CLI acceptance, not native checkbox, graphical helper/authentication,
 GUI-close, login/reboot or binary-version upgrade acceptance. Those remain in
@@ -3067,7 +3067,7 @@ Retrying with the temporary VM administrator password installs the root-owned
 helper and policy and changes the UI to green installed/ready with reinstall.
 After revoking temporary authorization, reinstall opens another real prompt and
 completes. The source fixture is preserved. All seven original captures were
-directly reviewed. Evidence: `.hermes/evidence/linux-helper-prompt-current/ACCEPTANCE.json`.
+directly reviewed. Evidence: `.evidence/linux-helper-prompt-current/ACCEPTANCE.json`.
 
 This does not establish AppImage/FUSE-specific setup, protected-file elevation,
 native index startup-checkbox, login/reboot, actual binary-version upgrade or
@@ -3094,7 +3094,7 @@ work. The original source fixture is retained.
 All ten original captures were directly reviewed. Two reveal the stopped-state
 visual failure described above; they are retained as failed visual evidence,
 not converted to accepted UI results. Evidence and frozen producers:
-`.hermes/evidence/linux-appimage-services-current/ACCEPTANCE.json`.
+`.evidence/linux-appimage-services-current/ACCEPTANCE.json`.
 The source fix probes the Linux listener without waiting on a full backlog;
 missing/refused stale sockets report absent while foreign files and real errors
 remain errors. Services uses this probe instead of socket-file existence.
@@ -3134,14 +3134,14 @@ background session and pkexec127 Not authorized, with no filesystem effect.
 Official polkit policy/session documentation explains why this does not meet the
 active local-console condition. The positive test must use a genuine local seat;
 no permission rule was relaxed. This remains independently executable software QA.
-Evidence: `.hermes/evidence/linux-stopped-delivery-current/`.
+Evidence: `.evidence/linux-stopped-delivery-current/`.
 
 ### Shared-widget delivery, 2026-11-04
 
 Runtime source `45830098b6d58eeb8a08252f8d8b9c6fe35d9eef` now has four built
 Linux packages now promoted at stable paths. Windows portable/NSIS/MSIX17
 candidates remain staged; the stable Windows paths/manifest still identify the
-usablef463 cohort. Evidence: `.hermes/evidence/theme-delivery-current/`.
+usablef463 cohort. Evidence: `.evidence/theme-delivery-current/`.
 
 Linux production content/dependency/policy/namespace gates pass. A complete113-file
 AppImage inventory shows only expected GUI/documentation changes; indexd is
@@ -3283,7 +3283,7 @@ Three owned VMs/nine volumes, credentials/seeds/private profiles, result archive
 77MB content extraction, consumed stage and superseded Linux packages are removed.
 Twenty obsolete compiler incremental sessions were removed by the locked helper
 (0.76GiB). Current packages, useful caches, protected VMs and user data remain.
-Evidence/producers: `.hermes/evidence/privileged-copy-current/`; `PROMOTION.json`
+Evidence/producers: `.evidence/privileged-copy-current/`; `PROMOTION.json`
 and `CLEANUP_CURRENT.json` are the delivery and resource authorities. Full roadmap
 completion, restart discovery, Windows bridge and broader native/physical gates
 remain separate.
@@ -3308,7 +3308,7 @@ AppImage/portable stable-path replacement from runtime47db to f8 cases preserve 
 Grid preference and database inode; all eight old/new windows were reviewed. The
 actual current FUSE daemon passes watcher/query/restart/two-shutdown checks at 0.13%
 one core over 30 seconds without clients on a private 1000-file fixture. All current
-receipts are in `.hermes/evidence/helper-readiness-final-current/`.
+receipts are in `.evidence/helper-readiness-final-current/`.
 
 The accepted cohort is published at `dist/packages/`. The personal managed index
 was refreshed to the current daemon, is Ready, and retains startup choice, exact
@@ -3341,7 +3341,7 @@ choice, Grid preference and database identity. Four login and eight old/new
 replacement captures were reviewed. The current mounted daemon passes watcher,
 query, restart and two-shutdown checks; its private 1000-file 30-second sample
 measures 0.07% of one core, not a personal/large-corpus guarantee. Current receipts:
-`.hermes/evidence/administrator-copy-status-current/`. All owned test environments,
+`.evidence/administrator-copy-status-current/`. All owned test environments,
 credentials, input aliases, transports, profiles and content extractions are removed.
 Exact aa run41894809859 passes all four hosted jobs. The accepted four-format aa
 cohort is now published at `dist/packages/`; the managed personal index is Ready
@@ -3357,13 +3357,13 @@ exact restored cohort's current Undo availability while preserving its card ID;
 live-session receipts, active work and cleanup ownership are preserved. All 502 UI
 tests pass (one existing ignore), including rendered status and refresh/ownership
 regressions; strict Linux and Windows cross-target all-target lint passes. Evidence:
-`.hermes/evidence/administrator-copy-refresh-current/`. This checkpoint is not yet
+`.evidence/administrator-copy-refresh-current/`. This checkpoint is not yet
 packaged or accepted on a native desktop. Eight obsolete incremental sessions were
 removed; current binaries and compiler caches remain. Windows transport and its
 canonical privileged recovery bridge still need implementation and native testing.
 
 Windows helper transport now has a focused source/native checkpoint in
-`.hermes/evidence/windows-helper-pipe-current/`. Direct native UAC and an owned
+`.evidence/windows-helper-pipe-current/`. Direct native UAC and an owned
 local pipe replace PowerShell and temporary request/response files. The index and
 helper share one overlapped-I/O implementation, retaining separate authentication
 policies. Ten focused native cases pass: five index pipe regressions, helper peer/
@@ -3384,7 +3384,7 @@ native GUI run rejected a history status after Undo: a fully undone cohort becam
 preservation, normal restart and authenticated discovery worked. The owned VM,
 three volumes, credentials/input and rejected packages are removed. Exact failed
 source, captures and controls remain in
-`.hermes/evidence/recovery-transport-delivery-current/first-candidate/`.
+`.evidence/recovery-transport-delivery-current/first-candidate/`.
 
 The correction uses a typed completed-Undo result after fresh canonical admission
 and explicit history recovery states (available, undone, review required). A
@@ -3400,7 +3400,7 @@ The private 1000-file mounted-daemon sample measured 0.0333% of one core over30s
 this is not a personal-index or large-corpus guarantee. All owned native guests,
 three volumes per guest, credentials, inputs, consumed transports and content
 extractions are removed. Compact receipts/captures remain in
-`.hermes/evidence/recovery-transport-delivery-current/`; the111MiB immutable stage
+`.evidence/recovery-transport-delivery-current/`; the111MiB immutable stage
 is retained solely for guarded publication after exact-source run41911407933.
 At this checkpoint three hosted jobs pass and Windows verification is still in
 Cargo test. Current delivered Linuxaa/Windows458 are unchanged. U08 remains open:
@@ -3415,7 +3415,7 @@ strict Linux/Windows cross-target all-target lint and formatting pass. Eight
 superseded incremental sessions were removed (0.41GiB reported recovered), while
 current test binaries and useful compiler caches remain. This is source/rendered
 acceptance only; native visual inspection and packaging remain required. Evidence:
-`.hermes/evidence/grid-label-layout-current/SOURCE_CHECKS.json`. Its source push is
+`.evidence/grid-label-layout-current/SOURCE_CHECKS.json`. Its source push is
 queued behind the still-running DAC CI to avoid cancelling that accepted candidate.
 
 A subsequent native review ran the exact7fefe release GUI beside the separately
@@ -3429,7 +3429,7 @@ Miller samples show1002 items without input at0/2/10/30s; this does not close th
 earlier disabled-service initial0-count finding. All eight original captures were
 reviewed. Three owned attempts (including two fixture precondition failures),
 nine volumes, credentials, executable aliases and consumed transports are removed.
-Compact controls/captures remain in `.hermes/evidence/grid-label-layout-current/`.
+Compact controls/captures remain in `.evidence/grid-label-layout-current/`.
 
 DAC Linux delivery is complete: all four exact-source jobs pass, guarded promotion
 published the accepted cohort, and the managed personal daemon is Ready with
@@ -3567,8 +3567,8 @@ Windows assembly was intentionally canceled after release compilation; its
 producer stopped children and removed staging. All rejected Linux package runtime
 copies/extractions are removed after closed-profile/consumer checks. Stable
 25b38c8f deliverables remain unchanged. Compact controls are under
-`.hermes/evidence/desktop-package-current/rejected-f33/`; source/alignment evidence
-is `.hermes/evidence/title-alignment-current/`. Continue exact package/native
+`.evidence/desktop-package-current/rejected-f33/`; source/alignment evidence
+is `.evidence/title-alignment-current/`. Continue exact package/native
 acceptance and remaining roadmap gates; owner/external waits remain parked.
 
 ## Long-title overflow — source correction, 2026-11-01
@@ -3594,8 +3594,8 @@ Hosted Linux verification, production active/pending portal cleanup and teardown
 and search performance pass. These retain their exact scope. The long-title case
 is rejected: all staged Linux/Windows packages/extractions are removed; stable
 25b38c8f deliverables remain unchanged. Rebuild one clean-source cohort after the
-correction. Evidence: `.hermes/evidence/properties-long-title-current/` and compact
-controls under `.hermes/evidence/desktop-package-current/rejected-e171/`.
+correction. Evidence: `.evidence/properties-long-title-current/` and compact
+controls under `.evidence/desktop-package-current/rejected-e171/`.
 
 ## Hosted portal lifecycle timing — 2026-11-01
 
@@ -3605,7 +3605,7 @@ rate-limit window and failed before pending-portal uninstall; immediate teardown
 was also rate-limited. The maintained hosted producer now waits the configured
 interval between scenarios and before teardown, preserving systemd policy and all
 assertions. It skips disable for an already-disabled receipt. Local syntax/parser
-checks pass; hosted rerun remains required. Evidence: `.hermes/evidence/portal-ci-pacing-current/`.
+checks pass; hosted rerun remains required. Evidence: `.evidence/portal-ci-pacing-current/`.
 The Properties rendered test now reads both measured scroll positions and checks
 the native Mode/read-only label; Linux Dark/Light at100/175percent passes, with
 hosted Windows execution still pending. Clean-source package refresh continues.
@@ -3627,7 +3627,7 @@ enable/restore, real default directory/drive launches, reviewed addresses, nativ
 Properties, normal closes, CLI repair/preservation and uninstall restoration.
 Earlier pointer-column/focus/close assumptions are rejected controls, with all
 roots/defaults restored and VMs off. The final driver verifies foreground focus
-before input. Evidence: `.hermes/evidence/windows-folder-default-current/`.
+before input. Evidence: `.evidence/windows-folder-default-current/`.
 
 Both cleanup entry points now remove desktop integration after successful data
 cleanup. Actual Linux CLI checks retain registration for a blocked cache or a
@@ -3663,7 +3663,7 @@ QPainter controls are retained; their private resources are removed.
 
 Linux49 app/two daemon/three CLI tests and452 UI tests pass, with one ignored
 existing mount-namespace fixture. Strict Linux/Windows GNU checks pass. Evidence:
-`.hermes/evidence/file-manager-lifecycle-current/`. Cleanup retired16 superseded
+`.evidence/file-manager-lifecycle-current/`. Cleanup retired16 superseded
 Linux app products with matching compiler settings, no hard-link/active/fingerprint
 consumers, retaining the verified current binary and shared dependencies. Their
 logical size is12,935,471,730 bytes. Final guarded incremental cleanup removed29 obsolete sessions (1.07 GiB
@@ -3695,7 +3695,7 @@ preferences are preserved; all private profiles/processes/mounts are removed.
 Linux49 app/two daemon/three CLI, one URI and six folder tests pass, with strict
 Linux/Windows GNU checks. Cleanup retired two replaced test executables
 (835,425,392 bytes) and38 obsolete incremental sessions (1.23 GiB reported).
-Evidence: `.hermes/evidence/file-manager-dbus-current/`. Startup-notification
+Evidence: `.evidence/file-manager-dbus-current/`. Startup-notification
 focus, broader/multiple-window reaping and final packaged integration remain
 independent software gates. Continue those and the ordered queue below.
 
@@ -3715,7 +3715,7 @@ Dark100/Light150 file/link windows close normally and preserve preferences/sourc
 without starting an index. Reviewed group widths are consistent. All owned
 profiles/processes are removed; three replaced test executables (756,170,826 bytes)
 and eight obsolete incremental sessions (0.37 GiB reported) are retired. Evidence:
-`.hermes/evidence/file-manager-properties-current/`. Native Windows Properties
+`.evidence/file-manager-properties-current/`. Native Windows Properties
 and exact packages remain separate gates. Continue FileManager1 and the queue
 below. Hosted60e92257 run41341026830 now passes all jobs, including MSVC icon
 resource/native Shell pixel verification;41d26cd5 also passes all jobs.
@@ -3730,7 +3730,7 @@ Historical evidence inputs remain unchanged. No personal settings file is edited
 All41 core tests pass, including active view/preferences round trips. Strict
 all-target platform/app/UI checks pass on Linux and Windows GNU. This is schema
 cleanup, not implementation of session restoration or package acceptance.
-Evidence: `.hermes/evidence/unused-session-config-current/`. Continue desktop
+Evidence: `.evidence/unused-session-config-current/`. Continue desktop
 integration and remaining software/package gates with the external waits parked.
 
 ## Windows executable icons — source, 2026-11-01
@@ -3751,7 +3751,7 @@ Strict Linux/GNU checks pass, plus46 Linux app/two daemon/three CLI tests and
 all32 Windows app tests per token. The Windows GUI subsystem remains intact in
 both products. The maintained native checker is now a Windows release CI gate,
 pinned to the tested Windows PowerShell engine; hosted MSVC execution is pending.
-Evidence: `.hermes/evidence/windows-executable-icon-current/`. Stable packages
+Evidence: `.evidence/windows-executable-icon-current/`. Stable packages
 remain25b38c8f. Continue default-folder preference, FileManager1, software gates
 and one coherent package cohort; signing/Store/final owner waits remain separate.
 
@@ -3769,7 +3769,7 @@ entry is restored, and reviewed Settings shows success plus Ready. Folder,
 background and drive shell launches, normal close, removal, original defaults
 and source preservation pass again. The owned root/processes are removed and
 the retained VM is off. Strict Linux/GNU checks pass. Evidence:
-`.hermes/evidence/services-refresh-current/`. This is focused source acceptance;
+`.evidence/services-refresh-current/`. This is focused source acceptance;
 stable packages still25b38c8f. Continue executable icons, default-folder preference,
 FileManager1 and the remaining software/package gates.
 
@@ -3795,7 +3795,7 @@ coordinate/input assumptions and cancellation. Every completed control removed
 its root/processes and stopped the retained VM. Manual Refresh removed
 the action row while its status query ran; the later refresh checkpoint above
 corrects that behavior and verifies the original sequence. These source checks do not establish final-package acceptance.
-Evidence: `.hermes/evidence/windows-folder-integration-current/` and the bounded
+Evidence: `.evidence/windows-folder-integration-current/` and the bounded
 native command-quoting probe under `windows-folder-command-probe-current`.
 Packages remain25b38c8f. Default-folder preference and FileManager1 remain work.
 
@@ -3806,7 +3806,7 @@ the caller lease until a validated bounded response arrives. Actual Linux source
 GUI checks pass Save, folder, user cancellation and automatic chooser exit after
 abrupt caller loss in a non-text native directory. No selected file is created
 by the chooser; original bytes, main preferences and stopped index remain intact.
-Evidence: `.hermes/evidence/picker-caller-example-current/`. Windows execution of
+Evidence: `.evidence/picker-caller-example-current/`. Windows execution of
 this example remains separate from the direct native caller fixture.
 
 The Windows direct caller fixture first mistook an untitled OpenGL bootstrap
@@ -3843,7 +3843,7 @@ a test-fixture conflict between two document services sharing a runtime root.
 The final producer allocates its own runtime and requires its document process
 to remain live. Open and Open+Save pass; all attempts removed their profiles,
 actors, mounts and compiled client. Compact controls and final evidence are in
-`.hermes/evidence/portal-sandbox-current/`. Hosted8cd433cc now passes the real
+`.evidence/portal-sandbox-current/`. Hosted8cd433cc now passes the real
 portal and folder production lifecycle, including restoration and removal.
 
 Latest0e85f745 hosted Linux stops at the HTML sandbox witness gate: one renderer
@@ -3871,7 +3871,7 @@ exit and protocol2 readiness, and verifies unchanged preferences/source. Retirem
 pins the authenticated process and requires the dedicated daemon role; it does
 not add a legacy protocol parser. A non-index peer refusal test guards termination.
 
-Evidence: `.hermes/evidence/native-search-wire-current/`. All owned profiles,
+Evidence: `.evidence/native-search-wire-current/`. All owned profiles,
 processes, old-package extraction and mounts are removed. Strict Linux/GNU checks, 243 Linux search tests (two measurement ignores),
 45 app/two daemon/three CLI and14 platform integration tests pass. Windows passes
 all eight protocol tests under ordinary/elevated tokens and actual accepted
@@ -3906,9 +3906,9 @@ update, restoration and teardown at 87999cf8 (run 41315141490); all Linux, Windo
 and search jobs pass. The extended folder lifecycle gate awaits its own hosted
 run. Stable packages remain 25b38c8f; these changes are not yet packaged.
 
-Evidence: `.hermes/evidence/folder-integration-current/`,
-`.hermes/evidence/index-diagnostic-label-current/`, and the property-fix hosted
-pass under `.hermes/evidence/portal-management-current/`. All owned GUI profiles,
+Evidence: `.evidence/folder-integration-current/`,
+`.evidence/index-diagnostic-label-current/`, and the property-fix hosted
+pass under `.evidence/portal-management-current/`. All owned GUI profiles,
 processes and mounts are removed. Compiler cleanup results accompany this
 checkpoint. Continue native query transport, remaining desktop/cooperating-app
 integration, package acceptance and the outstanding roadmap gates.
@@ -3931,7 +3931,7 @@ required; the corrected interface is not yet packaged. Earlier 78af6a2a Windows
 and search jobs passed; its Ubuntu failure was the renderer-name collision already
 corrected in 5dfe01ca, whose Ubuntu/search jobs are green.
 
-Evidence: `.hermes/evidence/portal-management-current/property-fix/`. Four obsolete
+Evidence: `.evidence/portal-management-current/property-fix/`. Four obsolete
 incremental sessions were removed (0.33 GiB reported); private probe profiles and
 processes are gone. Continue the production lifecycle rerun and the independently
 available folder/cooperating-app work. Stable packages remain `25b38c8f`.
@@ -3953,8 +3953,8 @@ both temporary roots. Real FD export of a native-byte filename, FUSE reads,
 per-app read permissions, deletion and unchanged original bytes pass. This closes
 the private-mount investigation; it does not establish an actual sandboxed caller
 or browser workflow. All private services, mounts and profiles are removed.
-Evidence: `.hermes/evidence/portal-document-export-current/` and
-`.hermes/evidence/portal-management-current/`.
+Evidence: `.evidence/portal-document-export-current/` and
+`.evidence/portal-management-current/`.
 
 Continue the hosted production lifecycle result, then sandbox caller, supported
 folder/cooperating-app integration and coherent package acceptance. Stable packages
@@ -3979,7 +3979,7 @@ acceptance. The later ae64ebd0 Ubuntu/search jobs passed even before this naming
 correction, confirming the original failure was intermittent; a new complete
 hosted run is still required for the correction.
 
-Evidence: `.hermes/evidence/preview-native-title-current/`. Its native GUI binary
+Evidence: `.evidence/preview-native-title-current/`. Its native GUI binary
 contains the title fix and predates only the independent renderer-name change.
 Owned processes/profiles are closed; 25 obsolete incremental sessions were removed
 (0.54 GiB reported). The exited system-monitor helper review was removed from the
@@ -4006,7 +4006,7 @@ routing. The actual Windows application also receives an unpaired UTF-16 argv
 unit and reaches Help with exit 0 in both tokens. Guest profiles are preserved,
 owned fixtures removed and the retained QA VM shut down.
 
-Evidence: `.hermes/evidence/native-launch-current/`. These are source checks;
+Evidence: `.evidence/native-launch-current/`. These are source checks;
 stable packages remain `25b38c8f`. This removes a prerequisite for reversible folder
 handlers. Native preview labels still fall back to “Preview” for non-text names;
 fix that observed display issue, then continue production activation/package,
@@ -4044,7 +4044,7 @@ restart/registration acceptance is still required. Actual source Services is
 visually checked using the shared settings frame, with normal close, index
 continuity and unchanged fixture files.
 
-Evidence: `.hermes/evidence/portal-current/`. This is source work; stable Linux
+Evidence: `.evidence/portal-current/`. This is source work; stable Linux
 packages and the Windows candidate remain the accepted `25b38c8f` cohort. Continue
 production activation/package acceptance, sandbox document export investigation,
 cooperating-app Windows integration and reversible folder handlers. Then deliver
@@ -4079,7 +4079,7 @@ were retained and each process was verified exited before a fresh guarded retry.
 No exception was added. Current binaries,compiler-matched test executables,useful
 latest caches and compact evidence remain. Stable packages are still source25b38c8f;
 Windows actual caller-hint GUI and new cohort acceptance remain independent work.
-Evidence: `.hermes/evidence/picker-native-name-request-current/ACCEPTANCE.json`.
+Evidence: `.evidence/picker-native-name-request-current/ACCEPTANCE.json`.
 Continue the Linux portal backend and reversible opt-in integration next.
 
 
@@ -4110,7 +4110,7 @@ superseded test executable/fingerprint/dep-info. Current binaries and useful cac
 remain. The stable packages still use source25b38c8f; batch these integration
 changes into the next coherent package cohort.
 
-Evidence: `.hermes/evidence/picker-disconnect-current/ACCEPTANCE.json`.
+Evidence: `.evidence/picker-disconnect-current/ACCEPTANCE.json`.
 Next: implement the opt-in Linux FileChooser backend and reversible registration,
 then supported cooperating-app Windows and folder integration. Owner/external
 acceptance waits do not block this work.
@@ -4143,7 +4143,7 @@ The owned Windows root/processes are removed, original profiles preserved and VM
 off. Guarded cleanup retired34 obsolete incremental sessions (1.52GiB) and exact
 compiler-matched superseded UI test executables; current caches/binaries remain.
 
-Evidence: `.hermes/evidence/picker-parent-current/ACCEPTANCE.json`. The stable
+Evidence: `.evidence/picker-parent-current/ACCEPTANCE.json`. The stable
 packages below remain source25b38c8f. Package this milestone with the next coherent
 integration cohort. Continue portal/cooperating-app registration and reversible
 folder handlers; owner/physical/release waits stay parked.
@@ -4196,9 +4196,9 @@ integration and folder actions; remaining available software/theme/resource chec
 Owner identities, signing/submission, physical hardware and final acceptance stay
 on the explicit waiting list and do not block those tasks.
 
-Evidence: `.hermes/evidence/linux-picker-package-current/`,
-`.hermes/evidence/windows-picker-package-current/`,
-`.hermes/evidence/windows-picker-gui-current/`.
+Evidence: `.evidence/linux-picker-package-current/`,
+`.evidence/windows-picker-package-current/`,
+`.evidence/windows-picker-gui-current/`.
 
 Last updated: 2026-11-01
 
@@ -4595,7 +4595,7 @@ Earlier checkpoints below retain their recorded source/artifact scopes:
   GUI roots are removed; the retained guest is off with unchanged XML and
   original files/login values preserved. The prior `bcd625ac` cohort was fully
   verified without consumers, then retired (285,845,463 bytes). Both superseded
-  `.hermes/packaging-tmp/windows-activity-candidate/` and task staging are gone.
+  `.evidence/packaging-tmp/windows-activity-candidate/` and task staging are gone.
   The prescribed incremental tool inspected both exact shared roots and applied
   cleanup after compiler consumers ended: zero obsolete sessions remained.
   Six selected product frames and compact receipts remain. Authority:
@@ -4606,14 +4606,14 @@ Earlier checkpoints below retain their recorded source/artifact scopes:
   acceptance remain separate gates. Public release files are unchanged.
 - **Completed older package workflows:** `48fb6c01` same/cross-volume parent-
   rename Undo and reopened recovery retain their exact earlier artifact scope in
-  `.hermes/evidence/windows-move-activity-gui-current/ACCEPTANCE.json`. They are
+  `.evidence/windows-move-activity-gui-current/ACCEPTANCE.json`. They are
   not automatically acceptance of the newer package. Earlier `68962f05` receipts
   are historical; its superseded generated internal candidate is removed.
 - **Cleanup:** all owned native-test, compiler and desktop fixtures,
   temporary accounts/profiles/credentials and secondary NTFS volume are removed.
   Original files, login values, disks and VM definition are preserved. The
   retained guest is off. Completed stages/extractions are absent, including
-  `.hermes/packaging-tmp/.windows-ci-stage/`; the current accepted Windows
+  `.evidence/packaging-tmp/.windows-ci-stage/`; the current accepted Windows
   candidate occupies its one stable path above. Current compiler caches remain.
   Superseded task test executables and older finalized incremental sessions were
   retired only after replacement, hard-link, consumer and compiler-lock checks.
@@ -4799,7 +4799,7 @@ Historical variants/scopes:
 The active order is maintained in **Current checkpoint and next work** above.
 
 CI push filters now omit commits that change only roadmap/status delivery
-receipts (`docs/ROADMAP.md`, `.hermes/evidence/**`, `dist/**`). Source, workflow,
+receipts (`docs/ROADMAP.md`, `.evidence/**`, `dist/**`). Source, workflow,
 packaging and other documentation changes still trigger the full workflow; pull
 requests retain unconditional verification. Runtime test commands, exclusions and
 release gates are unchanged. YAML/filter checks and all three release workflow/
@@ -4898,11 +4898,11 @@ selected for subsequent clipboard actions. Its actual Dark100 AppImage passes
 Copy/Paste, conflict renaming, Copy Undo, Rename, Cut/Paste without reselection,
 Move Undo and Rename Undo, with source bytes preserved and clean private-process
 teardown. All four formats pass payload/source/helper checks. Exact evidence is
-in `.hermes/evidence/linux-copy-workflows-current/PACKAGED_ACCEPTANCE.json`.
+in `.evidence/linux-copy-workflows-current/PACKAGED_ACCEPTANCE.json`.
 The source now extends the existing Move conflict confirmation to Copy, exposing
 Keep both, Replace, Skip and Cancel through one dialog. That follow-up's source
 checks and exact-package acceptance are recorded separately in
-`.hermes/evidence/transfer-conflicts-current/`; the rename delivery alone does
+`.evidence/transfer-conflicts-current/`; the rename delivery alone does
 not prove the follow-up is packaged.
 
 The Linux build entry point stages all formats and validates their checksums before
@@ -4949,10 +4949,10 @@ close. The displaced original and identical paired journal hashes remain unchang
 across four snapshots. Dark/List at 100% and default renderer selection are used.
 
 Source/native evidence remains in
-`.hermes/evidence/windows-packaged-workflows-current/ACCEPTANCE.json`; the new
+`.evidence/windows-packaged-workflows-current/ACCEPTANCE.json`; the new
 package and GUI receipts are
-`.hermes/evidence/windows-move-reuse-package-current/ACCEPTANCE.json` and
-`.hermes/evidence/windows-move-reuse-gui-current/ACCEPTANCE.json`.
+`.evidence/windows-move-reuse-package-current/ACCEPTANCE.json` and
+`.evidence/windows-move-reuse-gui-current/ACCEPTANCE.json`.
 The source checks include 46 passing Move tests and 25 explicit fixtures not run.
 Cross-volume retained completion/name reuse, Windows Move Undo, installer lifecycle
 and the other platform gates remain required. Public Windows packages and Linux
@@ -4980,12 +4980,12 @@ preferences/installation hashes are unchanged, and the retained VM is off with
 its definition unchanged. Superseded compiler sessions are retired while keeping
 the newest cache for each affected configuration.
 
-Evidence: `.hermes/evidence/windows-cross-move-reuse-current/ACCEPTANCE.json`.
+Evidence: `.evidence/windows-cross-move-reuse-current/ACCEPTANCE.json`.
 The internal portable/NSIS/MSI candidate now contains this correction from clean
 `68962f05`. All 57 payload files agree across portable, extracted NSIS and native
 MSI administrative extraction, and all five executables match release outputs.
 Native loader/CLI checks pass. Receipt:
-`.hermes/evidence/windows-cross-move-package-current/ACCEPTANCE.json`.
+`.evidence/windows-cross-move-package-current/ACCEPTANCE.json`.
 The prior generated candidate, compiler/extraction fixtures and temporary MSI
 service changes are retired/restored; the retained guest is off with unchanged
 persistent definition and checked profile/installation hashes. Public Windows
@@ -4997,7 +4997,7 @@ pass, including after normal close. The displaced original and both completion
 journal hashes remain identical across six snapshots. The two NTFS volumes have
 distinct volume identities and allocation sizes. Dark/List100 and default renderer
 selection are used. Receipt:
-`.hermes/evidence/windows-cross-move-gui-current/ACCEPTANCE.json`.
+`.evidence/windows-cross-move-gui-current/ACCEPTANCE.json`.
 
 The GUI driver needed a native focus/pointer correction after missed click input;
 the retained failure state showed no new Move journal and preserved source bytes.
@@ -5032,7 +5032,7 @@ excluded. Strict Windows platform all-target Clippy, formatting and diff checks
 pass. The initial recovery fixture used directory-only hooks with a regular file;
 that fixture mistake and the corrected run are preserved separately.
 
-Evidence: `.hermes/evidence/windows-move-undo-current/ACCEPTANCE.json`.
+Evidence: `.evidence/windows-move-undo-current/ACCEPTANCE.json`.
 The task removes its VHD and native payload, preserves checked original app files,
 returns the retained VM to off with unchanged definition, and retires superseded
 compiler sessions while keeping each current configuration's latest cache.
@@ -5075,7 +5075,7 @@ repaints cannot consume its completion signal. The earlier timeout and a native
 QA HOME-directory setup failure are retained with their corrected runs. Strict
 Windows platform and Linux/Windows UI all-target Clippy, formatting and diff
 checks pass. Exact evidence and cleanup are recorded in
-`.hermes/evidence/windows-move-undo-atomic-current/ACCEPTANCE.json`.
+`.evidence/windows-move-undo-atomic-current/ACCEPTANCE.json`.
 
 This checkpoint is source/native only. The stable internal Windows candidate is
 still `68962f05`; no public Windows or Linux package includes this change yet.
@@ -5115,7 +5115,7 @@ and child exits at six intent/restoration/completion boundaries. The earlier
 68-check run is retained separately. Linux UI passes 395 tests with one existing
 ignore; strict Windows platform and Linux/Windows UI all-target Clippy pass. Native
 UI and teardown receipts bind their own binaries and scopes. Evidence:
-`.hermes/evidence/windows-move-undo-replace-current/ACCEPTANCE.json`.
+`.evidence/windows-move-undo-replace-current/ACCEPTANCE.json`.
 
 This remains source/native work. Current Windows candidates and all Linux/public
 packages are unchanged. Cross-volume Undo, recovery operation-path admission and
@@ -5166,7 +5166,7 @@ collision/refusal/retry plus typed recovery status and existing transfer/cancell
 behavior. Linux UI passes 395 tests with one existing ignore; strict Windows
 platform and Linux/Windows UI all-target Clippy pass. These worker checks do not
 replace rendered package GUI acceptance. Evidence:
-`.hermes/evidence/windows-move-undo-cross-current/ACCEPTANCE.json`.
+`.evidence/windows-move-undo-cross-current/ACCEPTANCE.json`.
 
 All packages remain unchanged. Cross-volume Replace must still restore its retained
 destination through durable inverse-controller ownership. Recovery path admission,
@@ -5199,7 +5199,7 @@ to prevent a competing rename. The corrected handle requests DELETE access and
 denies delete sharing, matching the existing native Undo protection. The failed
 run is retained separately rather than replaced by a passing receipt.
 
-Evidence: `.hermes/evidence/windows-move-undo-cross-replace-current/ACCEPTANCE.json`.
+Evidence: `.evidence/windows-move-undo-cross-replace-current/ACCEPTANCE.json`.
 Recovery path admission, session-history reconciliation, terminal-control lifecycle,
 containing-parent/unavailable-volume behavior, broader metadata support, resource
 and hard-power outcomes, and exact-package GUI acceptance remain required before
@@ -5222,7 +5222,7 @@ refreshing its own authority. Central-first intent gaps retain an explicit absen
 local-journal observation, allowing the native engine to recover that legitimate
 interruption without bypassing the queue check.
 
-Evidence: `.hermes/evidence/windows-move-recovery-admission-current/ACCEPTANCE.json`.
+Evidence: `.evidence/windows-move-recovery-admission-current/ACCEPTANCE.json`.
 This is a source/native checkpoint; packages are unchanged. Session-history
 reconciliation, terminal-control retirement, containing-parent/unavailable-volume
 lifecycle, hard-power/resource and exact-package acceptance remain required.
@@ -5248,7 +5248,7 @@ Reconciliation itself performs no filesystem I/O on the UI thread. Activity row
 labels and recovery actions use that same captured observation rather than the
 earlier discovery status, so they cannot diverge during an inverse completion.
 
-Evidence: `.hermes/evidence/windows-move-history-current/ACCEPTANCE.json`.
+Evidence: `.evidence/windows-move-history-current/ACCEPTANCE.json`.
 This is a source/native checkpoint; packages are unchanged. Terminal-control
 retirement and containing-parent/unavailable-volume lifecycle, Linux native-plan
 admission, hard-power/resource outcomes and exact-package acceptance still remain.
@@ -5274,7 +5274,7 @@ conversion. An already retired non-overwrite forward directory is represented
 by an explicit absence observation under its verified original destination parent,
 so late central-journal teardown remains retryable without adopting a replacement.
 
-Evidence: `.hermes/evidence/windows-move-terminal-parent-current/ACCEPTANCE.json`.
+Evidence: `.evidence/windows-move-terminal-parent-current/ACCEPTANCE.json`.
 The first native run passed the new rename cases but exposed that late-forward
 teardown absence; the failed run is retained, and the corrected state distinction
 is checked by the existing sharing/interruption regression.
@@ -5310,7 +5310,7 @@ This ownership evidence now feeds explicit cleanup admission and worker
 revalidation as described below. Capturing completion alone deletes neither
 journals nor unknown private files. Native checks and exact
 remaining acceptance limits are recorded in
-`.hermes/evidence/windows-move-completion-current/ACCEPTANCE.json`.
+`.evidence/windows-move-completion-current/ACCEPTANCE.json`.
 
 ### Completed Undo with a detached Windows volume
 
@@ -5328,7 +5328,7 @@ streams and unknown private files, then removes the owned fixture. Deliberate
 preparation and verification failures also exercise fixture teardown. This is
 native API acceptance, not rendered/package UI, physical USB removal, sudden
 power loss, FAT32 or ReFS acceptance. Source and exact evidence are recorded in
-`.hermes/evidence/windows-move-offline-current/ACCEPTANCE.json`. Packages remain
+`.evidence/windows-move-offline-current/ACCEPTANCE.json`. Packages remain
 unchanged. The explicit cleanup action below builds on this completion proof.
 
 ### Windows completed-Undo recovery-record cleanup
@@ -5366,7 +5366,7 @@ offline/failure stages and 13 UI-worker checks. The privileged audit-SACL test
 remains excluded. Linux UI regression passes 395 tests; strict platform/UI
 all-target Clippy passes on Linux and Windows. These are native API and headless
 worker checks, not rendered UI acceptance. Exact evidence and complete teardown
-are recorded in `.hermes/evidence/windows-move-retirement-current/ACCEPTANCE.json`. This checkpoint
+are recorded in `.evidence/windows-move-retirement-current/ACCEPTANCE.json`. This checkpoint
 changes source, not installed packages. Rendered/package acceptance, retained
 forward and unfinished-operation parent renames, hard-power/resource tests,
 other filesystems and the remaining roadmap gates still apply.
@@ -5398,7 +5398,7 @@ receipt for exact session-history reconciliation after a failed attempt. Undo an
 record-cleanup preparation keep an idle UI polling without a continuous redraw
 loop. Read-only admission and native worker checks are recorded separately from
 rendered package acceptance in
-`.hermes/evidence/windows-move-parent-admission-current/ACCEPTANCE.json`.
+`.evidence/windows-move-parent-admission-current/ACCEPTANCE.json`.
 
 The final ordinary-user Windows selection passes 166 checks: 138 Move and
 receipt-dependency checks, seven Copy registry checks, seven fresh-process
@@ -5439,7 +5439,7 @@ requested-name occupant; normal no-replace candidate selection preserves it.
 The native worker checks include asynchronous cross-volume Undo admission,
 current directory claims, restored pointer selection and listing refresh. Evidence
 and exact executable hashes are recorded in
-`.hermes/evidence/windows-cross-parent-current/ACCEPTANCE.json`.
+`.evidence/windows-cross-parent-current/ACCEPTANCE.json`.
 These are source/native API and worker checks. The Windows packages retain their
 older recorded source; rendered exact-package Activity/Undo/recovery/cleanup,
 physical devices, hard power loss, resource and broader release gates remain.
@@ -5466,7 +5466,7 @@ now uses the same forward-publication engine as automatic retry, fixing a case
 that incorrectly required displaced-destination evidence for a non-overwrite Move.
 
 Source/native evidence is recorded separately in
-`.hermes/evidence/linux-move-admission-current/ACCEPTANCE.json`. This does not
+`.evidence/linux-move-admission-current/ACCEPTANCE.json`. This does not
 accept arbitrary concurrent namespace changes during the existing engine's
 path-based cleanup, physical device removal, power loss or a rebuilt package.
 Published and unsupported retained phases keep their previous Activity action
@@ -5502,7 +5502,7 @@ records through production APIs on one filesystem; this does not establish real
 EXDEV interruption, physical device removal or power-loss acceptance. The public
 Windows artifacts remain unchanged. Artifact hashes and scope:
 `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json` and
-`.hermes/evidence/linux-recovery-package-current/ACCEPTANCE.json`.
+`.evidence/linux-recovery-package-current/ACCEPTANCE.json`.
 
 ### Linux content-enabled index resource checkpoint
 
@@ -5518,7 +5518,7 @@ a UI latency guarantee. The shared runner's actual cancellation and metadata-onl
 control also pass and remove owned daemons/profiles.
 
 `docs/SEARCH_PERFORMANCE.md` documents reproduction and measurement limits;
-`.hermes/evidence/index-content-package-current/ACCEPTANCE.json` binds the exact
+`.evidence/index-content-package-current/ACCEPTANCE.json` binds the exact
 artifact and source. The existing personal service is only observed read-only,
 not upgraded or reconfigured. Its distinct older metadata-only binary records
 0.100% of one core during mixed background activity. Larger-body/provider,
@@ -5545,7 +5545,7 @@ with zero failures and 15 explicit fixture/resource ignores; it excludes the
 cleanup namespace. Strict Linux/Windows platform/UI all-target Clippy and
 formatting pass. Exact binaries, scopes, exclusions and the two corrected fixture
 failures are recorded in
-`.hermes/evidence/windows-copy-abort-current/ACCEPTANCE.json`.
+`.evidence/windows-copy-abort-current/ACCEPTANCE.json`.
 
 Teardown removes the owned native test and fixture executables, checks the
 original profile/installation hashes, leaves no owned test processes or temporary
@@ -5565,7 +5565,7 @@ executable passes 149 broader journal cases with zero failures and 15 explicit
 exclusions (555.37s); its selection excludes the cleanup namespace. Strict
 Linux/Windows platform all-target Clippy and formatting pass. Before-fix failures,
 source/binary bindings, data preservation and clean retained-VM teardown are in
-`.hermes/evidence/windows-ended-dependencies-current/ACCEPTANCE.json`.
+`.evidence/windows-ended-dependencies-current/ACCEPTANCE.json`.
 This follow-up is source-only; it does not add partial-payload reclamation.
 
 The latest internal Windows candidate now includes this dependency follow-up and
@@ -5604,9 +5604,9 @@ all-four-format payload verification and AppImage/RPM namespace checks.
 Portable/NSIS/MSI Windows candidates match all 57 current payload files; native
 MSI administrative extraction verifies content, not installation lifecycle.
 Public Windows downloads remain unchanged. Exact package scopes are in
-`.hermes/evidence/operation-admission-scaling-current/PACKAGED_ACCEPTANCE.json`.
+`.evidence/operation-admission-scaling-current/PACKAGED_ACCEPTANCE.json`.
 Exact source, executable, measurement scope and source-test teardown are in
-`.hermes/evidence/operation-admission-scaling-current/ACCEPTANCE.json`.
+`.evidence/operation-admission-scaling-current/ACCEPTANCE.json`.
 
 ## Operation-path ownership correction
 
@@ -5631,7 +5631,7 @@ Linux's eight focused filesystem/editor tests explicitly pass without skips too.
 Tests include byte preservation, retained unsaved text, refusal before elevation,
 concurrent readers, unrelated work and release of completed queue ownership.
 Source/profile/install hashes and clean teardown are recorded in
-`.hermes/evidence/activity-path-ownership-current/ACCEPTANCE.json`.
+`.evidence/activity-path-ownership-current/ACCEPTANCE.json`.
 The preceding clean source `69ab186` delivery was verified in all four Linux formats at
 `dist/packages/`; the AppImage SHA-256 is
 `a2a2ce357cad233ff78c83afc86bc10ab5c43ccec41c74a4f7904069ef59e2b2`.
@@ -5643,7 +5643,7 @@ from the same source match all 57 payload files, with the generated NSIS
 uninstaller checked separately. These remain internal; public Windows downloads
 and broader current installer lifecycle acceptance are unchanged. Exact artifacts
 and limits are in
-`.hermes/evidence/activity-path-ownership-current/PACKAGED_ACCEPTANCE.json`.
+`.evidence/activity-path-ownership-current/PACKAGED_ACCEPTANCE.json`.
 This is an application-queue correction, not native cross-process target
 reservation or alias/case-policy acceptance. Those gates and the full roadmap
 remain open.
@@ -5665,7 +5665,7 @@ metadata and tree selection passes all 50 tests after correcting the EA fixture'
 buffer alignment. This is native component evidence;
 application performance, native cross-volume/filesystem and public/package gates
 remain open. Exact source, broader regression scopes and cleanup:
-`.hermes/evidence/windows-sparse-current/ACCEPTANCE.json`.
+`.evidence/windows-sparse-current/ACCEPTANCE.json`.
 No packages changed and public Windows Copy remains disabled.
 
 A subsequent native cross-volume check passes four mixed-tree cases between
@@ -5678,7 +5678,7 @@ executable (the cross-volume entry is explicitly selected separately). This adds
 bounded NTFS cross-volume evidence; broader filesystems/providers, EFS, measured
 application resources, interference and public/package acceptance remain open.
 Exact executable, volume identities, scope and teardown:
-`.hermes/evidence/windows-sparse-cross-volume-current/ACCEPTANCE.json`.
+`.evidence/windows-sparse-cross-volume-current/ACCEPTANCE.json`.
 
 ## Windows Copy verification cancellation
 
@@ -5698,7 +5698,7 @@ cancellation case pass on one recorded executable. The same executable passes
 all 140 core journal tests with seven explicit fixture exclusions. This is cooperative cancellation between native
 calls; blocked-device/network I/O interruption remains required. Packages are
 unchanged and public Windows Copy remains gated. Exact scopes and teardown:
-`.hermes/evidence/windows-copy-verification-cancel-current/ACCEPTANCE.json`.
+`.evidence/windows-copy-verification-cancel-current/ACCEPTANCE.json`.
 
 ## Windows Activity native I/O cancellation
 
@@ -5722,7 +5722,7 @@ universal driver cancellation, device/network behavior, other workflow Stop
 controls or whole-application resource limits. Those gates remain required;
 public Windows Copy stays disabled and packages are unchanged. Exact source,
 executables and teardown:
-`.hermes/evidence/windows-copy-blocked-io-current/ACCEPTANCE.json`.
+`.evidence/windows-copy-blocked-io-current/ACCEPTANCE.json`.
 
 ## NTFS-blocked Copy recovery and cleanup cancellation
 
@@ -5740,7 +5740,7 @@ units). The final run observes cancellation in 12–28 ms; these fixture timings
 not promise driver/device or application latency. The lock request, OVERLAPPED
 buffer, event and worker are explicitly completed/closed on failure and success.
 Exact source, native scopes and teardown:
-`.hermes/evidence/windows-copy-oplock-current/ACCEPTANCE.json`.
+`.evidence/windows-copy-oplock-current/ACCEPTANCE.json`.
 
 This adds real local-filesystem evidence to the earlier pipe checks. Other
 filesystems, device/network behavior, cancellation during mutating I/O, blocked
@@ -5764,7 +5764,7 @@ both crates. UI tests directly use the existing Windows API crate as a Windows-o
 dev dependency; no runtime dependency or production behavior was added. Strict
 Windows platform/UI and Linux UI all-target Clippy, formatting and locked offline
 builds pass. Evidence and teardown:
-`.hermes/evidence/windows-copy-blocked-activity-current/ACCEPTANCE.json`.
+`.evidence/windows-copy-blocked-activity-current/ACCEPTANCE.json`.
 
 This accepts native egui action/layout input composed with local NTFS cancellation,
 not a physical desktop/graphics or exact-package pass. Mutating-I/O, other workflow
@@ -5792,7 +5792,7 @@ bindings and existing operation/text-edit admission regressions. Full Linux test
 pass 412 platform and 385 UI tests, with four explicit mount/resource ignores;
 strict Linux/Windows platform/UI all-target Clippy passes. Exact source, native
 executables, final scoped results and teardown are recorded in
-`.hermes/evidence/windows-copy-undo-stop-current/ACCEPTANCE.json`.
+`.evidence/windows-copy-undo-stop-current/ACCEPTANCE.json`.
 
 These are local NTFS pre-mutation interruption and native egui interaction checks.
 Mutating I/O, other filesystem/device/network behavior, full resource limits and
@@ -5819,7 +5819,7 @@ Strict Windows platform/UI all-target Clippy passes. The disposable disk is
 unthrottled, detached and deleted through libvirt; test processes/files are gone,
 the original preferences/uninstaller hashes and persistent guest definition match,
 and the retained guest is shut off. Exact executable scopes and limits are in
-`.hermes/evidence/windows-throttled-journal-current/ACCEPTANCE.json`.
+`.evidence/windows-throttled-journal-current/ACCEPTANCE.json`.
 
 Actual aborted/partial writes, additional payload/security/metadata I/O phases,
 remote/device/other-filesystem, physical-power, resource and remaining public
@@ -5841,7 +5841,7 @@ pass on the same native executable. Strict Windows platform/UI all-target Clippy
 passes. The test disk and fixture data are removed; the retained guest is shut off,
 its persistent definition is unchanged, and the recorded preferences/uninstaller
 hashes match. Scopes and exact executables are in
-`.hermes/evidence/windows-full-disk-current/ACCEPTANCE.json`.
+`.evidence/windows-full-disk-current/ACCEPTANCE.json`.
 
 The later `ca903085` matrix also covers separate destination and registry volumes,
 verified by native volume serial numbers. A full destination with a healthy registry
@@ -5851,7 +5851,7 @@ fresh and retained retries refuse it while preserving both journals, payload and
 unrelated data. Both same-volume cases also pass on that exact executable. The
 disposable disk is retired through libvirt, the retained guest is shut off, and its
 persistent definition and recorded preferences/uninstaller hashes match. Receipt:
-`.hermes/evidence/windows-split-full-disk-current/ACCEPTANCE.json`.
+`.evidence/windows-split-full-disk-current/ACCEPTANCE.json`.
 
 This advances the native resource gate for incomplete paired appends after staging.
 Initial Copy payload/staging writes, Undo and cleanup disk-full phases, cancellation
@@ -5880,7 +5880,7 @@ helper and journal-test definitions. The corrected payload case passes on final
 source, with strict Windows platform/UI all-target Clippy. The owned disk and
 fixtures are removed, the retained guest is shut off, and its persistent definition
 and recorded preferences/uninstaller hashes match. Exact scopes:
-`.hermes/evidence/windows-payload-full-current/ACCEPTANCE.json`.
+`.evidence/windows-payload-full-current/ACCEPTANCE.json`.
 
 This verifies preservation and refusal, not resuming or reclaiming an incomplete
 payload. Remaining staging/setup/metadata boundaries, Undo/cleanup full-disk phases
@@ -5903,7 +5903,7 @@ mutation workers. Phase/evidence and raw native-name checks pass, as do strict
 Linux/Windows platform/UI all-target Clippy. Guest exports and temporary data are
 removed; the retained guest is shut off with unchanged persistent definition and
 recorded preferences/uninstaller hashes. Receipt:
-`.hermes/evidence/windows-copy-review-current/ACCEPTANCE.json`.
+`.evidence/windows-copy-review-current/ACCEPTANCE.json`.
 
 This source checkpoint adds no mutation authority. Exact package refresh, native
 desktop/OS-clipboard acceptance and the remaining interrupted-staging protocol
@@ -5912,7 +5912,7 @@ are still open; existing packages and public Windows Copy are unchanged.
 ## Historical Windows candidate refresh
 
 The three internal Windows formats now come from clean source `4fbc3e1a`, at
-`.hermes/packaging-tmp/windows-activity-candidate/`. They include the schema-18
+`.evidence/packaging-tmp/windows-activity-candidate/`. They include the schema-18
 incomplete-attempt recovery and Activity confirmation accepted at `5d33bcaf`.
 The intervening commit only makes the existing package-check tools reusable;
 all production files match that reviewed source byte-for-byte.
@@ -5940,7 +5940,7 @@ extractions are gone. The retained guest is shut off with unchanged persistent
 definition, original preferences/uninstaller hashes and restored MSI service
 state. Shared caches are retained; public Windows downloads and Linux packages
 are unchanged. Exact receipts and limits:
-`.hermes/evidence/windows-copy-abort-package-current/ACCEPTANCE.json`.
+`.evidence/windows-copy-abort-package-current/ACCEPTANCE.json`.
 Public Windows Copy stays disabled; the remaining roadmap outcomes remain open.
 
 ## MSI rollback comparison: failure timing matters
@@ -5965,7 +5965,7 @@ is justified by this comparison alone.
 
 No attached package or custom action was executed. Input hashes, compressed tables
 and scope are recorded in
-`.hermes/evidence/msi-authoring-comparison-current/COMPARISON.json`.
+`.evidence/msi-authoring-comparison-current/COMPARISON.json`.
 The downloaded samples and native input copies are removed, the retained guest
 is shut off with unchanged persistent definition and recorded preferences/
 uninstaller hashes, and current deliverables are unchanged.
@@ -5997,7 +5997,7 @@ keeps its unknown-time label; missing completion timing is not fabricated. All
 387 regular Linux UI tests and strict Linux/Windows UI all-target Clippy pass.
 Temporal and rendered-caption regressions cover this correction. The preceding
 Trash package receipt still describes its own artifact until the package refresh
-is accepted. Evidence: `.hermes/evidence/activity-timing-current/ACCEPTANCE.json`.
+is accepted. Evidence: `.evidence/activity-timing-current/ACCEPTANCE.json`.
 
 ## Historical Windows Copy implementation checkpoint
 
@@ -6024,22 +6024,22 @@ passes the broader core journal suite (138 passed, six explicit exclusions).
 Three grouped-cleanup shared-prepare tests also pass, exercising the held-control
 reader, and all five separate dispatch tests pass. Strict Windows all-target
 Clippy and formatting pass. Exact source and teardown:
-`.hermes/evidence/windows-setup-recovery-current/ACCEPTANCE.json`.
+`.evidence/windows-setup-recovery-current/ACCEPTANCE.json`.
 
 Earlier abrupt guest cuts at complete-unpublished and published-claim barriers
 passed reservation recovery without changing protected bytes. Those receipts
 retain their original source/executable scope and are not new whole-Copy or
 physical-storage acceptance:
-`.hermes/evidence/windows-persistent-controls-current/ACCEPTANCE.json`.
+`.evidence/windows-persistent-controls-current/ACCEPTANCE.json`.
 Earlier native review-visibility evidence is in
-`.hermes/evidence/windows-unpublished-setup-current/ACCEPTANCE.json`.
+`.evidence/windows-unpublished-setup-current/ACCEPTANCE.json`.
 
 The rejected guarded-file design and the earlier directory-lifetime probes remain
 useful negative evidence. A pre-held permission-changing handle can restore write
 access after a permission freeze, insert a stream and have automatic deletion
 remove it. That candidate was archived and removed. Details:
-`.hermes/evidence/windows-ephemeral-security-current/FINDINGS.md` and
-`.hermes/evidence/windows-directory-lifetime-current/FINDINGS.md`.
+`.evidence/windows-ephemeral-security-current/FINDINGS.md` and
+`.evidence/windows-directory-lifetime-current/FINDINGS.md`.
 The remaining work includes restart admission/reclamation for unpublished setup,
 partial stages, mutation/cleanup interference and interruption/resource gates.
 No package changes at this source checkpoint; public Windows Copy remains gated.
@@ -6078,7 +6078,7 @@ hard kill, foreign-preparation collision/preservation and both case-policy races
 Strict Windows all-target Clippy and formatting pass. Original profile,
 installation and login state are preserved; owned test data/processes are gone
 and the VM is shut down. Exact source, binary and native scopes are recorded in
-`.hermes/evidence/windows-preparation-disposition-current/ACCEPTANCE.json`.
+`.evidence/windows-preparation-disposition-current/ACCEPTANCE.json`.
 
 The preceding `e9d9687` reservation-lifetime checkpoint passed 194 journal tests
 across a disjoint 203-name catalog, with nine root exclusions; its individual and
@@ -6087,7 +6087,7 @@ rerun for the temporary-creation change. The six core exclusions in that checkpo
 child/fixture entry points, the unprovisioned secondary NTFS volume and the
 Activity fixture whose UI consumer was not rerun. Earlier acceptance, including
 superseded assertions, keeps its recorded source/artifact scope in
-`.hermes/evidence/windows-copy-claim-lifetime-current/ACCEPTANCE.json`.
+`.evidence/windows-copy-claim-lifetime-current/ACCEPTANCE.json`.
 
 Released-claim retirement now has explicit native process-interruption and
 publisher-handoff coverage. Four removal boundaries each pass ordinary-error and
@@ -6100,7 +6100,7 @@ the first 34-pass/1-fail expectation and its correction remain separately scoped
 All 35 focused checks pass (85.26s), along with strict Windows all-target Clippy
 and formatting. The algorithm and formats are unchanged; added production
 boundaries are no-ops. Exact source/executable and clean teardown evidence is in
-`.hermes/evidence/windows-claim-retirement-interruptions-current/ACCEPTANCE.json`.
+`.evidence/windows-claim-retirement-interruptions-current/ACCEPTANCE.json`.
 No broader journal/UI/package rerun is claimed for this coverage checkpoint.
 
 One sudden-guest-power case now covers the live, flushed Prepared boundary on
@@ -6115,7 +6115,7 @@ guest power loss. It is not physical-host-power or all-phase crash acceptance.
 The fixture/binaries were removed, original profile/install/login checks passed
 and the VM was shut down. An earlier expired-barrier attempt was refused without
 any cut and cleaned before replay. Exact receipts are in
-`.hermes/evidence/windows-claim-power-current/ACCEPTANCE.json`.
+`.evidence/windows-claim-power-current/ACCEPTANCE.json`.
 No application code or package changed in this experiment.
 
 A second sudden-guest-power case covers a fully persisted reservation held by a
@@ -6126,7 +6126,7 @@ same namespace anchors, creator and security. Source/public/foreign bytes remain
 unchanged. No unpublished app preparation remains in this case. The token-owned
 fixture and binaries are removed, original profile/install/login checks pass and
 the VM is shut down. Exact receipts and an offline evidence verifier are in
-`.hermes/evidence/windows-claim-power-current/persisted/ACCEPTANCE.json`.
+`.evidence/windows-claim-power-current/persisted/ACCEPTANCE.json`.
 This reservation-only scenario creates no payload transaction journals. It does
 not resolve the Prepared-case leftover or establish physical-host, intermediate
 publication, retirement or payload power-loss acceptance. Packages are unchanged.
@@ -6146,7 +6146,7 @@ bytes. Fixture/binary cleanup, original profile/install/login checks and VM
 shutdown pass. This closes the complete-frame preparation lifecycle finding
 above; partial/unrecognizable remnants and other power boundaries remain open.
 Exact source, executable, native selections and power receipts are in
-`.hermes/evidence/windows-preparation-cleanup-current/ACCEPTANCE.json`.
+`.evidence/windows-preparation-cleanup-current/ACCEPTANCE.json`.
 No public Copy feature gate or package changes at this source checkpoint.
 
 Initial journal setup now rolls back ordinary failures before the durable-setup
@@ -6164,7 +6164,7 @@ passes 130 core journal tests with six explicit exclusions (548.91s), and all fi
 dispatch-routing checks (13.68s). The focused parents overlap the core suite.
 Strict Windows all-target Clippy and formatting pass. Exact source, executable,
 scopes and teardown are in
-`.hermes/evidence/windows-preheader-cleanup-current/ACCEPTANCE.json`.
+`.evidence/windows-preheader-cleanup-current/ACCEPTANCE.json`.
 This is live-owner rollback, not crash-time adoption of unregistered stages or
 partial root anchors. Those interruption/power cases remain open; journal formats,
 public Windows Copy gating and packages are unchanged.
@@ -6173,7 +6173,7 @@ Native QA binds dispatch/results to a unique ID, exact selection, executable and
 raw-log hashes. Preparing, stale/mismatched, malformed, altered-log and zero-test
 success results are rejected before accepted evidence is replaced; the separate
 routing acceptance is in
-`.hermes/evidence/windows-native-dispatch-current/ACCEPTANCE.json`.
+`.evidence/windows-native-dispatch-current/ACCEPTANCE.json`.
 
 Still required: partial root/stage construction, sudden VM/physical-power behavior
 (including claim retirement and any private preparations it leaves), idle bookkeeping, remaining alias/ancestor/resource and
@@ -6282,7 +6282,7 @@ passes available-Undo warning, Cancel, Undo restoring the original, neutral
 retained-data cleanup and clean teardown in Light at 100%. All four Linux package
 formats pass content/source/runtime identity checks; AppImage and RPM daemon
 namespace ownership checks pass. Exact artifacts and limits are recorded in
-`.hermes/evidence/windows-activity-desktop-current/ACCEPTANCE.json`.
+`.evidence/windows-activity-desktop-current/ACCEPTANCE.json`.
 
 The subsequent clean build `693e515` is now delivered in all four Linux formats
 at `dist/packages/`. Activity cards separate readable status from selectable,
@@ -6301,9 +6301,9 @@ AppImage/RPM daemon namespace checks pass. The actual Windows default-renderer
 window passes Light100 refusal/disclosure and custom Dark text1.35 disclosure;
 Windows 150% DPI is not claimed. Portable/NSIS/MSI payload identities match all
 57 files. Windows packages remain internal candidates at
-`.hermes/packaging-tmp/windows-activity-candidate/`; public Windows packages have
+`.evidence/packaging-tmp/windows-activity-candidate/`; public Windows packages have
 not been replaced. Exact hashes, screenshots, scope and clean teardown are in
-`.hermes/evidence/windows-activity-presentation-current/ACCEPTANCE.json` and
+`.evidence/windows-activity-presentation-current/ACCEPTANCE.json` and
 `DELIVERY.json`. Earlier acceptance retains its original artifact scope.
 Desktop Stop/retry, broader current Windows workflows/installer lifecycle and the
 remaining Copy/security/resource gates below remain open.
@@ -6330,7 +6330,7 @@ Earlier acknowledgement proof remains in
 `PEER_ACK_ACCEPTANCE.json` and `PEER_ACK_COVERAGE.json`. The preceding
 peer-binding checkpoint proof is `PEER_BINDING_ACCEPTANCE.json` and
 `PEER_BINDING_COVERAGE.json` under
-`.hermes/evidence/windows-copy-cleanup-current/`. Earlier component receipts and
+`.evidence/windows-copy-cleanup-current/`. Earlier component receipts and
 `WINDOWS_COPY_DESIGN.md` retain their narrower scopes.
 
 **Still required:** remaining native desktop Activity and current-package acceptance,
@@ -6373,7 +6373,7 @@ injected failures and 72 real process exits, including readonly copies and
 source-free recovery. Current-schema Activity integration and the explicit
 SYSTEM audit fixture pass. This is component acceptance, not public workflow,
 power-cut, broad storage/security or package acceptance. Receipt:
-`.hermes/evidence/windows-copy-registry-current/ACCEPTANCE.json`.
+`.evidence/windows-copy-registry-current/ACCEPTANCE.json`.
 
 Earlier dispatcher acceptance passes three focused native tests, including twelve
 file/directory source conflict cases, ancestry/alias/private-registry refusals
@@ -6382,7 +6382,7 @@ suite passes 265 with 33 specialized exclusions; the separate SYSTEM audit
 fixture, strict platform/UI Windows Clippy and formatting pass. The first late
 change fixture attempted a write during locked admission; the corrected fixture
 waits for a staging journal, retaining the preservation assertions. Evidence:
-`.hermes/evidence/windows-copy-dispatch-current/ACCEPTANCE.json`.
+`.evidence/windows-copy-dispatch-current/ACCEPTANCE.json`.
 Packages remain unchanged; public Copy is still gated.
 
 The private Windows Copy backend now implements paired no-replace publication
@@ -6433,7 +6433,7 @@ Existing streamed-plan/prefix/forged-ACL, streams, metadata and ownership tests
 still pass. The full actor pins its runtime binary. Linux platform tests pass
 411 with 3 exclusions; strict all-target platform Clippy passes on both targets.
 Earlier publication/permission receipt:
-`.hermes/evidence/windows-copy-permission-journal-current/ACCEPTANCE.json`.
+`.evidence/windows-copy-permission-journal-current/ACCEPTANCE.json`.
 The follow-up source-free plan recovery checkpoint also passes. A fully verified
 retained stage can finish a coherent, unsealed permission-plan prefix after the
 source and original writer are gone. Live preparation and recovery share one
@@ -6442,7 +6442,7 @@ writing. Five cancellation prefixes and ten additional injected failures plus te
 real process exits are covered, bringing combined coverage to 68 injected
 failures and 54 real exits. Local-only journal mismatches remain untouched and
 refused. Source-free plan receipt:
-`.hermes/evidence/windows-copy-plan-resume-current/ACCEPTANCE.json`.
+`.evidence/windows-copy-plan-resume-current/ACCEPTANCE.json`.
 Earlier handle-mode and streamed-plan receipts retain their original scopes.
 
 Read-only file roots and descendants now have journaled attribute-transition
@@ -6464,7 +6464,7 @@ covered 106 injected failures and 92 real exits; the payload-tampering guard
 also injects a separate initial failure. Readonly stream revalidation honors
 cancellation; a native cancellation leaves the durable intent recoverable and
 retry restores attributes before completing. Readonly checkpoint receipt:
-`.hermes/evidence/windows-copy-readonly-current/ACCEPTANCE.json`.
+`.evidence/windows-copy-readonly-current/ACCEPTANCE.json`.
 Broader permission-denial, privileged, readonly-link, specialized storage and
 power-cut matrices remain required. Public Windows Copy remains disabled.
 
@@ -6489,7 +6489,7 @@ adversarial setup failures and cancellation fixtures are separately scoped.
 That completion checkpoint passed 212 Windows platform tests with 29 specialized exclusions,
 411 Linux platform tests with 3 exclusions and strict all-target Clippy on both
 targets. Current receipt:
-`.hermes/evidence/windows-copy-completion-current/ACCEPTANCE.json`.
+`.evidence/windows-copy-completion-current/ACCEPTANCE.json`.
 
 Final-entry frame reservation uses bounded maximum JSON widths for future native
 change times and the digest. All final evidence hashing streams through one
@@ -6526,7 +6526,7 @@ source-free recovery. The new inverse matrix adds 28 injected failures and 28 re
 process exits, bringing the combined explicit matrices to 148 failures and 134
 exits. Separate adversarial setup/cancellation/handoff cases retain their own
 scope. Current receipt:
-`.hermes/evidence/windows-copy-undo-current/ACCEPTANCE.json`.
+`.evidence/windows-copy-undo-current/ACCEPTANCE.json`.
 
 At that creation-Undo checkpoint public integration was still disabled. Overwrite restoration, session receipt and
 Activity/clipboard/Tandem integration, cleanup, central discovery, broader
@@ -6558,7 +6558,7 @@ The final cohort passes 226 Windows platform tests with 30 specialized exclusion
 targets. The second-volume fixture is selected separately as an ordinary user;
 SYSTEM audit remains a distinct lane. Owned virtual storage, the guest and test
 profiles are removed after terminal verification. Current receipt:
-`.hermes/evidence/windows-copy-discovery-current/ACCEPTANCE.json`.
+`.evidence/windows-copy-discovery-current/ACCEPTANCE.json`.
 That discovery checkpoint left UI/Activity and action admission for the following
 work below. Native package acceptance and the remaining public Copy gates stay
 required; public Copy remains disabled and packages are unchanged.
@@ -6584,7 +6584,7 @@ exclusions, the separate SYSTEM audit case passes, and Linux passes 411 with
 file/folder and readonly roots, cancellation, interrupted
 retry, moved destinations, changed bytes and replaced registries. Full-suite
 and cleanup evidence is recorded in
-`.hermes/evidence/windows-copy-admission-current/ACCEPTANCE.json`.
+`.evidence/windows-copy-admission-current/ACCEPTANCE.json`.
 
 Windows Activity consumes central Copy discovery through its background loader
 and freshly admits opaque Undo plans only for completed creations or interrupted
@@ -6600,7 +6600,7 @@ recovery survives Clear finished and cannot be reclaimed by Windows cleanup.
 Public Windows Copy/Overwrite and cleanup remain gated. Native integration
 exercises the rendered buttons and actual filesystem/worker path with separate
 owned profiles; installed/package GUI acceptance remains required. Current action
-receipt: `.hermes/evidence/windows-copy-action-current/ACCEPTANCE.json`.
+receipt: `.evidence/windows-copy-action-current/ACCEPTANCE.json`.
 The exact native platform suite passes 230 with 31 specialized exclusions; the
 separate SYSTEM audit case passes. Two native presentation/worker tests pass,
 and the explicit integration consumer passes four rendered-button scenarios.
@@ -6617,7 +6617,7 @@ the controller verifies the disk-image association and removes the owned storage
 after terminal checks. This closes the two-volume native creation-Undo/Activity
 fixture gate; physical/removable devices, ReFS, resource and power-cut matrices
 remain required. Current receipt:
-`.hermes/evidence/windows-copy-cross-volume-action-current/ACCEPTANCE.json`.
+`.evidence/windows-copy-cross-volume-action-current/ACCEPTANCE.json`.
 The exact native suite passes 230 with 31 exclusions, the separate SYSTEM audit
 case passes, and the two existing UI checks pass. The same-volume and two-volume
 integration consumers each pass all four scenarios on the same pinned binaries.
@@ -6638,7 +6638,7 @@ rather than silently adopted. Parent policy/path changes, registry replacement,
 payload changes, cancellation and incomplete staging retain data for review.
 Publication-rename and native permission failures can retry on the original
 binding. Native acceptance is recorded in
-`.hermes/evidence/windows-copy-forward-admission-current/ACCEPTANCE.json`.
+`.evidence/windows-copy-forward-admission-current/ACCEPTANCE.json`.
 Five new ordinary-user native fixtures pass, and the full Windows platform suite
 passes 235 with 31 specialized exclusions. The separate SYSTEM audit case passes;
 Linux platform tests pass 411 with 3 exclusions. Strict all-target platform
@@ -6656,7 +6656,7 @@ Windows platform suite passes 236 with 31 specialized exclusions, and the
 separate SYSTEM audit fixture passes. Strict Windows platform Clippy and format
 checks pass. Only regression coverage and documentation change here; Activity
 forward actions and packages remain unchanged. Receipt:
-`.hermes/evidence/windows-copy-readonly-finalization-current/ACCEPTANCE.json`.
+`.evidence/windows-copy-readonly-finalization-current/ACCEPTANCE.json`.
 
 Windows Activity now exposes **Resume copy** for freshly admitted, verified
 unfinished transactions. Its opaque platform plan revalidates the original
@@ -6677,10 +6677,10 @@ finished keeps ownership, and recovery errors survive discovery. The ordinary
 user runs with Developer Mode off; the owned VHDX receives its test user's rights
 before attachment. Two focused UI checks, all 379 Linux UI tests (one exclusion),
 and strict all-target UI Clippy on both targets pass. Current receipt:
-`.hermes/evidence/windows-copy-resume-volume-current/ACCEPTANCE.json`.
+`.evidence/windows-copy-resume-volume-current/ACCEPTANCE.json`.
 The unchanged platform's preceding full native suite (236 passes, 31 exclusions)
 and Linux suite (411 passes, three exclusions) retain their scope in
-`.hermes/evidence/windows-copy-resume-action-current/ACCEPTANCE.json`.
+`.evidence/windows-copy-resume-action-current/ACCEPTANCE.json`.
 These are source-built native checks, not rebuilt-package or desktop visual
 acceptance. Public new Copy, Overwrite and cleanup remain gated. The two-volume
 consumer covers populated folders; root-file, readonly, link and specialized
@@ -6701,7 +6701,7 @@ fixtures cover unchanged populated trees, six drift modes independent of cached
 timestamps, and cancellation/entry-budget refusal. The full ordinary-user platform
 suite passes 239 with 31 specialized exclusions; the separate SYSTEM audit case
 and strict platform Clippy on both targets pass. Receipt:
-`.hermes/evidence/windows-copy-existing-tree-current/ACCEPTANCE.json`.
+`.evidence/windows-copy-existing-tree-current/ACCEPTANCE.json`.
 That observation-only checkpoint is an Overwrite prerequisite, not retention or publication authority. Paired
 retention records, root/writer handoff, restoration and full SACL/label protection
 remained unimplemented; that checkpoint did not change the journal/schema or packages.
@@ -6718,7 +6718,7 @@ one local-only boundary, unwritten-child drift, source aliasing and pre-append
 budget refusal. The full native suite passes 242 with 31 exclusions; Linux passes
 411 with three exclusions. SYSTEM audit, strict platform Clippy on both targets
 and Windows UI Clippy pass. Receipt:
-`.hermes/evidence/windows-copy-original-plan-current/ACCEPTANCE.json`.
+`.evidence/windows-copy-original-plan-current/ACCEPTANCE.json`.
 At that preparation-only checkpoint the original stayed in place; native
 retention and restoration were not yet implemented.
 There is no compatibility reader for prior schemas. Public Copy/Overwrite and
@@ -6737,7 +6737,7 @@ file/folder roots and both directions; all pass. The full native platform suite
 passes 247 with 32 exclusions, Linux passes 411 with three exclusions, and the
 separate SYSTEM audit and strict Clippy checks pass. The disposable VM, disk,
 NVRAM and TPM were removed; the original profile and installation stayed intact.
-Receipt: `.hermes/evidence/windows-copy-original-move-current/ACCEPTANCE.json`.
+Receipt: `.evidence/windows-copy-original-move-current/ACCEPTANCE.json`.
 That schema-8 checkpoint implemented pre-publication cancellation/restoration
 only; packages were unchanged.
 
@@ -6760,7 +6760,7 @@ ordinary-user platform suite passes 253 with 33 exclusions; Linux passes 411
 with three exclusions. The separate SYSTEM audit and native Activity state test
 pass, as do strict Clippy checks. The disposable guest and its disk/NVRAM/TPM
 were removed, with the original installation and preferences unchanged.
-Evidence: `.hermes/evidence/windows-copy-overwrite-current/ACCEPTANCE.json`.
+Evidence: `.evidence/windows-copy-overwrite-current/ACCEPTANCE.json`.
 Readonly-original access strategy, broader security/storage, initial conflict
 admission and public session/batch integration remain required. Packages are
 unchanged.
@@ -6779,7 +6779,7 @@ mismatched mirrors. The final native platform suite passes 256 with 33 exclusion
 Linux passes 411 with three exclusions. Activity state mapping, SYSTEM audit,
 strict Clippy and format checks pass. The owned guest/disk/NVRAM/TPM were removed;
 the original profile/installation remained unchanged. Receipt:
-`.hermes/evidence/windows-copy-retention-resume-current/ACCEPTANCE.json`.
+`.evidence/windows-copy-retention-resume-current/ACCEPTANCE.json`.
 Initial user-conflict admission and public Copy/session/batch integration remain
 required; packages are unchanged.
 
@@ -6794,7 +6794,7 @@ All three native admission tests pass; the complete Windows platform suite passe
 259 with 33 exclusions, Linux passes 411 with three exclusions, and the separate
 SYSTEM audit, strict Clippy and format checks pass. The disposable guest and its
 disk/NVRAM/TPM were removed; original preferences/installation stayed unchanged.
-Receipt: `.hermes/evidence/windows-copy-destination-admission-current/ACCEPTANCE.json`.
+Receipt: `.evidence/windows-copy-destination-admission-current/ACCEPTANCE.json`.
 Public user-conflict UI, session/batch and cleanup integration remain required;
 packages are unchanged.
 
@@ -6806,7 +6806,7 @@ separate SYSTEM audit fixture. Native Activity integration passes nine recovery
 scenarios. Linux passes 411 platform and 379 UI tests (four total exclusions),
 including distinct session transaction-ID/path bookkeeping. Strict Linux/Windows
 UI/platform Clippy and formatting pass. Evidence:
-`.hermes/evidence/windows-copy-session-receipt-current/ACCEPTANCE.json`.
+`.evidence/windows-copy-session-receipt-current/ACCEPTANCE.json`.
 Packages remain unchanged; these are source/native component checks.
 
 Public Windows Copy stays disabled. Public session/batch workflow
@@ -6824,7 +6824,7 @@ full roadmap goal stays active.
 
 Clean runtime source `e9e6783` supplied the preceding four-format Linux cohort at
 `dist/packages/` and three-format internal Windows cohort at
-`.hermes/packaging-tmp/windows-current/`. The AppImage SHA-256 is
+`.evidence/packaging-tmp/windows-current/`. The AppImage SHA-256 is
 `1577fb3d47457c4c0fbc2460650a4ad6b25a95967fb188a305ea9a38ed242608`.
 All four Linux formats pass exact content/provider/watch/paging checks and release
 payload identity; RPM code/data sections agree after normal stripping. The exact
@@ -6848,7 +6848,7 @@ installed Windows GUI, upgrade/repair/reboot/login or MSI failed-registration
 rollback gates. Windows public Copy still has two required native UI failures and
 remains agent-executable implementation work. User testing is deferred; no
 release or daily-driver completion is claimed. Current receipt and all hashes:
-`.hermes/evidence/eps-package-current/ACCEPTANCE.json`.
+`.evidence/eps-package-current/ACCEPTANCE.json`.
 
 ## Windows EPS worker integration follow-up
 
@@ -6865,7 +6865,7 @@ failures and no exclusions. Strict UI all-target Clippy passes on both targets.
 The rejected cohort was not promoted. This source checkpoint preceded the
 `e9e6783` package promotion and exact checks recorded in the current delivery
 checkpoint above.
-Evidence: `.hermes/evidence/windows-eps-worker-current/ACCEPTANCE.json`.
+Evidence: `.evidence/windows-eps-worker-current/ACCEPTANCE.json`.
 
 ## Windows EPS source checkpoint
 
@@ -6893,7 +6893,7 @@ its interactive-forced installer is not counted as accepted.
 This is the initial renderer source/native-test checkpoint. The later worker
 correction and verified package promotion above supersede its unpublished
 candidates. Current delivery and final COW cleanup are recorded above. Evidence:
-`.hermes/evidence/windows-eps-current/ACCEPTANCE.json`.
+`.evidence/windows-eps-current/ACCEPTANCE.json`.
 
 ## Windows recursive folder-size source checkpoint
 
@@ -6919,7 +6919,7 @@ profile/install checks. No positive test has been excluded.
 This is a source/native-test checkpoint. Stable packages still carry runtime
 source `9df0224`; the Windows fix needs the next rebuilt/exactly checked internal
 cohort. Windows EPS and the two public Copy UI failures remain agent-executable
-work. Evidence: `.hermes/evidence/windows-folder-size-current/ACCEPTANCE.json`.
+work. Evidence: `.evidence/windows-folder-size-current/ACCEPTANCE.json`.
 
 ## PLY/Affinity preview package checkpoint
 
@@ -6944,10 +6944,10 @@ outdated universal metadata-only assumption. Linux passes all 197 preview and
 378 UI tests, with one existing UI exclusion. Strict preview/UI all-target
 Clippy passes for both targets.
 
-Evidence: `.hermes/evidence/windows-preview-admission-current/ACCEPTANCE.json`.
+Evidence: `.evidence/windows-preview-admission-current/ACCEPTANCE.json`.
 Clean runtime source `9df0224` is now the current four-format Linux cohort at
 `dist/packages/` and the three-format internal Windows cohort at
-`.hermes/packaging-tmp/windows-current/`. All four Linux artifacts pass exact
+`.evidence/packaging-tmp/windows-current/`. All four Linux artifacts pass exact
 content/watcher/paging checks and release payload identity. Exact AppImage GUI
 checks pass PLY wireframe and Affinity embedded-composite rendering, unchanged
 sources and clean close. VCF arrows/Space, shared Inspector title bar and 70
@@ -6962,7 +6962,7 @@ Windows GUI, upgrade/repair/reboot/login and MSI failed-registration rollback
 remain open. Earlier receipts retain their exact artifact scopes. The original
 profiles/installations and three stopped VMs are preserved; the owned guest and
 superseded staging are removed. Evidence and current artifact hashes:
-`.hermes/evidence/preview-package-current/ACCEPTANCE.json`.
+`.evidence/preview-package-current/ACCEPTANCE.json`.
 
 ## Windows Copy — native staging in progress
 
@@ -7034,13 +7034,13 @@ policy/Unicode/error handling and complete ordered Name/path pages for 137 and
 VCF navigation/Space, shared Inspector chrome and 70 stable PDF captures, with
 clean exits. All four settled five-second tiny-fixture CPU samples measured 0%
 of one core; this is not full-workload acceptance. Detailed evidence for that checkpoint is
-`.hermes/evidence/preview-package-current/ACCEPTANCE.json`. Older theme/DPI,
+`.evidence/preview-package-current/ACCEPTANCE.json`. Older theme/DPI,
 distribution lifecycle, editing and broader GUI receipts retain their own
 artifact hashes and scopes. Broader release gates remain open.
 
 The saved-view reset was traced to UI tests writing the operator's settings; test profiles are now private, and the runtime restores the saved view. The remaining indexer CPU defect was reproduced with the packaged daemon and the operator's configured roots using a private database copy: ordinary file-change bursts spent about 94% of one core in subtree cleanup. Cleanup now follows indexed parent links instead of scanning the complete generation for each changed path. A bounded database-work regression protects that behavior.
 
-The October 3 native clipboard-event repair is part of the current source. The September 30 AppImage predates that repair and must not be used to evaluate the corrected source. Local builds now put all deliverables from `build-all.sh` in `dist/packages/`; read each artifact's source revision rather than inferring freshness from its version number. Current package acceptance and remaining limits are recorded in `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json` and `PREVIEW_SAFETY_ACCEPTANCE.json`. `.hermes/coordinator-worker-report.md` and `.hermes/evidence/takeover-20261009/REPORT.md` are historical takeover evidence.
+The October 3 native clipboard-event repair is part of the current source. The September 30 AppImage predates that repair and must not be used to evaluate the corrected source. Local builds now put all deliverables from `build-all.sh` in `dist/packages/`; read each artifact's source revision rather than inferring freshness from its version number. Current package acceptance and remaining limits are recorded in `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json` and `PREVIEW_SAFETY_ACCEPTANCE.json`. `.evidence/coordinator-worker-report.md` and `.evidence/takeover-20261009/REPORT.md` are historical takeover evidence.
 
 These repairs do not close the full Linux daily-driver or Windows release gates below. Hermes remains paused; the old task board's completion labels are not release acceptance.
 
@@ -7074,7 +7074,7 @@ resolves the three preview failures; Copy remains required.
 UI failures were not excluded. Linux passes 238 search, 378 UI and 23 app tests,
 with two search and one UI exclusion. Strict platform/search/UI/app all-target
 Clippy passes for both targets. Source, exact packages, native lifecycle, payload
-identities and cleanup: `.hermes/evidence/content-pagination-current/ACCEPTANCE.json`.
+identities and cleanup: `.evidence/content-pagination-current/ACCEPTANCE.json`.
 
 The previous clean `3d24d47` NSIS passed twenty ordinary-user GUI Cut/Paste cases:
 populated folders and mixed file/folder batches, with unoccupied, Replace, Keep
@@ -7083,7 +7083,7 @@ active, and bytes, tree shapes, same-volume identities and paired durable
 retention journals were verified after both NSIS and MSI uninstall. Its MSI also
 passed explicit scheduling, watched populated-tree rename and a bounded quiet
 CPU sample on a tiny fixture. Those checks retain their exact prior artifact
-scope in `.hermes/evidence/windows-tree-ui-current/ACCEPTANCE.json`; they were not
+scope in `.evidence/windows-tree-ui-current/ACCEPTANCE.json`; they were not
 rerun by the current content-search package checks.
 
 Earlier `a7c189f` pre-journal interruption/retry, VCF/PDF Inspector, GUI-close/
@@ -7108,17 +7108,17 @@ remain open. Internal candidates stay unpublished; user testing is deferred.
 
 The `41027a0` public candidate's native drive navigation/address/search and daemon
 lifetime evidence remains in
-`.hermes/evidence/windows-20261011/WINDOWS_COMPLETION_CANDIDATE_ACCEPTANCE.json`.
+`.evidence/windows-20261011/WINDOWS_COMPLETION_CANDIDATE_ACCEPTANCE.json`.
 The October 11 snapshot below is historical, including package revisions and
 then-open tasks; subsequent dated entries retain their own exact scope.
 
 ## Audited platform status — 2026-10-11
 
-This snapshot reconciles the roadmap with local source, package provenance and retained acceptance receipts. It is not a fresh full-platform test run. `.hermes/coordinator-worker-report.md` is historical: its HEAD and Linux artifact inventory predate the changes below, and its `active` label does not establish a running worker or goal.
+This snapshot reconciles the roadmap with local source, package provenance and retained acceptance receipts. It is not a fresh full-platform test run. `.evidence/coordinator-worker-report.md` is historical: its HEAD and Linux artifact inventory predate the changes below, and its `active` label does not establish a running worker or goal.
 
 - **Linux:** stable AppImage, portable, DEB and RPM are built from clean source `554591d`. AppImage SHA-256: `3758bae8aabda470eb224b7b2889cff6018b480ccbcb2f2fe8dd893e9db5ed55`. Exact-package offline restart freshness, populated/burst/post-restart quiet CPU, session cleanup, Dark 100% / Light 150% Move/menu checks and native/portable payload identities pass. Receipt: `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`. Personal settings/unit/running daemon remain untouched; the verified launcher uses this package on the next service start. Fresh native install/upgrade, live-home/content-enabled performance, broader graphics/authentication and full daily-driver acceptance remain open.
 - **Linux remaining before the new deferred outcome:** clean-desktop package installation/launch; the consolidated daily-driver workflow including cross-volume conflicts, interruption/recovery and editor recovery; real removable-volume lifecycle; supported installed-LibreOffice conversion/fallback; audible representative media; the packaged helper/polkit permission matrix; and an explicit assistive-integration decision. Existing Xvfb and focused native checks narrow these tasks but do not close them. Accessibility is currently disabled after an upstream lifecycle defect.
-- **Windows:** current portable/NSIS/MSI packages are built from clean revision `4552483`; all three current artifact hashes match `dist/WINDOWS_PACKAGES_ACCEPTANCE.json`. Exact fresh standard-user silent MSI install/uninstall and NSIS install/reinstall/uninstall are accepted in `dist/WINDOWS_CURRENT_INSTALLER_LIFECYCLE_ACCEPTANCE.json`. Concise task-query error/refusal behavior is accepted in `dist/WINDOWS_TASK_ERROR_NATIVE_ACCEPTANCE.json`. Current failed-transaction MSI registration rollback, cross-version upgrade and interactive installer acceptance remain open. Earlier cleanup failure/retry and GUI receipts retain their original artifact scope. Native ordinary-user evidence exists for text saving, many Move/recovery cases and scheduled indexing including simultaneous two-user coexistence, Office conversion before the unfinished containment changes, and a generated video thumbnail. This is substantial implementation progress; focused package checks below do not close full Windows release acceptance. Cross-volume Move is enabled in source after native transaction and guest power-cut checks; its public workflow/package acceptance remains open. The published Windows app predates Office UI enablement. Historical AppContainer diagnostics passed isolation fixtures but timed out on DOCX and Kit initialization; the committed production helper now supersedes that conversion path. See `.hermes/evidence/windows-20261010/office-appcontainer-private-temp-env-results.log`, `office-appcontainer-kit-budget-results.log`, `office-appcontainer-private-temp-docx-results.log` and `office-appcontainer-kit-stack-results.log`. A fresh isolated guest on October 11 passes all ten containment/process fixtures after making fixture executable access self-contained (`9d20378`). The Windows production converter now uses the packaged LibreOfficeKit helper instead of the CLI global pipe denied by AppContainer. Two fresh-profile production DOCX checks pass (7.31s and 9.93s), covering PDFium rendering/text, source preservation and cleanup; in-flight cancellation passes (2.65s). All 17 Linux provider contracts and strict Windows helper Clippy pass. The owner-thread dispatch repair now passes all nine advertised formats through the actual AppContainer pipeline, plus provider-start cancellation and desktop-independent metadata probing. Paired explicit macro controls and contained production rendering now pass macro-suppression acceptance. Representative DOCX/XLSX/PPTX layout acceptance now passes with all five rendered pages visually inspected; Windows Office UI integration now passes native main-window and Quick Inspector rendering/fallback checks and is enabled in source; exact-package acceptance remains open. Current native evidence is in `.hermes/evidence/windows-office-owner-thread-current/ACCEPTANCE.json` and `.hermes/evidence/windows-office-macro-current/ACCEPTANCE.json`; earlier timeout diagnostics remain historical.
+- **Windows:** current portable/NSIS/MSI packages are built from clean revision `4552483`; all three current artifact hashes match `dist/WINDOWS_PACKAGES_ACCEPTANCE.json`. Exact fresh standard-user silent MSI install/uninstall and NSIS install/reinstall/uninstall are accepted in `dist/WINDOWS_CURRENT_INSTALLER_LIFECYCLE_ACCEPTANCE.json`. Concise task-query error/refusal behavior is accepted in `dist/WINDOWS_TASK_ERROR_NATIVE_ACCEPTANCE.json`. Current failed-transaction MSI registration rollback, cross-version upgrade and interactive installer acceptance remain open. Earlier cleanup failure/retry and GUI receipts retain their original artifact scope. Native ordinary-user evidence exists for text saving, many Move/recovery cases and scheduled indexing including simultaneous two-user coexistence, Office conversion before the unfinished containment changes, and a generated video thumbnail. This is substantial implementation progress; focused package checks below do not close full Windows release acceptance. Cross-volume Move is enabled in source after native transaction and guest power-cut checks; its public workflow/package acceptance remains open. The published Windows app predates Office UI enablement. Historical AppContainer diagnostics passed isolation fixtures but timed out on DOCX and Kit initialization; the committed production helper now supersedes that conversion path. See `.evidence/windows-20261010/office-appcontainer-private-temp-env-results.log`, `office-appcontainer-kit-budget-results.log`, `office-appcontainer-private-temp-docx-results.log` and `office-appcontainer-kit-stack-results.log`. A fresh isolated guest on October 11 passes all ten containment/process fixtures after making fixture executable access self-contained (`9d20378`). The Windows production converter now uses the packaged LibreOfficeKit helper instead of the CLI global pipe denied by AppContainer. Two fresh-profile production DOCX checks pass (7.31s and 9.93s), covering PDFium rendering/text, source preservation and cleanup; in-flight cancellation passes (2.65s). All 17 Linux provider contracts and strict Windows helper Clippy pass. The owner-thread dispatch repair now passes all nine advertised formats through the actual AppContainer pipeline, plus provider-start cancellation and desktop-independent metadata probing. Paired explicit macro controls and contained production rendering now pass macro-suppression acceptance. Representative DOCX/XLSX/PPTX layout acceptance now passes with all five rendered pages visually inspected; Windows Office UI integration now passes native main-window and Quick Inspector rendering/fallback checks and is enabled in source; exact-package acceptance remains open. Current native evidence is in `.evidence/windows-office-owner-thread-current/ACCEPTANCE.json` and `.evidence/windows-office-macro-current/ACCEPTANCE.json`; earlier timeout diagnostics remain historical.
 - **Windows continuous-indexing source:** the shared authenticated daemon now handles UI/CLI queries and writes, configuration, watches and service lifecycle. Native standalone startup/reuse/restart/stop, per-user login-task definition, live task replacement/removal, and short populated-index quiet CPU checks pass within their documented fixture scopes. No-argument indexd launches the persistent daemon; one-shot indexd mode is removed. These changes are newer than the published `4552483` packages. Actual scheduled-daemon execution, GUI search/lifetime and current packaged upgrade/rollback remain required before publishing the replacement candidates.
 - **Windows remaining before the new deferred outcome:** repair and accept Office containment/conversion/fallback; accept enabled cross-volume Move through the public workflow; construct current portable/MSI/installer candidates and accept editing, Move, installation/upgrade/rollback/uninstall; validate native/Mesa graphics, representative media, UAC, storage attachment/network-drive states and the consolidated daily-driver workflow.
 - **Both platforms:** the final exact-candidate workspace/CI, package-integrity, production-signing and downloaded-artifact checks remain open. The required picker/folder integration below adds a deliberate later milestone. No percentage or calendar estimate is claimed: the open outcomes vary greatly in size and several need native/device acceptance. macOS remains deferred.
@@ -7183,21 +7183,21 @@ ordinary conversion/cleanup contract (three parent tests, 24.02s). A new
 batch/session-0 regression passes metadata probing (0.38s); UI APIs are loaded
 only for conversion. Strict Windows preview all-target Clippy passes. Exact source,
 helper/test hashes and clean teardown are recorded in
-`.hermes/evidence/windows-office-owner-thread-current/ACCEPTANCE.json`.
+`.evidence/windows-office-owner-thread-current/ACCEPTANCE.json`.
 Macro suppression now passes a native ordinary-user acceptance test after paired
 explicit macro challenges: the enabled control executes the harmless document
 macro, the exact production policy denies it, and the production AppContainer
 conversion renders the unchanged document without its marker. The test requires
 both controls; automatic document events alone did not establish suppression.
 Exact inputs, binaries and cleanup are recorded in
-`.hermes/evidence/windows-office-macro-current/ACCEPTANCE.json`.
+`.evidence/windows-office-macro-current/ACCEPTANCE.json`.
 Representative DOCX/XLSX/PPTX fidelity now passes through the same contained
 production helper: five rendered pages preserve checked typography, text
 positions, pagination, spreadsheet calculations/print layout, chart colors and
 slide shapes/images. All five page images were visually inspected; no clipping
 or overlap was observed. Fixture regeneration is byte-for-byte repeatable.
 Exact source, binary hashes, rendered pages, limits and clean native teardown:
-`.hermes/evidence/windows-office-fidelity-current/ACCEPTANCE.json`. This covers
+`.evidence/windows-office-fidelity-current/ACCEPTANCE.json`. This covers
 ordinary representative layouts, not arbitrary Office compatibility. Windows UI integration now passes in a non-administrator interactive session:
 the main Miller preview and Quick Inspector render through the release-profile
 helper; removing the owned helper after detection produces native worksheet
@@ -7207,20 +7207,20 @@ wakes an idle UI without adding a polling timer. Nine focused Office tests,
 two existing wake tests and the operation/undo wake regression pass, as does
 strict Linux/Windows UI Clippy. Exact source/binaries, four reviewed window
 captures, private-profile preservation and clean teardown are recorded in
-`.hermes/evidence/windows-office-ui-current/ACCEPTANCE.json`. This UI run used
+`.evidence/windows-office-ui-current/ACCEPTANCE.json`. This UI run used
 the explicit OpenGL compatibility renderer; it does not accept default D3D12
 or a fresh application installation. Windows Office previews are now enabled
 in source. The clean `a6dc090` Windows portable/MSI/NSIS candidates now contain
 this integration. Exact portable-bundle Office conversion and main/Inspector
 OpenGL rendering/fallback checks pass; default D3D12 and installed lifecycle
 acceptance remain open. All four Linux formats are refreshed at `dist/packages/`.
-See `.hermes/evidence/office-package-current/ACCEPTANCE.json` for exact
+See `.evidence/office-package-current/ACCEPTANCE.json` for exact
 identities and scope. The preceding bitmap
 experiment remains rejected in
-`.hermes/evidence/windows-office-calc-current/DIAGNOSTIC.json`.
+`.evidence/windows-office-calc-current/DIAGNOSTIC.json`.
 
-- Native Windows 11 build 26100 fixtures passed on 2026-10-10 as the ordinary desktop user: startup inside the Job Object, output capture/budget, diagnostic cleanup, timeout after parent exit, cancellation of the process tree, per-process and aggregate memory limits, active-process limits and inherited-handle restriction. The run exposed a dangling Job Object attribute buffer causing CreateProcessW error 6; the attribute list now borrows caller-owned value buffers through destruction. Commands are in [DEVELOPMENT.md](DEVELOPMENT.md#windows-office-process-boundary), with RED/GREEN evidence in `.hermes/evidence/windows-20261010/`. A supported LibreOffice 26.8.1 installation is now present in the disposable guest. Ordinary-user production discovery, DOCX conversion through the Job Object, PDFium rendering/text content, provider labeling, private-profile cleanup, source preservation and pre-cancellation pass. Windows discovery was repaired after a native `NotInstalled` regression. Historical pre-AppContainer CLI fixtures passed all nine advertised formats. The pre-owner-thread contained Kit sweep passed only DOC/DOCX/ODT and timed out on six spreadsheet/presentation formats; the subsequent nine-format repair is recorded above. In-flight cancellation passes after LibreOffice acquires its real profile lock. The converter now follows the original Windows input basename after a native filename regression. A longer private-directory layout reproduced a provider crash; shortening the authoritative disposable-profile name fixes it, with all three native acceptance fixtures passing in the original failing layouts. A native fake-credential regression now verifies a private Unicode environment, with all eight process-boundary tests and three installed-provider fixtures passing. Those early checks did not establish representative fidelity, constrained-token/filesystem isolation, network denial or UI fallback presentation; the current gate state and newer receipts are recorded above.
-- The approved Linux editable-text publication contract is source-complete for plain text, text-equivalent/code and Markdown files. Saving retains both the independent draft and the actual displaced inode in a private source-local recovery directory. Final-window content, replacement and permission races are detected after exchange; a recovery conflict keeps the buffer and exact recovery location visible and disables further saves until explicit reload. Restoration only fills a vacant name without replacement; an occupied or failed recovery leaves all retained versions intact. Both affected directories are synced, and uncertainty stays visible. Prior inodes are never automatically pruned, including after clean saves, because late descriptor writers cannot be ruled out. Exchange-induced ctime changes, later external edits, same-user tampering and crash/power-loss limits are stated in the user guide; this is a retention guarantee, not generation-conditional overwrite or writer exclusion. Focused tests cover final-window mutation, inode identity, permissions, late descriptor writes, restoration refusal/failure, durability failure, retention and editor recovery. Workspace and source-built Linux acceptance evidence is recorded in `.hermes/text-publication-20260923/`. The exact AppImage from `cabfc8e4f0a6e4046581e73224eef5b2f9aac944` has packaged-editor byte identity, documentation and isolated headless-entrypoint evidence there; final-window race injection is test-only and has no packaged control, so packaged interactive recovery acceptance remains pending. Native crash/power-loss and physical/Wayland package acceptance remain unclaimed. Windows native text publication and source-built desktop acceptance are recorded below; macOS stays read-only. Additional document formats are not authorized.
+- Native Windows 11 build 26100 fixtures passed on 2026-10-10 as the ordinary desktop user: startup inside the Job Object, output capture/budget, diagnostic cleanup, timeout after parent exit, cancellation of the process tree, per-process and aggregate memory limits, active-process limits and inherited-handle restriction. The run exposed a dangling Job Object attribute buffer causing CreateProcessW error 6; the attribute list now borrows caller-owned value buffers through destruction. Commands are in [DEVELOPMENT.md](DEVELOPMENT.md#windows-office-process-boundary), with RED/GREEN evidence in `.evidence/windows-20261010/`. A supported LibreOffice 26.8.1 installation is now present in the disposable guest. Ordinary-user production discovery, DOCX conversion through the Job Object, PDFium rendering/text content, provider labeling, private-profile cleanup, source preservation and pre-cancellation pass. Windows discovery was repaired after a native `NotInstalled` regression. Historical pre-AppContainer CLI fixtures passed all nine advertised formats. The pre-owner-thread contained Kit sweep passed only DOC/DOCX/ODT and timed out on six spreadsheet/presentation formats; the subsequent nine-format repair is recorded above. In-flight cancellation passes after LibreOffice acquires its real profile lock. The converter now follows the original Windows input basename after a native filename regression. A longer private-directory layout reproduced a provider crash; shortening the authoritative disposable-profile name fixes it, with all three native acceptance fixtures passing in the original failing layouts. A native fake-credential regression now verifies a private Unicode environment, with all eight process-boundary tests and three installed-provider fixtures passing. Those early checks did not establish representative fidelity, constrained-token/filesystem isolation, network denial or UI fallback presentation; the current gate state and newer receipts are recorded above.
+- The approved Linux editable-text publication contract is source-complete for plain text, text-equivalent/code and Markdown files. Saving retains both the independent draft and the actual displaced inode in a private source-local recovery directory. Final-window content, replacement and permission races are detected after exchange; a recovery conflict keeps the buffer and exact recovery location visible and disables further saves until explicit reload. Restoration only fills a vacant name without replacement; an occupied or failed recovery leaves all retained versions intact. Both affected directories are synced, and uncertainty stays visible. Prior inodes are never automatically pruned, including after clean saves, because late descriptor writers cannot be ruled out. Exchange-induced ctime changes, later external edits, same-user tampering and crash/power-loss limits are stated in the user guide; this is a retention guarantee, not generation-conditional overwrite or writer exclusion. Focused tests cover final-window mutation, inode identity, permissions, late descriptor writes, restoration refusal/failure, durability failure, retention and editor recovery. Workspace and source-built Linux acceptance evidence is recorded in `.evidence/text-publication-20260923/`. The exact AppImage from `cabfc8e4f0a6e4046581e73224eef5b2f9aac944` has packaged-editor byte identity, documentation and isolated headless-entrypoint evidence there; final-window race injection is test-only and has no packaged control, so packaged interactive recovery acceptance remains pending. Native crash/power-loss and physical/Wayland package acceptance remain unclaimed. Windows native text publication and source-built desktop acceptance are recorded below; macOS stays read-only. Additional document formats are not authorized.
 
 - Windows text-save candidate: seventeen native ordinary-user fixtures pass on Windows 11 build 26100, including exact bytes/security preservation for inherited, protected and explicit DACLs, retained originals/drafts, sharing refusal and collision/failure recovery. Unicode names, ancestor-rename refusal, eight process-exit boundaries, and writable-mapping refusal/retry have native evidence; object IDs and all present SACLs are refused before staging. Actual audit-only, mixed audit/resource and scoped-policy fixtures confirm refusal without metadata loss; extended attributes are refused before staging both at admission and after session opening; partial-SACL publication was removed after it dropped an audit rule. Candidate ACL preparation now preserves the automatic-inheritance state through the filesystem security API; exact descriptor validation remains mandatory. Public editing is now enabled for admitted local NTFS files: all 22 native text checks pass, and the source-built desktop Inspector verifies exact saving, retained original/draft, external-change refusal and confirmed reload. Focused exact portable-package Markdown save/conflict/reload acceptance now passes with exact saved bytes, retained Unicode original/draft, external-change refusal, Keep editing, Copy my edits and confirmed reload. [WINDOWS_TEXT_EDITING.md](WINDOWS_TEXT_EDITING.md) records the current archive/hash, limited interactive token, diagnostic OpenGL scope and remaining platform limits.
 
@@ -7228,14 +7228,14 @@ experiment remains rejected in
 
 - **Linux admission repair and acceptance:** Clipboard and queued commands use one fallible admission path with per-path Linux unique mount IDs in addition to discovered-volume checks, correct source/destination symlink semantics and retained unavailable-volume tombstones. Ordinary-user worker/regression tests and a real private-namespace mount replacement pass; Linux and Windows strict Clippy pass. This requires Linux 6.8+. The preceding clean `771eae8` AppImage passes rapid Ctrl+L path entry and two-file Ctrl+A selection, Copy, conflict renaming, reverse batch Copy, Move, Cancel, overwrite retention and overwrite Undo on two distinct local tmpfs filesystems outside Home. Exact byte checks, normal exit and fixture/process cleanup pass. Main command shortcuts use key-event modifiers; address fields receive focus before rendering. Both released-chord/same-frame typing regressions and all 343 regular UI tests pass. Receipt: `dist/packages/LOCAL_PATH_ADMISSION_ACCEPTANCE.json`. Physical removable acceptance remains open. Batch Copy source now retains per-file receipts in Activity, removes the spurious cleanup warning on successful publication and supports reverse-order Undo with retained progress on failure. All 329 platform and 343 regular UI tests pass, including displaced-byte restoration, replacement refusal and retry of only remaining entries. Exact rebuilt-AppImage GUI checks pass two-file cross-filesystem Copy and Undo with source bytes retained, the new action label and no spurious cleanup warning. The full rapid-path/Copy/Move/Cancel/Overwrite/Undo sequence also passes, with normal exit and owned fixture/process cleanup. Receipt: `dist/packages/BATCH_COPY_ACCEPTANCE.json`. Safe expiry/reclamation of session Copy transaction stages remains daily-driver work. The current `4c0961b` source and AppImage use shared nonblocking inotify identity guards and unique mount IDs for Copy/create receipt directories, with short-lived, verified directory-relative handles for the inverse. It refuses replaced parents/stages and redirected destination aliases, including published hard links preserving file inode identity. Long-lived directory handles were rejected because they prevent ordinary unmount. Dedicated private mount acceptance covers ordinary unmount with live receipts, tmpfs replacement, and same-inode bind remount. History eviction/Clear and safe recursive reclamation remain unfinished. All 335 regular platform tests, 343 regular UI tests, strict Linux/Windows cross-target Clippy and the private mount fixture pass. The rebuilt exact AppImage passes rapid path entry, Copy/conflict rename/batch Undo/Move/Cancel/Overwrite/Undo with exact bytes and normal exit; successful Undo messages use normal muted text. Owned apps, daemon, bus, display and fixtures are removed. Receipt: `dist/packages/COPY_DIRECTORY_OWNERSHIP_ACCEPTANCE.json`. Physical removable-device acceptance and native Windows remain open. Evidence and scope: [STORAGE_LOCATIONS_STATUS.md](STORAGE_LOCATIONS_STATUS.md#current-linux-clipboard-path-admission-gap).
 
-- Miller startup selection now requests the same one-shot row/column reveal as explicit navigation, showing the selected file and its adjacent preview rather than leaving the preview off-screen. A rendered deep-path regression reproduces the missing reveal before the fix and passes afterward; actual ArrowUp selection preserves the settled horizontal offset. Existing Miller/pointer navigation tests and strict UI Clippy pass. The private reveal state has one shared implementation for startup and navigation. Native Windows portable acceptance now passes at 1100 × 690 and 800 × 600: selected file/full adjacent preview visible, ArrowUp changes selection without shifting columns, clean exits. Exact portable source `5a6b001895eec2a3c8a426b7cd0ae1acbdf9a2ad`, SHA-256 `f27508c5d85b812a7512585eedf0c0c5c676bb10b619ad869e2da79907861e4d`; receipt `.hermes/evidence/windows-20261011/WINDOWS_MILLER_STARTUP_ACCEPTANCE.json`. Linux AppImage acceptance also passes at both sizes using private Xvfb/DBus and the exact clean-revision `73b913d` package; receipt `dist/packages/MILLER_STARTUP_ACCEPTANCE.json`. Portable/DEB/RPM also contain the fix and pass the same extracted-package layout checks; exact current identities are in `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`. The current NSIS and MSI installers also contain this fix. Full platform acceptance remains separate. Historical reproduction: `.hermes/evidence/windows-20261011/text-package-start.png`.
+- Miller startup selection now requests the same one-shot row/column reveal as explicit navigation, showing the selected file and its adjacent preview rather than leaving the preview off-screen. A rendered deep-path regression reproduces the missing reveal before the fix and passes afterward; actual ArrowUp selection preserves the settled horizontal offset. Existing Miller/pointer navigation tests and strict UI Clippy pass. The private reveal state has one shared implementation for startup and navigation. Native Windows portable acceptance now passes at 1100 × 690 and 800 × 600: selected file/full adjacent preview visible, ArrowUp changes selection without shifting columns, clean exits. Exact portable source `5a6b001895eec2a3c8a426b7cd0ae1acbdf9a2ad`, SHA-256 `f27508c5d85b812a7512585eedf0c0c5c676bb10b619ad869e2da79907861e4d`; receipt `.evidence/windows-20261011/WINDOWS_MILLER_STARTUP_ACCEPTANCE.json`. Linux AppImage acceptance also passes at both sizes using private Xvfb/DBus and the exact clean-revision `73b913d` package; receipt `dist/packages/MILLER_STARTUP_ACCEPTANCE.json`. Portable/DEB/RPM also contain the fix and pass the same extracted-package layout checks; exact current identities are in `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`. The current NSIS and MSI installers also contain this fix. Full platform acceptance remains separate. Historical reproduction: `.evidence/windows-20261011/text-package-start.png`.
 
-- Complete native Windows Move acceptance against the same product contract. Ordinary-user fixtures on Windows 11 build 26100 cover ten same-volume cases and cross-volume file/directory/symlink Move on two NTFS volumes; Skip/Rename/Overwrite with exact displaced retention; raw nested links and empty directories; creation/modification times and hidden/archive/read-only metadata; changed-source/published-entry refusal; adverse sharing and destination ACL refusal/retry; and process exits during staging, publication, source claim and displaced retention. Read-only-source publication recovery survives repeated exits without clearing original source attributes. Read-only destination files survive Skip/Rename; Overwrite safely refuses until destination protection is removed, then ordinary retry retains the exact displaced file. Source cleanup rechecks named streams added after interruption. Journal namespaces are explicitly flushed, with native durability-failure/refusal/retry evidence. Explicit recovery shares the ordinary recovery gate; native checks cover closed-gate refusal, idempotent completed recovery, retained originals/later edits and malformed or misnamed journals. A separate native lock-owning process blocks both explicit recovery and ordinary retry without changing journal or file bytes; killing it releases ownership, after which recovery completes with exact displaced retention and remains idempotent. Strict Windows platform Clippy passes. These fixtures are not power-loss or exact-package acceptance. Directory process-exit acceptance now covers initial journal publication, candidate unlock/publication, before source cleanup, source unlock and source claim. The initial central/local journal gap is repaired only for an empty, identity-bound initial transaction; staged-data and later missing-journal cases remain refused. Native FAT32 boundary checks now prove safe refusal in both directions for Rename/Overwrite with both files unchanged; this does not claim FAT32 Move support or physical removable-device acceptance. Extended attributes are now refused at admission and cleanup, with native exact-retention checks for files, directory roots and nested entries, including attributes added after interrupted publication. Completed non-Overwrite Moves now retain a durable central completion receipt through ordered, flushed teardown; native tests cover deletion failures, process exits and preservation of mismatched or replaced recovery data. Top-level file and directory symlinks now refuse link-owned named streams at admission and cleanup; native checks distinguish those streams from target data and preserve streams added after interrupted publication. The bounded independent review confirms this stream-refusal repair. Source-built Windows GUI acceptance now covers Cut/Paste Overwrite and idempotent same-volume recovery with exact displaced-byte retention. It exposed a storage-root path mismatch, repaired at discovery. Cross-volume recovery now exposes the normal action; recovery revalidates the journal, identities and content before mutation. A fresh network-isolated Windows guest on October 11 passes all 21 current cross-volume native fixtures (15.69s), the FAT32 refusal fixture in both directions (0.05s), and 102 default platform tests (6.60s; 23 ignored), as the limited interactive user; strict Windows all-target platform Clippy passes. Evidence: `.hermes/evidence/windows-20261011/MOVE_ACCEPTANCE.json`. Separate ordinary-user Overwrite fixtures now survive hard guest power cuts at BeforeSourceCleanup for a regular file and SourceClaimed for a directory tree. Both verify published/displaced content and identity, recovery and its idempotent repeat (0.10s and 0.09s). The directory check verifies the claimed source identity, nested payload, empty folder and drained claim. Windows needed one normal restart from Automatic Repair after repeated cuts; fixture state survived. Evidence is `POWER_CUT_ACCEPTANCE.json` and `SOURCE_CLAIM_POWER_CUT_ACCEPTANCE.json` beside that receipt. The temporary Windows acceptance gate and override variables are removed; public Move and retained recovery use the authoritative verified transaction path. A fresh no-override run passes 21 cross-volume cases, FAT32 refusal and 99 default platform tests. The final public-command fixture also passes single-file and batch Move across NTFS volumes (0.69s), with explicit dispositions and no unsupported undo receipt. Strict Windows platform/UI all-target Clippy passes; `PUBLIC_MOVE_ACCEPTANCE.json` records the exact binaries and scope. The clean `9335cff` Windows portable candidate built successfully (SHA-256 `9f3669693a75564542712c7a94381c35104e2d123138554756dd4077d08357b6`); all 49 archive files match its stage. Ordinary-user packaged launch passes with explicit OpenGL, but Cut/Paste to a typed `Q:` destination exposed a lexical mismatch against the discovered verbatim drive root. Both files remain unchanged; this candidate is not accepted for that workflow. The shared storage-root comparison now recognizes ordinary/verbatim drive and UNC prefixes without resolving links or changing the operation path. Its ordinary-user native Windows regression passes valid aliases and missing/replaced/unrelated-volume refusals; strict Windows UI all-target Clippy passes. Evidence: `STORAGE_PREFIX_ACCEPTANCE.json`. The rebuilt clean `56f0d4e` package (SHA-256 `528dc46064877ead4e433ecd955d345802f200229e940acd0001196b5ca9f099`) passes limited-user Cut/Paste/Replace across C:/Q: with source removal, exact published/displaced bytes, retained file identity, paired journals and bundled graphics module paths verified. A VHDX attachment-filter limitation caused the earlier ACL failure; correcting the owned backing-image permissions resolved it without a production ACL change. Fresh native verification passes 22 cross-volume cases including a Modify-only destination and 99 default tests. Evidence: `PREFIX_PACKAGE_ACCEPTANCE.json` and `MODIFY_DESTINATION_ACCEPTANCE.json`. Broader GUI acceptance remains pending. Other power-cut boundaries and physical-device acceptance also remain pending. Non-symbolic reparse points remain rejected. Native commands, detailed evidence and limits are in [DEVELOPMENT.md](DEVELOPMENT.md#windows-move).
+- Complete native Windows Move acceptance against the same product contract. Ordinary-user fixtures on Windows 11 build 26100 cover ten same-volume cases and cross-volume file/directory/symlink Move on two NTFS volumes; Skip/Rename/Overwrite with exact displaced retention; raw nested links and empty directories; creation/modification times and hidden/archive/read-only metadata; changed-source/published-entry refusal; adverse sharing and destination ACL refusal/retry; and process exits during staging, publication, source claim and displaced retention. Read-only-source publication recovery survives repeated exits without clearing original source attributes. Read-only destination files survive Skip/Rename; Overwrite safely refuses until destination protection is removed, then ordinary retry retains the exact displaced file. Source cleanup rechecks named streams added after interruption. Journal namespaces are explicitly flushed, with native durability-failure/refusal/retry evidence. Explicit recovery shares the ordinary recovery gate; native checks cover closed-gate refusal, idempotent completed recovery, retained originals/later edits and malformed or misnamed journals. A separate native lock-owning process blocks both explicit recovery and ordinary retry without changing journal or file bytes; killing it releases ownership, after which recovery completes with exact displaced retention and remains idempotent. Strict Windows platform Clippy passes. These fixtures are not power-loss or exact-package acceptance. Directory process-exit acceptance now covers initial journal publication, candidate unlock/publication, before source cleanup, source unlock and source claim. The initial central/local journal gap is repaired only for an empty, identity-bound initial transaction; staged-data and later missing-journal cases remain refused. Native FAT32 boundary checks now prove safe refusal in both directions for Rename/Overwrite with both files unchanged; this does not claim FAT32 Move support or physical removable-device acceptance. Extended attributes are now refused at admission and cleanup, with native exact-retention checks for files, directory roots and nested entries, including attributes added after interrupted publication. Completed non-Overwrite Moves now retain a durable central completion receipt through ordered, flushed teardown; native tests cover deletion failures, process exits and preservation of mismatched or replaced recovery data. Top-level file and directory symlinks now refuse link-owned named streams at admission and cleanup; native checks distinguish those streams from target data and preserve streams added after interrupted publication. The bounded independent review confirms this stream-refusal repair. Source-built Windows GUI acceptance now covers Cut/Paste Overwrite and idempotent same-volume recovery with exact displaced-byte retention. It exposed a storage-root path mismatch, repaired at discovery. Cross-volume recovery now exposes the normal action; recovery revalidates the journal, identities and content before mutation. A fresh network-isolated Windows guest on October 11 passes all 21 current cross-volume native fixtures (15.69s), the FAT32 refusal fixture in both directions (0.05s), and 102 default platform tests (6.60s; 23 ignored), as the limited interactive user; strict Windows all-target platform Clippy passes. Evidence: `.evidence/windows-20261011/MOVE_ACCEPTANCE.json`. Separate ordinary-user Overwrite fixtures now survive hard guest power cuts at BeforeSourceCleanup for a regular file and SourceClaimed for a directory tree. Both verify published/displaced content and identity, recovery and its idempotent repeat (0.10s and 0.09s). The directory check verifies the claimed source identity, nested payload, empty folder and drained claim. Windows needed one normal restart from Automatic Repair after repeated cuts; fixture state survived. Evidence is `POWER_CUT_ACCEPTANCE.json` and `SOURCE_CLAIM_POWER_CUT_ACCEPTANCE.json` beside that receipt. The temporary Windows acceptance gate and override variables are removed; public Move and retained recovery use the authoritative verified transaction path. A fresh no-override run passes 21 cross-volume cases, FAT32 refusal and 99 default platform tests. The final public-command fixture also passes single-file and batch Move across NTFS volumes (0.69s), with explicit dispositions and no unsupported undo receipt. Strict Windows platform/UI all-target Clippy passes; `PUBLIC_MOVE_ACCEPTANCE.json` records the exact binaries and scope. The clean `9335cff` Windows portable candidate built successfully (SHA-256 `9f3669693a75564542712c7a94381c35104e2d123138554756dd4077d08357b6`); all 49 archive files match its stage. Ordinary-user packaged launch passes with explicit OpenGL, but Cut/Paste to a typed `Q:` destination exposed a lexical mismatch against the discovered verbatim drive root. Both files remain unchanged; this candidate is not accepted for that workflow. The shared storage-root comparison now recognizes ordinary/verbatim drive and UNC prefixes without resolving links or changing the operation path. Its ordinary-user native Windows regression passes valid aliases and missing/replaced/unrelated-volume refusals; strict Windows UI all-target Clippy passes. Evidence: `STORAGE_PREFIX_ACCEPTANCE.json`. The rebuilt clean `56f0d4e` package (SHA-256 `528dc46064877ead4e433ecd955d345802f200229e940acd0001196b5ca9f099`) passes limited-user Cut/Paste/Replace across C:/Q: with source removal, exact published/displaced bytes, retained file identity, paired journals and bundled graphics module paths verified. A VHDX attachment-filter limitation caused the earlier ACL failure; correcting the owned backing-image permissions resolved it without a production ACL change. Fresh native verification passes 22 cross-volume cases including a Modify-only destination and 99 default tests. Evidence: `PREFIX_PACKAGE_ACCEPTANCE.json` and `MODIFY_DESTINATION_ACCEPTANCE.json`. Broader GUI acceptance remains pending. Other power-cut boundaries and physical-device acceptance also remain pending. Non-symbolic reparse points remain rejected. Native commands, detailed evidence and limits are in [DEVELOPMENT.md](DEVELOPMENT.md#windows-move).
 
 
-Windows index-task status source now reads the task's `Settings/Enabled` value instead of a trigger's earlier `Enabled` flag, which could incorrectly label a disabled task ready. Differing trigger/task flags and malformed settings have rendered-status regressions. Source verification passes 215 search tests (two ignored), strict Linux/Windows search all-target Clippy, formatting and diff checks. The first full run's 500k benchmark hit 270 ms under concurrent compilation; an isolated repeat passed at 121 ms and the full suite passed without compilation. The subsequent task-update repair below includes this status fix in the refreshed portable/NSIS payload; native portable CLI/status acceptance passes. Updated installer lifecycle and MSI refresh pass the subsequent checkpoint below; cross-version upgrade and full rollback remain open. Evidence: `.hermes/evidence/windows-refresh-20261012/TASK_STATUS_SOURCE_VERIFICATION.json`.
+Windows index-task status source now reads the task's `Settings/Enabled` value instead of a trigger's earlier `Enabled` flag, which could incorrectly label a disabled task ready. Differing trigger/task flags and malformed settings have rendered-status regressions. Source verification passes 215 search tests (two ignored), strict Linux/Windows search all-target Clippy, formatting and diff checks. The first full run's 500k benchmark hit 270 ms under concurrent compilation; an isolated repeat passed at 121 ms and the full suite passed without compilation. The subsequent task-update repair below includes this status fix in the refreshed portable/NSIS payload; native portable CLI/status acceptance passes. Updated installer lifecycle and MSI refresh pass the subsequent checkpoint below; cross-version upgrade and full rollback remain open. Evidence: `.evidence/windows-refresh-20261012/TASK_STATUS_SOURCE_VERIFICATION.json`.
 
-The shared Windows background setup now registers the replacement task atomically with its existing enabled state and permissions, verifies task ownership/logon type, and passes the executable path as process data. It replaces the hourly `schtasks /MO` path with a Task Scheduler time trigger and validates the documented 1–744-hour repetition range. The exact embedded script passes native medium-integrity interactive checks for new/enabled tasks, disabled updates at 1/6/24/168/744 hours, unchanged security descriptors, paths with spaces/apostrophes, and mutation-free refusal of 0/745 hours. The initial verifier incorrectly compared an account name returned by Windows with a SID; normalized SID checks pass. All 213 current search tests (two ignored), strict Linux/Windows search all-target Clippy, formatting and diff checks pass. Native script evidence: `.hermes/evidence/windows-task-update-20261012/NATIVE_SCRIPT_ACCEPTANCE.json`. The additional native ownership control refuses a readable other-user task without changing its definition or permissions. Exact portable CLI acceptance now passes setup, disabled update to 24 hours, preserved permissions, correct enabled/disabled status with an enabled trigger, and invalid-interval refusal. The subsequent installer checkpoint below accepts the current same-version lifecycle; cross-version upgrade and full rollback remain open.
+The shared Windows background setup now registers the replacement task atomically with its existing enabled state and permissions, verifies task ownership/logon type, and passes the executable path as process data. It replaces the hourly `schtasks /MO` path with a Task Scheduler time trigger and validates the documented 1–744-hour repetition range. The exact embedded script passes native medium-integrity interactive checks for new/enabled tasks, disabled updates at 1/6/24/168/744 hours, unchanged security descriptors, paths with spaces/apostrophes, and mutation-free refusal of 0/745 hours. The initial verifier incorrectly compared an account name returned by Windows with a SID; normalized SID checks pass. All 213 current search tests (two ignored), strict Linux/Windows search all-target Clippy, formatting and diff checks pass. Native script evidence: `.evidence/windows-task-update-20261012/NATIVE_SCRIPT_ACCEPTANCE.json`. The additional native ownership control refuses a readable other-user task without changing its definition or permissions. Exact portable CLI acceptance now passes setup, disabled update to 24 hours, preserved permissions, correct enabled/disabled status with an enabled trigger, and invalid-interval refusal. The subsequent installer checkpoint below accepts the current same-version lifecycle; cross-version upgrade and full rollback remain open.
 
 
 
@@ -7263,14 +7263,14 @@ Native MSI QA on 2026-10-12 exposed destructive early upgrade removal and an omi
 
 A later native failure test on 2026-10-12, after `InstallExecute` and before old-product removal, **fails**: Windows Installer leaves the failed product registered and reports access-denied rollback errors, while background setup re-enables a previously disabled index task. A separate file-only MSI with no Ottrin executable or index custom action reproduces the registration failure (1603, payload rolled back, product state still installed); its explicit cleanup uninstall succeeds. `MSI_LATE_FAILURE.json`, `MSI_REGISTRATION_PROBE.json` and compressed native logs retain the evidence. [WiX issue 8574](https://github.com/wixtoolset/issues/issues/8574) reports similar symptoms; the exact authoring/engine cause is not established here. This is a confirmed open release gate, not covered by the earlier passing pre-execution failure test. Installer-owned index rollback is now implemented: a UTF-8 snapshot records the prior definition and permissions before setup, rollback restores it without running registration triggers, and commit removes the snapshot. A native medium-integrity test with a failure after `InstallExecute` restores the complete disabled task XML and permission entries, preserves the 49 prior payload files/preferences and removes the snapshot. New-task rollback, commit cleanup and stale-snapshot retention also pass focused native tests. `MSI_TASK_ROLLBACK.json` and `MSI_TASK_TRANSACTION_UNIT.json` record this source/candidate evidence; it does not resolve the failed-product registration error or complete populated-data rollback, fresh non-administrator or exact published-MSI acceptance.
 
-A new file-only control rules out filtered-administrator membership as the explanation for the registration rollback failure. Native WiX 5.0.2, Windows build 26100 and `msi.dll` 5.0.26100.9168 reproduce it in a fresh standard account with a medium-integrity interactive token and no administrator membership: injected failure after `InstallExecute` returns 1603, the file rolls back, but product state remains 5. The rollback contains 149 access-denied registry notes, excluding ordinary missing-key diagnostics. Explicit uninstall returns 0 and product state becomes -1. The probe has no Ottrin executable or index custom actions; this does not establish the compiler, engine or authoring cause. The [open upstream report](https://github.com/wixtoolset/issues/issues/8574) describes similar registration failures; similarity is not root-cause proof. `dist/MSI_STANDARD_USER_ROLLBACK_COMPARISON.json` and compact logs under `.hermes/evidence/msi-rollback-20261012/` retain the evidence. Owned account/profile/task/credential/compiler/uploads were removed and the prior guest installation is unchanged. Full MSI rollback remains an open gate; other roadmap work can continue.
+A new file-only control rules out filtered-administrator membership as the explanation for the registration rollback failure. Native WiX 5.0.2, Windows build 26100 and `msi.dll` 5.0.26100.9168 reproduce it in a fresh standard account with a medium-integrity interactive token and no administrator membership: injected failure after `InstallExecute` returns 1603, the file rolls back, but product state remains 5. The rollback contains 149 access-denied registry notes, excluding ordinary missing-key diagnostics. Explicit uninstall returns 0 and product state becomes -1. The probe has no Ottrin executable or index custom actions; this does not establish the compiler, engine or authoring cause. The [open upstream report](https://github.com/wixtoolset/issues/issues/8574) describes similar registration failures; similarity is not root-cause proof. `dist/MSI_STANDARD_USER_ROLLBACK_COMPARISON.json` and compact logs under `.evidence/msi-rollback-20261012/` retain the evidence. Owned account/profile/task/credential/compiler/uploads were removed and the prior guest installation is unchanged. Full MSI rollback remains an open gate; other roadmap work can continue.
 
 
 The task-transaction portable/MSI checkpoint was built from clean tracked revision `c3bba32532b0a5a3a0c96c52e047b88eec1f3a58`: portable SHA-256 `2864bd4522e67f0b6758789f8705b0471818e3aa4fbc7201a389ed111f35e7cb`, MSI SHA-256 `c53089f1dfd85cebba653e56e318686af110e976bb46b5465eb9dec4e8e33b52`. The MSI adds one installer-owned task-transaction script (50 installed files; portable remains 49). Exact silent install/uninstall passes with complete payload hashes, index task/product registration and removal, preferences retained and no transaction snapshots left. `MSI_TASK_FINAL_ACCEPTANCE.json` binds this medium-integrity interactive acceptance to the exact artifact. A separate native helper test also confirms restoring an enabled registration trigger does not execute it. Full MSI registration/data rollback and fresh non-administrator interactive/Installed Apps acceptance remain open.
 
-The NSIS lifecycle checkpoint used Windows portable and NSIS packages from clean revision `e09d88c8ecf11460338034945ce0b5ee890ed432`. Portable SHA-256: `327a5d8868949fd50dd62139ad290ec457b5e9b63d0646f6b8b6a7bd9d38711f`; NSIS SHA-256: `3389e0128cae0e93c36b76be397481abdd3907ab8df4113941ceac1c56eaf699`. The published archive matches all 49 staged files; its app binary matches the earlier accepted startup-preview binary. Exact NSIS silent install, same-version reinstall and uninstall pass under a fresh standard account with a medium-integrity batch token: full payload hashes, index action/principal, Installed Apps name/version/icon, Start menu shortcut targets, removal of files/task/registration/shortcuts, and unchanged preferences. The owned account, profile, temporary batch-logon right, tasks and fixtures are removed; the existing guest installation is preserved. Receipt: `.hermes/evidence/windows-20261011/CURRENT_NSIS_ACCEPTANCE.json`, also included in `dist/WINDOWS_PACKAGES_ACCEPTANCE.json`. Cross-version upgrade, failure/rollback, populated-data cleanup, interactive installer and full installed-app workflow acceptance remain open.
+The NSIS lifecycle checkpoint used Windows portable and NSIS packages from clean revision `e09d88c8ecf11460338034945ce0b5ee890ed432`. Portable SHA-256: `327a5d8868949fd50dd62139ad290ec457b5e9b63d0646f6b8b6a7bd9d38711f`; NSIS SHA-256: `3389e0128cae0e93c36b76be397481abdd3907ab8df4113941ceac1c56eaf699`. The published archive matches all 49 staged files; its app binary matches the earlier accepted startup-preview binary. Exact NSIS silent install, same-version reinstall and uninstall pass under a fresh standard account with a medium-integrity batch token: full payload hashes, index action/principal, Installed Apps name/version/icon, Start menu shortcut targets, removal of files/task/registration/shortcuts, and unchanged preferences. The owned account, profile, temporary batch-logon right, tasks and fixtures are removed; the existing guest installation is preserved. Receipt: `.evidence/windows-20261011/CURRENT_NSIS_ACCEPTANCE.json`, also included in `dist/WINDOWS_PACKAGES_ACCEPTANCE.json`. Cross-version upgrade, failure/rollback, populated-data cleanup, interactive installer and full installed-app workflow acceptance remain open.
 
-The historical portable and MSI checkpoint was built from clean revision `fc313932a4993cb3122594257928d676daf3e931`: portable SHA-256 `afda48f12327fb1df2bc9337e97eaa8fc1577c7b2455b767198ac2674b2b66ae`, MSI SHA-256 `f88a875c2b03d5d9b9445d655de023f56c9d9a53b0f4520500b4ef13bc5b3520`. The exact MSI passes silent install/uninstall under a fresh standard account with a medium-integrity **interactive** token: all 50 file hashes, index-task registration/removal, product state 5 → -1, preferences preserved, and no transaction snapshots. Its first batch-token attempt failed before package actions with installer-server access denied; that context failure is retained separately and no permissions were changed. Temporary account/profile, tasks, credential, runtime and fixtures were removed; existing guest installation preserved. Receipt: `.hermes/evidence/windows-20261011/MSI_CURRENT_ACCEPTANCE.json`, also in `dist/WINDOWS_PACKAGES_ACCEPTANCE.json`. MSI authoring currently lacks Start menu app/uninstall entries; add and accept those next. Full rollback/product restoration and the broader release gates remain open.
+The historical portable and MSI checkpoint was built from clean revision `fc313932a4993cb3122594257928d676daf3e931`: portable SHA-256 `afda48f12327fb1df2bc9337e97eaa8fc1577c7b2455b767198ac2674b2b66ae`, MSI SHA-256 `f88a875c2b03d5d9b9445d655de023f56c9d9a53b0f4520500b4ef13bc5b3520`. The exact MSI passes silent install/uninstall under a fresh standard account with a medium-integrity **interactive** token: all 50 file hashes, index-task registration/removal, product state 5 → -1, preferences preserved, and no transaction snapshots. Its first batch-token attempt failed before package actions with installer-server access denied; that context failure is retained separately and no permissions were changed. Temporary account/profile, tasks, credential, runtime and fixtures were removed; existing guest installation preserved. Receipt: `.evidence/windows-20261011/MSI_CURRENT_ACCEPTANCE.json`, also in `dist/WINDOWS_PACKAGES_ACCEPTANCE.json`. MSI authoring currently lacks Start menu app/uninstall entries; add and accept those next. Full rollback/product restoration and the broader release gates remain open.
 
 
 
@@ -7403,13 +7403,13 @@ Start this phase after outcomes 1–3 are complete. Complete the independently a
 
 ### Linux
 
-- Bounded packaged QA on 2026-10-03 verified the then-current AppImage in isolated Xvfb: startup, folder navigation, editable-text Inspector save/reopen, external-change refusal with retained draft, and confirmed reload. Embedded tracked-source provenance matched the checkout before this QA note. This does not close final Linux acceptance: automated Copy/Paste did not produce an accepted conflict flow; clean desktop, real removable storage and installed LibreOffice remain unverified or unavailable. Evidence and the first next acceptance are in `.hermes/evidence/t_fb84c0b6/QA_RECEIPT.md`; Windows remains a separate native gate.
+- Bounded packaged QA on 2026-10-03 verified the then-current AppImage in isolated Xvfb: startup, folder navigation, editable-text Inspector save/reopen, external-change refusal with retained draft, and confirmed reload. Embedded tracked-source provenance matched the checkout before this QA note. This does not close final Linux acceptance: automated Copy/Paste did not produce an accepted conflict flow; clean desktop, real removable storage and installed LibreOffice remain unverified or unavailable. Evidence and the first next acceptance are in `.evidence/t_fb84c0b6/QA_RECEIPT.md`; Windows remains a separate native gate.
 - Launch the AppImage, portable tarball and native packages on a clean supported desktop.
 - Run one daily-driver workflow covering navigation, New File/New Folder, file operations, cross-volume Copy, Tandem View, multi-select, search, Quick Inspector, context menus and status messages.
 - Attach, browse, index by explicit choice, detach and reconnect real mounted/removable volumes. Check compact/expanded Locations pointer, keyboard, tooltip, ordering, selection and unavailable states.
 - Exercise installed LibreOffice with representative DOCX, XLSX and PPTX files. Confirm conversion, cancellation, cleanup, provider labels, page navigation and native fallback. Add fixtures only for defects found or features Ottrin claims to support.
 - Native helper smoke verified on Linux: generated silent video, RGBA frames, pause/resume acknowledgement, Stop, end-of-stream, retained-descriptor pathname replacement, malformed input and isolated missing-plugin fallback (`scripts/linux-media-playback-smoke.py`). Source-built Inspector presentation has also been exercised in isolated Xvfb with generated video: decoded frames, Pause/resume, end-of-stream, missing-helper and missing-plugin fallback. Duplicate external-open actions and enabled controls for terminal sessions were corrected. Audible playback, representative user media and clean-package fallback remain pending; no codecs were added.
-- Isolated packaged QA on 2026-10-10 verified New File/New Folder, rename, multiselect Copy, Trash, permanent delete, same-filesystem Cut/Paste, Tandem Copy/Move, tab reordering and scoped search with disposable files. List/Grid rubber-band selection from blank space below entries was repaired and verified in the AppImage from `76b50087e0f26a6312976a9def902e0d68409bd3`. Evidence is in `.hermes/evidence/roadmap-20261010/`; these checks do not close physical desktop, removable-volume or full workflow acceptance.
+- Isolated packaged QA on 2026-10-10 verified New File/New Folder, rename, multiselect Copy, Trash, permanent delete, same-filesystem Cut/Paste, Tandem Copy/Move, tab reordering and scoped search with disposable files. List/Grid rubber-band selection from blank space below entries was repaired and verified in the AppImage from `76b50087e0f26a6312976a9def902e0d68409bd3`. Evidence is in `.evidence/roadmap-20261010/`; these checks do not close physical desktop, removable-volume or full workflow acceptance.
 - Check packaged privileged-helper and polkit allow, cancel, missing-helper and policy-error paths.
 - Recheck native assistive integration once. If the upstream Unix AT-SPI lifecycle remains unusable, record the observed limitation rather than starting replacement infrastructure during QA.
 
@@ -7461,7 +7461,7 @@ Run this gate once the implementation outcomes above are source-complete and exa
 
 ### Windows MSI desktop integration — 2026-10-12
 
-The per-user MSI now defines Ottrin and Uninstall Ottrin Start menu shortcuts, an Installed Apps icon, and uninstall ownership for its menu folder and registration marker. Both Windows portable builders carry `assets/icon.ico`, derived from the authoritative 256-pixel `assets/icon.png` at 16, 24, 32, 48, 64, 128 and 256 pixels. The MSI embeds this small icon resource rather than duplicating the application executable. The exact MSI from clean revision `f9b20627dbeab7ee7ca58648ce35198f3fe44121`, SHA-256 `e8ea82f0da32613fd316d3badc3e352dbc55af3f963d347d3f0c2ee313fe00be`, passes native silent install/uninstall under a fresh standard interactive account. All 51 payload files, both shortcut targets/arguments, shortcut and primary product icon bytes, index registration/removal, component/menu/icon removal, product state 5 → -1 and preference preservation pass. Launching the actual app shortcut opens an Ottrin window and exits cleanly with the bundled OpenGL override after initialization. The first two-second initialization/close probe timed out; a later probe refreshed the window handle after eight seconds and passed, with both results retained. Full UI/native graphics, cross-version upgrade and the separately recorded rollback/product-restoration gate remain open. Receipt: `.hermes/evidence/windows-20261011/MSI_DESKTOP_ACCEPTANCE.json`; current package pointers: `dist/WINDOWS_PACKAGES_ACCEPTANCE.json`. The refreshed portable archive has 50 files, all matching its stage; the application executable remains identical to the earlier accepted startup-preview binary. The disposable account/profile, task, credentials and staging were removed; the pre-existing guest installation checksum is unchanged.
+The per-user MSI now defines Ottrin and Uninstall Ottrin Start menu shortcuts, an Installed Apps icon, and uninstall ownership for its menu folder and registration marker. Both Windows portable builders carry `assets/icon.ico`, derived from the authoritative 256-pixel `assets/icon.png` at 16, 24, 32, 48, 64, 128 and 256 pixels. The MSI embeds this small icon resource rather than duplicating the application executable. The exact MSI from clean revision `f9b20627dbeab7ee7ca58648ce35198f3fe44121`, SHA-256 `e8ea82f0da32613fd316d3badc3e352dbc55af3f963d347d3f0c2ee313fe00be`, passes native silent install/uninstall under a fresh standard interactive account. All 51 payload files, both shortcut targets/arguments, shortcut and primary product icon bytes, index registration/removal, component/menu/icon removal, product state 5 → -1 and preference preservation pass. Launching the actual app shortcut opens an Ottrin window and exits cleanly with the bundled OpenGL override after initialization. The first two-second initialization/close probe timed out; a later probe refreshed the window handle after eight seconds and passed, with both results retained. Full UI/native graphics, cross-version upgrade and the separately recorded rollback/product-restoration gate remain open. Receipt: `.evidence/windows-20261011/MSI_DESKTOP_ACCEPTANCE.json`; current package pointers: `dist/WINDOWS_PACKAGES_ACCEPTANCE.json`. The refreshed portable archive has 50 files, all matching its stage; the application executable remains identical to the earlier accepted startup-preview binary. The disposable account/profile, task, credentials and staging were removed; the pre-existing guest installation checksum is unchanged.
 
 ### Preview toolbar wrapping acceptance
 
@@ -7483,7 +7483,7 @@ lifecycle gates, physical removable acceptance, or retained-data reclamation.
 
 ## Fresh Ubuntu DEB lifecycle acceptance — 2026-10-12
 
-The current `6e8cef0` DEB, SHA-256 `b165dee2e1e8fd89d8aa12c36dd0d7a906ad2cb5551707f95db18247af1b42d4`, passes fresh Ubuntu 24.04.5 VM installation with dependencies, regular-user CLI and text-preview GUI launch/clean exit, same-version reinstall, and removal of package-owned executable/helper/desktop/polkit files. Saved preferences remain byte-identical after reinstall and removal. All five installed executables match the accepted release binaries. Real systemd user-service install (enabled/active), status, restart and removal pass. This replaces the prior namespace-only installation blocker at this scope. Receipt: `dist/packages/DEB_INSTALL_ACCEPTANCE.json`; compact logs and screenshot: `.hermes/evidence/linux-native-vm-20261012/`. Owned VM, disks, seed, image and SSH keys are removed. Full desktop integration, cross-version upgrades, reboot/logout service persistence, fresh RPM installation and helper authentication remain open.
+The current `6e8cef0` DEB, SHA-256 `b165dee2e1e8fd89d8aa12c36dd0d7a906ad2cb5551707f95db18247af1b42d4`, passes fresh Ubuntu 24.04.5 VM installation with dependencies, regular-user CLI and text-preview GUI launch/clean exit, same-version reinstall, and removal of package-owned executable/helper/desktop/polkit files. Saved preferences remain byte-identical after reinstall and removal. All five installed executables match the accepted release binaries. Real systemd user-service install (enabled/active), status, restart and removal pass. This replaces the prior namespace-only installation blocker at this scope. Receipt: `dist/packages/DEB_INSTALL_ACCEPTANCE.json`; compact logs and screenshot: `.evidence/linux-native-vm-20261012/`. Owned VM, disks, seed, image and SSH keys are removed. Full desktop integration, cross-version upgrades, reboot/logout service persistence, fresh RPM installation and helper authentication remain open.
 
 ## DEB libc requirement correction — 2026-10-12
 
@@ -7495,17 +7495,17 @@ Clean-system review found that native packages shipped the helper/policy without
 
 ## Release verifier native-package coverage — 2026-10-12
 
-The release artifact verifier now requires DEB/RPM checksum entries and inspects both native payloads, source records, exact helper policy and generated libc/polkit dependencies. All five DEB executables must match the release AppImage byte-for-byte; RPM code/read-only sections must match after standard stripping. The portable PDFium checks use its actual corrected `libexec/ottrin/pdfium` layout and the obsolete duplicate check is removed. The shared packaging lifecycle/ABI helper is included in preflight syntax/ShellCheck coverage. Actual production native-check code passes on the current recorded packages and refuses a wrong source revision and a modified executable comparison fixture; all 19 portable archive entry requirements pass. ShellCheck, shell syntax and relevant provenance/coverage contracts pass. Compact receipt: `.hermes/evidence/native-release-gate-20261012/ACCEPTANCE.json`. Full multi-platform release verification remains open pending a coherent exact-release artifact set; this gate does not substitute for native installation/authentication acceptance. Owned extractions and altered fixtures are removed.
+The release artifact verifier now requires DEB/RPM checksum entries and inspects both native payloads, source records, exact helper policy and generated libc/polkit dependencies. All five DEB executables must match the release AppImage byte-for-byte; RPM code/read-only sections must match after standard stripping. The portable PDFium checks use its actual corrected `libexec/ottrin/pdfium` layout and the obsolete duplicate check is removed. The shared packaging lifecycle/ABI helper is included in preflight syntax/ShellCheck coverage. Actual production native-check code passes on the current recorded packages and refuses a wrong source revision and a modified executable comparison fixture; all 19 portable archive entry requirements pass. ShellCheck, shell syntax and relevant provenance/coverage contracts pass. Compact receipt: `.evidence/native-release-gate-20261012/ACCEPTANCE.json`. Full multi-platform release verification remains open pending a coherent exact-release artifact set; this gate does not substitute for native installation/authentication acceptance. Owned extractions and altered fixtures are removed.
 
 ## Windows cross-version upgrade acceptance — 2026-10-12
 
 The current NSIS and MSI candidates now pass native upgrades from a QA-only `0.0.9` installer built from historical source `f18ee49` to the published `0.1.0` packages. This fixture is not a claimed historical release. Under a fresh standard interactive Windows account, all 50 NSIS / 51 MSI payload hashes, saved preferences, populated index bytes and search results, disabled indexing and task permissions survive the upgrade. MSI removes the old product registration, registers the current product, updates the uninstall shortcut and refuses downgrade at LaunchConditions without changing the current installation. Final removal preserves preferences. The initial NSIS removal assertion raced its delegated uninstaller; the retained failure and subsequent final-state verification are recorded.
 
-Exact package revisions and checksums, native results, compressed MSI logs and cleanup proof are in `dist/WINDOWS_CROSS_VERSION_ACCEPTANCE.json` and `.hermes/evidence/windows-cross-upgrade-20261012/`. Owned accounts, profiles, tasks, credentials, older-source checkout and test packages are removed; the QA guest is shut off and its existing installation is unchanged. Historical/current builds exposed stale Cargo worktree fingerprints; affected first-party Windows release outputs were cleared and rebuilt from current source, including Office helpers. Published packages remain unchanged. `docs/DEVELOPMENT.md` now requires a task-owned target namespace for historical-source QA builds. Installer late-failure rollback, interactive installer UI and broader Windows daily-driver/graphics acceptance remain open.
+Exact package revisions and checksums, native results, compressed MSI logs and cleanup proof are in `dist/WINDOWS_CROSS_VERSION_ACCEPTANCE.json` and `.evidence/windows-cross-upgrade-20261012/`. Owned accounts, profiles, tasks, credentials, older-source checkout and test packages are removed; the QA guest is shut off and its existing installation is unchanged. Historical/current builds exposed stale Cargo worktree fingerprints; affected first-party Windows release outputs were cleared and rebuilt from current source, including Office helpers. Published packages remain unchanged. `docs/DEVELOPMENT.md` now requires a task-owned target namespace for historical-source QA builds. Installer late-failure rollback, interactive installer UI and broader Windows daily-driver/graphics acceptance remain open.
 
 ## Linux installed Office provider repair — 2026-10-12
 
-Fresh Ubuntu 24.04 native testing exposed two distinct blockers: default AppArmor denies Bubblewrap namespace setup, and Ottrin omitted `/bin` from the sandbox, preventing LibreOffice's `/bin/sh` launcher from executing. The authoritative launcher now mounts `/bin` read-only. The existing Office acceptance contract is shared between Linux and Windows, using their production launchers; superseded Windows-only test names and commands are removed. With the distribution's restrictive Bubblewrap profile explicitly loaded in the disposable guest and global restrictions still enabled, all three native Linux tests pass: DOCX/PDFium rendering and source preservation, in-flight cancellation/cleanup, and all nine advertised formats with expected rendered-text markers. All 17 provider contracts and strict Linux/Windows shared-contract Clippy pass. The refreshed DEB also installs successfully with `pkexec` and `polkitd` present and a clean dpkg audit. Evidence: `.hermes/evidence/linux-office-native-20261012/`.
+Fresh Ubuntu 24.04 native testing exposed two distinct blockers: default AppArmor denies Bubblewrap namespace setup, and Ottrin omitted `/bin` from the sandbox, preventing LibreOffice's `/bin/sh` launcher from executing. The authoritative launcher now mounts `/bin` read-only. The existing Office acceptance contract is shared between Linux and Windows, using their production launchers; superseded Windows-only test names and commands are removed. With the distribution's restrictive Bubblewrap profile explicitly loaded in the disposable guest and global restrictions still enabled, all three native Linux tests pass: DOCX/PDFium rendering and source preservation, in-flight cancellation/cleanup, and all nine advertised formats with expected rendered-text markers. All 17 provider contracts and strict Linux/Windows shared-contract Clippy pass. The refreshed DEB also installs successfully with `pkexec` and `polkitd` present and a clean dpkg audit. Evidence: `.evidence/linux-office-native-20261012/`.
 
 This accepts the configured installed-provider scope, not Ubuntu's default policy or Inspector UI/package behavior. Administrator-managed Bubblewrap policy setup, native-package PDFium availability, representative visual fidelity and the remaining platform gates stay explicit. Publication of the repaired Linux app and owned-VM cleanup are recorded separately when complete.
 
@@ -7593,7 +7593,7 @@ An additional rendered Windows text-field regression then passes alongside the
 file regression: selected text alone is cut, rapid release preserves the press
 modifiers, file Cut state is not created, and confirmation remains required.
 Strict Linux and Windows-target UI Clippy pass. Logs:
-`.hermes/evidence/windows-delete-adapter/`. Native exact-package Windows
+`.evidence/windows-delete-adapter/`. Native exact-package Windows
 confirmation/cancellation/destination acceptance and refreshed package delivery
 remain open until the corrected build is tested.
 
@@ -7608,7 +7608,7 @@ outside the Recycle Bin, unchanged unrelated files and normal exits. Windows
 150%, ordinary Trash completion and current installer lifecycle acceptance
 remain separate gates. Receipt: `dist/WINDOWS_SHORTCUT_ACCEPTANCE.json`. The
 previous failed Windows check is retained under
-`.hermes/evidence/windows-shortcut-current/`.
+`.evidence/windows-shortcut-current/`.
 
 The exact current AppImage passes Dark 100% / Light 150% confirmations,
 cancellations, permanent deletion outside Trash and exact-byte ordinary Trash
@@ -7635,7 +7635,7 @@ retained original overwrite backup are unchanged when Undo refuses the edit.
 
 All 336 regular platform tests pass (one existing ignored test), alongside
 strict Linux and Windows-target platform Clippy. Source receipt:
-`.hermes/evidence/copy-content-evidence/SOURCE_ACCEPTANCE.json`. This step is
+`.evidence/copy-content-evidence/SOURCE_ACCEPTANCE.json`. This step is
 source-only; current deliverables remain the accepted `083fb3f` packages.
 Durable ownership/journal creation before publication, recovery discovery and
 UI ownership after restart, retained-backup evidence, interrupted Undo replay
@@ -7655,7 +7655,7 @@ without changing the source, replacement or edited backup.
 
 All 337 regular platform tests pass (one ignored); strict Linux/Windows-target
 UI Clippy passes. Source receipt:
-`.hermes/evidence/copy-content-evidence/backup/SOURCE_ACCEPTANCE.json`. Linux
+`.evidence/copy-content-evidence/backup/SOURCE_ACCEPTANCE.json`. Linux
 package/GUI acceptance is pending. Durable journal ownership before publication,
 restart discovery, interrupted Undo replay and safe reclamation remain open;
 no automatic retained-data deletion has been enabled.
@@ -7705,7 +7705,7 @@ All 339 regular platform tests and 351 regular UI tests pass (one ignored in eac
 with strict Linux/Windows-target UI Clippy and formatting checks. The real SIGKILL
 fixtures verify durable overwrite evidence immediately before and after exchange;
 a journal-write failure refuses publication and preserves both versions. Evidence:
-`.hermes/evidence/copy-local-journal/`. This is source-only; current Linux packages
+`.evidence/copy-local-journal/`. This is source-only; current Linux packages
 remain the accepted `76f441f` build. Central registration/discovery, validation of
 restart authority, Activity ownership restoration, interrupted Undo replay and safe
 reclamation remain unfinished. Local records alone do not enable restart Undo or
@@ -7734,7 +7734,7 @@ strict Linux/Windows-target UI Clippy and formatting checks. Fresh-process,
 read-only/no-creation, altered/missing local record, FIFO, registry replacement,
 Move/Copy marker coexistence and concurrent Copy checks pass. Verification uses
 private state-home data and removes it after execution. Evidence:
-`.hermes/evidence/copy-registry/`. This is source-only; current Linux packages
+`.evidence/copy-registry/`. This is source-only; current Linux packages
 remain the accepted `76f441f` build. Restart mutation authority, Activity ownership
 restoration, interrupted inverse replay and safe reclamation remain unfinished.
 No restart Undo or automatic retained-data deletion has been enabled. Windows
@@ -7760,7 +7760,7 @@ handles, without repairing either record or changing published contents.
 
 All 345 regular platform tests pass (one ignored), with strict Linux and
 Windows-target UI Clippy and formatting checks. Evidence:
-`.hermes/evidence/copy-object-handles/`. This is source-only; Linux packages remain
+`.evidence/copy-object-handles/`. This is source-only; Linux packages remain
 the accepted `76f441f` build. Directory evidence is one part of restart authority:
 published/backup tree object evidence, current-content validation, fresh session
 guards, Activity ownership, interrupted inverse replay and safe reclamation remain
@@ -7794,7 +7794,7 @@ All 348 regular platform and 351 regular UI tests pass (one ignored in each), wi
 strict Linux/Windows-target UI Clippy and formatting checks. Fresh-process discovery,
 eleven changed-data cases, a file-to-FIFO race and a directory-to-outside-symlink race
 pass. Verification owns a private state-home and temporary directory and tears them
-down. Evidence: `.hermes/evidence/copy-tree-restart/`. This is source-only; current
+down. Evidence: `.evidence/copy-tree-restart/`. This is source-only; current
 Linux packages remain the accepted `76f441f` build. Fresh session guards, restoration
 of Undo/Activity ownership, interrupted publication/inverse reconciliation and safe
 reclamation remain unfinished. Ownership across an OS reboot is not established.
@@ -7826,7 +7826,7 @@ topologies. Active-receipt retries at all four boundaries and the refusal cases 
 
 All 351 regular platform and 351 regular UI tests pass (one ignored in each), with
 strict Linux/Windows-target UI Clippy and formatting checks. Evidence:
-`.hermes/evidence/copy-undo-journal/`. This is source-only; packages remain unchanged.
+`.evidence/copy-undo-journal/`. This is source-only; packages remain unchanged.
 New-process guard/receipt restoration and Activity integration remain unfinished;
 the crash fixtures establish recognition, not new-process mutation authority.
 Journal-pair mismatch reconciliation, automatic safe reclamation, cross-boot
@@ -7860,7 +7860,7 @@ refused while preserving data and records.
 
 All 354 regular platform and 351 regular UI tests pass (one ignored in each), with
 strict Linux/Windows-target UI Clippy and formatting checks. Evidence:
-`.hermes/evidence/copy-receipt-restart/`. This is source-only; current packages
+`.evidence/copy-receipt-restart/`. This is source-only; current packages
 remain unchanged. Startup Activity ownership and grouped operation history are not
 connected yet. Publication-intent reconciliation, pair-mismatch reconciliation,
 safe reclamation, cross-boot ownership and broader filesystem acceptance remain
@@ -7882,7 +7882,7 @@ explicit channel-failure handling. Startup and operation-warning tests wait for
 and verify the actual asynchronous discovery snapshot. All 354 regular platform
 and 353 regular UI tests pass (one ignored in each); strict Linux/Windows-target
 UI Clippy and formatting checks are recorded in
-`.hermes/evidence/activity-discovery-worker/`.
+`.evidence/activity-discovery-worker/`.
 
 This prerequisite is source-only; packages remain unchanged. Copy startup Activity
 ownership, grouped batch history, interrupted-publication/pair reconciliation,
@@ -7913,7 +7913,7 @@ and untouched skipped/independent files. Additional tests cover a batch failing
 after its first publication and malformed/missing/older metadata refusal without
 data or journal mutation. All 357 regular platform and 353 regular UI tests pass
 (one ignored in each), with strict Linux/Windows-target UI Clippy and formatting
-checks. Evidence: `.hermes/evidence/copy-operation-order/`.
+checks. Evidence: `.evidence/copy-operation-order/`.
 
 This is source-only; stable packages remain unchanged. Startup Activity still needs
 to merge these operation groups, validate duplicate/conflicting group metadata and
@@ -7948,7 +7948,7 @@ trimming and lost evidence. Tests also cover duplicate/inconsistent metadata,
 current-session state preservation, deferred merge and later-item conflicts.
 All 357 regular platform and 355 regular UI tests pass (one ignored in each),
 with strict Linux/Windows-target UI Clippy and formatting checks. Evidence:
-`.hermes/evidence/copy-startup-activity/`.
+`.evidence/copy-startup-activity/`.
 
 This is source-only; stable packages remain unchanged. Exact-package restart UI
 acceptance is required next. Overlapping batch publications need chain validation
@@ -7963,7 +7963,7 @@ The `5211d37` AppImage passed real two-file Copy, process restart, restored Acti
 Undo, durable journal completion and source preservation. Native/portable payload
 identity checks passed. GUI inspection found two remaining defects, so this is an
 initial investigation rather than final acceptance. Evidence and cleanup:
-`.hermes/evidence/copy-startup-activity/INITIAL_PACKAGE_OBSERVATIONS.json`.
+`.evidence/copy-startup-activity/INITIAL_PACKAGE_OBSERVATIONS.json`.
 
 Batch receipt completion used a destination-directory surrogate as an entry path,
 which refreshed its parent and left copied files visible after successful Undo.
@@ -7984,7 +7984,7 @@ publication, plus Activity restoration after a later batch reuses the same names
 
 All 359 regular platform and 355 regular UI tests pass (one ignored in each), with
 strict Linux/Windows-target UI Clippy and formatting. Source evidence:
-`.hermes/evidence/copy-completion-lifecycle/`. Rebuilt exact-package Dark/Light
+`.evidence/copy-completion-lifecycle/`. Rebuilt exact-package Dark/Light
 restart/Undo/history acceptance is still required. Overlapping publication chains,
 publication-intent/pair reconciliation, safe reclamation, cross-boot ownership and
 broader platform/filesystem acceptance remain open; no automatic deletion or
@@ -8026,7 +8026,7 @@ journals are preserved, and all private processes/profile are cleaned. Refreshed
 portable/DEB/RPM payload identities pass. Actual screenshots still show the caption
 clipped beside Activity, contradicting the helper-only rendered acceptance. Layout
 acceptance remains open. Evidence:
-`.hermes/evidence/copy-completion-lifecycle/EMPTY_LAYOUT_INITIAL_PACKAGE.json`.
+`.evidence/copy-completion-lifecycle/EMPTY_LAYOUT_INITIAL_PACKAGE.json`.
 A follow-up is testing the production Miller viewport and its inherited clipping.
 
 The follow-up explicitly constrains Miller's inherited clip to its file viewport.
@@ -8037,7 +8037,7 @@ Linux/Windows-target UI Clippy and formatting. The earlier two verification runs
 had inadvertently used the operator's state directory; 22 journals tied to their
 exact disposable fixture paths were removed after confirming their sources,
 publications and transactions were absent. Registry/markers were preserved.
-Evidence: `.hermes/evidence/copy-completion-lifecycle/TEST_JOURNAL_CLEANUP.json`.
+Evidence: `.evidence/copy-completion-lifecycle/TEST_JOURNAL_CLEANUP.json`.
 A rebuilt exact-package layout check is still required; it is not yet accepted.
 
 Activity operation identity now belongs to the history record instead of its disposable Undo receipt. Successful or refused text-edit Undo can release the editor session while preserving its text-edit classification; the rename fallback is removed. The save/Undo regression also inspects rendered Activity text. All 356 regular UI tests, the non-skipped native text save/Undo fixture, strict Linux/Windows-target UI Clippy and formatting pass. The correction was packaged and accepted in the preceding `c27403f` Linux package. Exact-package Dark 100% / Light 150% native text save/Undo, restored batch Copy Undo and caption layout acceptance pass. Native/portable payload identities pass; receipts are linked in the current delivery status above. Windows native GUI and broader editor/filesystem acceptance remain separate.
@@ -8104,7 +8104,7 @@ amplification: one plan reads 12,611,475 characters and six plans read 75,668,30
 (`/proc/self/io`, including journal/metadata reads). Plan restoration must validate
 only its captured operation records while retaining the original-evidence and
 external-blocker refusal guarantees. Evidence:
-`.hermes/evidence/copy-batch-plan/READ_AMPLIFICATION.json`.
+`.evidence/copy-batch-plan/READ_AMPLIFICATION.json`.
 
 The exact batch restart also exposes a Miller viewport issue: the destination
 breadcrumb/footer are correct, but its column starts outside the visible viewport
@@ -8114,7 +8114,7 @@ The menu GUI harness left eight private index daemons because teardown searched
 command lines for profile paths carried only in HOME/XDG environment variables.
 Exact uid and profile ownership were verified before terminating those daemons
 and one private bus; the regular user daemon was preserved. Earlier command-line
-cleanup claims are corrected by `.hermes/evidence/menu-alignment/ORPHAN_CLEANUP.json`.
+cleanup claims are corrected by `.evidence/menu-alignment/ORPHAN_CLEANUP.json`.
 The harness now verifies environment identity and cleans private processes before
 removing the profile. Fresh Dark/Light success and cancellation with a live private
 daemon both pass; no test processes/profile remain.
@@ -8122,7 +8122,7 @@ daemon both pass; no test processes/profile remain.
 The Light batch harness was repeated under an explicit Python supervisor after a
 unified-session exit 143 observation. The supervised harness exits zero, both
 applications exit zero, all three inverse/restart checks pass and owned cleanup
-is empty. Receipt: `.hermes/evidence/copy-batch-plan/gui/Light-SUPERVISOR_EXIT.json`.
+is empty. Receipt: `.evidence/copy-batch-plan/gui/Light-SUPERVISOR_EXIT.json`.
 
 
 ### Scoped Copy restoration and startup directory reveal — source checkpoint
@@ -8137,7 +8137,7 @@ admission. Original-record comparison under the inverse lock remains unchanged.
 The same six-operation 2 MiB native fixture now reads 2,101,764 characters for one
 plan and 12,610,061 for all six, versus 12,611,475 and 75,668,306 previously: an
 83.34% reduction in plan-admission reads. These counters include journal/metadata
-reads, not just file contents. `.hermes/evidence/copy-batch-plan/SCOPED_READS.json`
+reads, not just file contents. `.evidence/copy-batch-plan/SCOPED_READS.json`
 records the fixture and library identity. A thread-specific read-byte regression
 proves an unrelated 4 MiB publication is not reread, avoiding timing thresholds.
 
@@ -8183,7 +8183,7 @@ path. All 213 regular search tests pass (two ignored), all 360 regular UI tests
 pass (one ignored), and strict Linux/Windows-target search/UI Clippy passes.
 The source-built daemon records 60 wakeups over six seconds, 0.167% of one core,
 0.358 ms maximum ping latency and a clean 113.832 ms shutdown. These short,
-empty-root measurements are in `.hermes/evidence/index-idle-current/`; they do not
+empty-root measurements are in `.evidence/index-idle-current/`; they do not
 establish CPU usage while watching a real, changing home directory. Exact-package
 empty-root checks pass with the same daemon hash: 60 wakeups, no measured CPU
 ticks, 0.308 ms maximum ping latency and clean 113.964 ms shutdown. The installed
@@ -8194,7 +8194,7 @@ running at the upgrade checkpoint; a subsequent observation reports Ready with
 158,825 entries and an active watch. Over twelve seconds with the existing main
 GUI, CPU measures 0.5% of one core while the snapshot revision advances from 143
 to 146. This records a changing home session, not strict quiet idle. Evidence:
-`.hermes/evidence/index-idle-current/INSTALLED_UPGRADE.json` and
+`.evidence/index-idle-current/INSTALLED_UPGRADE.json` and
 `INSTALLED_SAMPLE.json`. Sustained quiet-idle and heavy-change acceptance remain
 open.
 
@@ -8286,7 +8286,7 @@ private profiles and commands are cleaned. Receipt:
 refreshed from that same revision. The production native-verifier block confirms
 executable/PDFium identity, embedded revision, GLIBC and polkit metadata, with all
 portable entry requirements present. Receipt:
-`.hermes/evidence/index-idle-current/NATIVE_PACKAGE_IDENTITY.json`.
+`.evidence/index-idle-current/NATIVE_PACKAGE_IDENTITY.json`.
 Windows portable, NSIS and MSI are now refreshed from clean `3c7e9e6`.
 The exact portable passes a native limited-token interactive CLI test with a
 thumbnail held open without delete sharing: cleanup returns 1 and identifies
@@ -8334,7 +8334,7 @@ A native negative control of the preceding `4e43998` installer confirms a dead
 end: locking `LICENSE` during recursive removal returns 1 and retains Installed
 Apps registration, but deletes both `ottrin.exe` and `Uninstall.exe`. The isolated
 fixture required reinstallation for teardown; that repair is not acceptance.
-Baseline: `.hermes/evidence/index-idle-current/NSIS_PAYLOAD_FAILURE_BASELINE.json`.
+Baseline: `.evidence/index-idle-current/NSIS_PAYLOAD_FAILURE_BASELINE.json`.
 
 Clean `ba13c7a` removes other payload files first while reserving the cleanup
 executable and uninstaller. DELETE-access handles and read-only checks reject
@@ -8368,7 +8368,7 @@ A's task XML and security descriptor remain byte-for-byte unchanged across B's
 failed attempt. The first comparison observed delayed persistence of the test's
 own disable operation; a fresh COM read after that state settled and a repeated
 B attempt prove preservation. This is a failure receipt, not acceptance:
-`.hermes/evidence/index-idle-current/WINDOWS_MULTIUSER_TASK_FAILURE.json`.
+`.evidence/index-idle-current/WINDOWS_MULTIUSER_TASK_FAILURE.json`.
 
 The task installer, status/run/delete command arguments and MSI transaction
 helper all currently address that shared name. They must use one authoritative
@@ -8464,7 +8464,7 @@ The current `e937db7` MSI fails the locked-preview-cache uninstall probe: exit
 1603 retains all 53 installed files but deletes the user's scoped index task and
 leaves Windows Installer product state 1 (advertised). A normal retry then fails
 with error 2753 because MainExecutable is no longer marked for installation.
-Baseline: `.hermes/evidence/index-idle-current/MSI_UNINSTALL_FAILURE_BASELINE.json`.
+Baseline: `.evidence/index-idle-current/MSI_UNINSTALL_FAILURE_BASELINE.json`.
 
 Uninstall now snapshots task state immediately after InstallInitialize and pairs
 cleanup with rollback before destructive standard actions. Both installation and
@@ -8491,7 +8491,7 @@ However, the full recovery gate still fails: product state becomes 1 (advertised
 and a subsequent ordinary uninstall fails with error 2753/1603. This remains an
 open registration/rollback defect; task recovery alone does not close it.
 Windows Installer logs rollback errors 3 and 5. The failed test and causal logs
-are retained in `.hermes/evidence/msi-rollback-current/`; the compact receipt is
+are retained in `.evidence/msi-rollback-current/`; the compact receipt is
 `dist/MSI_UNINSTALL_ROLLBACK_ACCEPTANCE.json`. Current Windows artifact pointers
 record the exact scope and failing gate. Linux artifacts are unchanged.
 
@@ -8619,7 +8619,7 @@ recovery (round-trip/collision share one test). Three coordinated native probes
 pass owner-server teardown, foreign-user ACL denial, and counterfeit-server
 PID/SID rejection with zero request bytes received. The early cross-user harness
 missed its stop deadline; its controller was fixed and final probes repeated.
-Receipt: `.hermes/evidence/windows-20261011/WINDOWS_PIPE_TRANSPORT_ACCEPTANCE.json`.
+Receipt: `.evidence/windows-20261011/WINDOWS_PIPE_TRANSPORT_ACCEPTANCE.json`.
 This is transport acceptance only. Shared command dispatch, persistent Windows
 daemon/server/client lifecycle, UI integration, scheduling/update/shutdown and
 end-to-end idle CPU acceptance remain open. Published packages are unchanged.
@@ -8641,7 +8641,7 @@ It links the production library/storage path but runs the server on a thread
 inside the test process with the guest SYSTEM token. The initial library-test
 flow failed because its test-only storage disables staged generations; the flow
 was moved to an integration test rather than adapting production code to that
-fixture. Receipt: `.hermes/evidence/windows-20261011/WINDOWS_DAEMON_CORE_ACCEPTANCE.json`.
+fixture. Receipt: `.evidence/windows-20261011/WINDOWS_DAEMON_CORE_ACCEPTANCE.json`.
 Five Linux daemon regressions and strict Linux/Windows app/search all-target
 Clippy pass. This does not establish standalone daemon lifetime, standard-user
 startup, scheduler/update integration, UI routing, packaged end-to-end behavior
@@ -8662,7 +8662,7 @@ distinct kernel-reported PID and executable, repeats indexing/watcher/config/cle
 checks, and verifies process exit, endpoint removal and writer-lock reacquisition
 after preparation. Both parent and child exit normally. Fourteen Linux
 daemon/protocol tests and strict Linux/Windows app/search all-target Clippy pass.
-Receipt: `.hermes/evidence/windows-20261011/WINDOWS_DAEMON_PROCESS_ACCEPTANCE.json`.
+Receipt: `.evidence/windows-20261011/WINDOWS_DAEMON_PROCESS_ACCEPTANCE.json`.
 The actor links production storage but is an integration-test executable under
 the guest SYSTEM token; it does not establish packaged standalone startup,
 standard-user scheduler behavior, UI routing or idle CPU acceptance. Windows
@@ -8696,7 +8696,7 @@ normalization; the corrected check resolves SIDs. Controller task completion and
 expected missing-task exit status were also corrected. Final actor/controller
 exit normally and both QA registrations are removed. 218 regular Linux search
 tests pass (two ignored), along with strict Linux/Windows all-target Clippy.
-Receipt: `.hermes/evidence/windows-20261011/WINDOWS_UI_DAEMON_SOURCE_ACCEPTANCE.json`.
+Receipt: `.evidence/windows-20261011/WINDOWS_UI_DAEMON_SOURCE_ACCEPTANCE.json`.
 Native GUI search/lifetime, actual scheduled execution/login cycle, update
 management, current installers and idle CPU acceptance remain open. Published
 packages are unchanged and retain their earlier provenance.
@@ -8723,7 +8723,7 @@ the fixture's 1% limit. The preceding build before the peer-classification fix
 measured the same percentage; this is a scoped measurement, not evidence that
 that fix changed performance. 218 regular Linux search tests pass (two ignored),
 as do strict Linux/Windows all-target Clippy checks. Receipt:
-`.hermes/evidence/windows-20261011/WINDOWS_SERVICE_READY_IDLE_ACCEPTANCE.json`.
+`.evidence/windows-20261011/WINDOWS_SERVICE_READY_IDLE_ACCEPTANCE.json`.
 
 Actual scheduled execution/install/upgrade/removal readiness, native GUI status,
 longer idle intervals, large trees and current packaged acceptance remain open.
@@ -8750,7 +8750,7 @@ XML/security, and rollback deletion each stop the captured worker. Actor/task
 cleanup succeeds. The fixture substitutes QA task names and a harmless PowerShell
 target for file-existence validation; it does not run the new --index-daemon
 action or touch the existing installation/index. Receipt:
-`.hermes/evidence/windows-20261011/WINDOWS_RUNNING_TASK_STOP_ACCEPTANCE.json`.
+`.evidence/windows-20261011/WINDOWS_RUNNING_TASK_STOP_ACCEPTANCE.json`.
 Fifteen focused Windows scheduling regressions on Linux, strict Linux/Windows
 all-target Clippy, and MSI/NSIS lifecycle source contracts pass. Actual scheduled
 index daemon execution, data preservation during upgrade/rollback, descendant
@@ -8777,7 +8777,7 @@ files. A twelve-second request-free sample measures 0.015625 CPU seconds, or
 0.1302% of one core, below the fixture's 1% ceiling. No performance improvement
 over preceding builds is inferred from this short sample. Twenty-two Linux
 application binary tests and strict Linux/Windows all-target Clippy pass.
-Receipt: `.hermes/evidence/windows-20261011/WINDOWS_DEFAULT_DAEMON_ACCEPTANCE.json`.
+Receipt: `.evidence/windows-20261011/WINDOWS_DEFAULT_DAEMON_ACCEPTANCE.json`.
 Owned test processes/profile/staging are removed. Actual scheduled daemon
 execution, native GUI and replacement-package acceptance remain open; published
 packages are unchanged.
@@ -8804,7 +8804,7 @@ without a performance comparison. All 218 regular Linux search tests (two
 ignored) and strict Linux/Windows Clippy pass. Services wording now explains
 that closing windows leaves indexing running and sign-in startup is optional;
 this label is compile checked. Receipt:
-`.hermes/evidence/windows-20261011/WINDOWS_PATH_IDENTITY_ACCEPTANCE.json`.
+`.evidence/windows-20261011/WINDOWS_PATH_IDENTITY_ACCEPTANCE.json`.
 
 Discard the rejected candidate after consumers exit, rebuild from the fixed
 commit and repeat exact-package GUI search before publication. Scheduled daemon
@@ -8826,9 +8826,9 @@ The same-source NSIS candidate, SHA-256
 `344807cbd3b350f81b66a10c26cb4f0ceade99fa61d80fef04a8dc48f5cf12e8`,
 contains 51 extracted payload files matching that stage. No current NSIS
 lifecycle result is claimed. Both candidates remain at the stable task staging
-path `.hermes/packaging-tmp/windows-current` for installer/scheduled-daemon
+path `.evidence/packaging-tmp/windows-current` for installer/scheduled-daemon
 validation. Receipt:
-`.hermes/evidence/windows-20261011/WINDOWS_FIXED_CANDIDATE_GUI_ACCEPTANCE.json`.
+`.evidence/windows-20261011/WINDOWS_FIXED_CANDIDATE_GUI_ACCEPTANCE.json`.
 
 This closes the duplicate-row GUI regression and focused post-window daemon
 lifetime checks for this candidate. Native graphics, broader theme/scaling, real
@@ -8855,7 +8855,7 @@ The first uninstall probe waited only for the bootstrap launcher and saw files
 remaining while its copied worker completed. Independent standard-user final
 verification passes after completion; this is retained as a fixture observation,
 not a product failure or a claimed worker exit code. Receipt:
-`.hermes/evidence/windows-20261011/WINDOWS_SCHEDULED_NSIS_LIFECYCLE_ACCEPTANCE.json`.
+`.evidence/windows-20261011/WINDOWS_SCHEDULED_NSIS_LIFECYCLE_ACCEPTANCE.json`.
 
 Testing uses the disposable `ottrin-index-qa` qcow2 overlay and a fresh signed-in
 standard account, so real task startup uses its real profile without changing
@@ -8887,7 +8887,7 @@ entries. Uninstaller bootstrap exit zero and independently inspected final state
 are recorded, not a copied worker exit code. Initial fixture assertions needed
 account-name-to-SID normalization and explicit bounded CLI process handling;
 the unsuccessful probes are retained alongside passing native verification.
-Receipt: `.hermes/evidence/windows-20261011/WINDOWS_NSIS_PERIODIC_UPGRADE_ACCEPTANCE.json`.
+Receipt: `.evidence/windows-20261011/WINDOWS_NSIS_PERIODIC_UPGRADE_ACCEPTANCE.json`.
 
 Owned actor tasks/processes and guest installers/scripts/results are removed;
 the reusable overlay is shut off and backing content mtime remains unchanged.
@@ -8899,7 +8899,7 @@ installer acceptance remain open; this result does not close those gates.
 ### Continuous Windows MSI candidate — ordinary native lifecycle
 
 The same clean 0aea0d8 stage now has a native WiX 5.0.2 MSI candidate at
-`.hermes/packaging-tmp/windows-current/Ottrin-0.1.0-windows-x64.msi`, SHA-256
+`.evidence/packaging-tmp/windows-current/Ottrin-0.1.0-windows-x64.msi`, SHA-256
 `cdd87f89da6adfc1edc61539026bc9d87d7e8f1c4c931920a71798afdc22f529`.
 The authoritative shell packager runs from a temporary clean checkout of the
 candidate revision, retaining exact source/documentation/payload checks. A
@@ -8913,7 +8913,7 @@ scripts. The running per-user login daemon serves one fixture result with an
 active watch. Preferences and source hashes remain unchanged. Uninstall removes
 the app directory, index task, generated database and Start menu entry. Native
 MSI logs confirm successful install/cleanup actions and final engine returns.
-Receipt: `.hermes/evidence/windows-20261011/WINDOWS_MSI_CONTINUOUS_LIFECYCLE_ACCEPTANCE.json`.
+Receipt: `.evidence/windows-20261011/WINDOWS_MSI_CONTINUOUS_LIFECYCLE_ACCEPTANCE.json`.
 
 Owned actor/processes, guest compiler/payload/archive/scripts, host compiler
 archives and temporary source checkout are removed. The overlay is shut off,
@@ -8941,12 +8941,12 @@ is rejected at the newer-version launch condition (1603), preserving current
 registration, all 53 installed files, preferences/source and search. Subsequent
 removal of the upgraded MSI succeeds and leaves no product/app directory.
 
-Current clean-source candidate hashes at `.hermes/packaging-tmp/windows-current`:
+Current clean-source candidate hashes at `.evidence/packaging-tmp/windows-current`:
 - Portable: `e433275c574d2f8d11b90d4a94da63a2f9fa75743828a0ee7587433396a942fe`.
 - NSIS: `59a0bafe0d863594a8869cda0b9a2afcda08abb606e9be88e1ba364af625b997`.
 - MSI: `b6f46322965d6e6b3a9624349dc49c2bc7d0fe576c901fcbdbcfc70165351771`.
 
-Receipt: `.hermes/evidence/windows-20261011/WINDOWS_MSI_SAME_VERSION_UPGRADE_ACCEPTANCE.json`.
+Receipt: `.evidence/windows-20261011/WINDOWS_MSI_SAME_VERSION_UPGRADE_ACCEPTANCE.json`.
 The unsuccessful registration probe and causal MSI log excerpts are retained.
 An initial private ProductCode helper needed null COM-output suppression before
 that real regression was identified; its observation is recorded separately.
@@ -8989,7 +8989,7 @@ one-result query. An initial abrupt-stop probe and stale COM XML observation are
 retained; the final fixture uses production graceful removal and fresh task
 queries. Release Windows app build, strict Windows app/search all-target Clippy,
 formatting and MSI source contract pass. Receipt:
-`.hermes/evidence/windows-20261011/WINDOWS_RUNNING_ROLLBACK_SOURCE_ACCEPTANCE.json`.
+`.evidence/windows-20261011/WINDOWS_RUNNING_ROLLBACK_SOURCE_ACCEPTANCE.json`.
 
 These are source/helper checks, not an updated MSI package or full rollback
 acceptance. Rebuild coherent candidates and repeat packaged failure/retry before
@@ -9004,7 +9004,7 @@ VM template remains available for fresh subsequent native QA.
 
 Clean revision `160b803e80bd9444c4eecee193a171113c8dc5e9` now has coherent
 portable, NSIS and native WiX MSI candidates at the stable task staging path
-`.hermes/packaging-tmp/windows-current`. These include the blocked-cache cleanup
+`.evidence/packaging-tmp/windows-current`. These include the blocked-cache cleanup
 guard and schema-3 running-state restoration, alongside the persistent daemon,
 path-identity and same-version replacement fixes.
 
@@ -9017,7 +9017,7 @@ All 51 portable archive files and 51 embedded NSIS files match staging. The
 53-file MSI embedded digest multiset matches the stage plus both exact-source
 helper scripts. All authoritative package builds pass against the same clean
 source/payload. Receipt:
-`.hermes/evidence/windows-20261011/WINDOWS_CLEANUP_FIXED_CANDIDATE_BUILD.json`.
+`.evidence/windows-20261011/WINDOWS_CLEANUP_FIXED_CANDIDATE_BUILD.json`.
 
 Host extraction/compiler archives and native compiler/payload/script fixtures
 are removed. A fresh disposable overlay is shut off and retained for required
@@ -9044,7 +9044,7 @@ final-state inspection verifies removal of app files, task, generated index,
 cache entries and Installed Apps/Start menu integration. Preferences and source
 hashes remain identical. The empty preview-cache directory remains. Copied
 worker exit code is not claimed. Receipt:
-`.hermes/evidence/windows-20261011/WINDOWS_NSIS_CLEANUP_RETRY_ACCEPTANCE.json`.
+`.evidence/windows-20261011/WINDOWS_NSIS_CLEANUP_RETRY_ACCEPTANCE.json`.
 
 The initial fresh-account run passed but its host export failed before fixture
 cleanup; the complete retained receipt comes from a repeat using the same owned
@@ -9072,7 +9072,7 @@ Read-only query returns the saved fixture; status reports ready with one watched
 root. Preferences and source hashes remain unchanged through reboot and removal.
 Subsequent ordinary uninstall bootstrap exits zero, and final-state checks find
 no app directory, task or generated index. Receipt:
-`.hermes/evidence/windows-20261011/WINDOWS_NSIS_CURRENT_LOGIN_ACCEPTANCE.json`.
+`.evidence/windows-20261011/WINDOWS_NSIS_CURRENT_LOGIN_ACCEPTANCE.json`.
 
 Owned actor tasks/processes and guest installer/scripts/results are removed;
 overlay is shut off with backing content mtime unchanged. The owned account/
@@ -9103,7 +9103,7 @@ session daemon and removes its database. Sixteen focused search tests, strict
 Windows app/search and Linux search all-target Clippy, release Windows app build,
 formatting and diff checks pass. This fix still needs coherent packaging.
 
-Receipt: `.hermes/evidence/windows-20261011/WINDOWS_PUBLIC_MOVE_SESSION_CLEANUP_ACCEPTANCE.json`.
+Receipt: `.evidence/windows-20261011/WINDOWS_PUBLIC_MOVE_SESSION_CLEANUP_ACCEPTANCE.json`.
 First-run privacy setup obscured the initial GUI; optional choices were disabled
 in the owned account before input. A process-handle fixture correction verifies
 normal exit independently. The original portable Finish receipt remains failed
@@ -9156,7 +9156,7 @@ Normal GUI closure returns zero, and the same package's portable cleanup succeed
 without leaving its app/index processes or private index files. The QA account's
 separate saved preferences and source fixture retain their original hashes.
 
-Receipt: `.hermes/evidence/windows-20261011/WINDOWS_COMPLETION_CANDIDATE_ACCEPTANCE.json`.
+Receipt: `.evidence/windows-20261011/WINDOWS_COMPLETION_CANDIDATE_ACCEPTANCE.json`.
 Screenshots and phase results are exported before cleanup. Owned actors, private
 profile, payload/archive, scripts and detached virtual disk are removed; overlay
 is shut off and backing content mtime is unchanged. The first scheduled actor returned one without a launch receipt; retrying with
@@ -9178,14 +9178,14 @@ Installed Apps and Start menu. Source and preferences retain their prior hashes.
 The shared QA actor now requires an explicit expected installer hash; a stale
 hardcoded artifact cannot silently satisfy the test.
 
-Receipt: `.hermes/evidence/windows-20261011/WINDOWS_NSIS_COMPLETION_LIFECYCLE_ACCEPTANCE.json`.
+Receipt: `.evidence/windows-20261011/WINDOWS_NSIS_COMPLETION_LIFECYCLE_ACCEPTANCE.json`.
 The stable candidate MSI is also rebuilt coherently from clean source 43cfa62 with
 native WiX 5.0.2 in the owned overlay. SHA-256:
 `cca6eca82112f06501b26bdeeab6861fcbb939a57fc6532ffcd656d87ce4a79d`.
 Its embedded digest multiset contains all 53 expected payload/helper files. This
 is packaging acceptance, not installed-layout or MSI transaction acceptance.
 The current candidate receipt aggregates all three artifact hashes:
-`.hermes/evidence/windows-20261011/WINDOWS_COMPLETION_CANDIDATE_ACCEPTANCE.json`.
+`.evidence/windows-20261011/WINDOWS_COMPLETION_CANDIDATE_ACCEPTANCE.json`.
 
 Phase and cleanup receipts are exported and read-back validated before removal.
 Owned actors, installer/test staging, guest compiler runtime/archives and the
@@ -9223,7 +9223,7 @@ verification covers embedded clean provenance, GLIBC and polkit metadata;
 portable layout and provenance also pass. No fresh native installation/upgrade
 acceptance is inferred. Receipts: `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`,
 `CACHE_CLEANUP_ACCEPTANCE.json`, `CURRENT_MENU_ACCEPTANCE.json`, with source
-receipts in `.hermes/evidence/linux-completion-current/`.
+receipts in `.evidence/linux-completion-current/`.
 
 The readiness fixture initially compared lowercase CLI status with the wire
 protocol's `Ready`; the corrected protocol check passes. Initial unsequenced
@@ -9252,7 +9252,7 @@ or starting a full scan. Both instances exit normally; profile/socket and all
 private processes are removed. The existing live daemon remains untouched.
 
 Runnable gate: `scripts/index-populated-qa.py`. Receipt and runner digest:
-`.hermes/evidence/index-populated-current/ACCEPTANCE.json`. Fixture assertions
+`.evidence/index-populated-current/ACCEPTANCE.json`. Fixture assertions
 reject an incomplete app config's empty default root, use the actual nested wire
 query response, and distinguish non-persisted scan-start timestamps from a new
 scan. The accepted final run includes all correctness and resource assertions.
@@ -9272,7 +9272,7 @@ with periodic refresh disabled, create/edit/rename/delete while stopped are not
 reconciled. The af78252 AppImage returns Ready and establishes watches while its
 canonical rows retain two obsolete paths, omit two new paths and retain an old
 size. The 15-second freshness deadline rejects this state. Baseline:
-`.hermes/evidence/index-populated-current/OFFLINE_BASELINE_FAILURE.json`.
+`.evidence/index-populated-current/OFFLINE_BASELINE_FAILURE.json`.
 Earlier unchanged-corpus restart timing remains valid for that artifact, but it
 does not establish offline freshness.
 
@@ -9313,7 +9313,7 @@ private instances exit normally; no profile/socket/process remains. Dark 100% /
 Light 150% packaged Move/menu visuals and normal exits pass, as does cleanup
 failure/retry/no-unit shutdown. Native/portable payload/provenance/ABI/polkit
 comparisons pass. Receipt:
-`.hermes/evidence/index-populated-current/OFFLINE_PACKAGE_ACCEPTANCE.json`.
+`.evidence/index-populated-current/OFFLINE_PACKAGE_ACCEPTANCE.json`.
 
 All four candidates replace their stable deliverables; temporary package staging
 is removed. The existing personal configuration/service hashes and running daemon
@@ -9341,7 +9341,7 @@ All three current candidate formats were rebuilt from that clean source:
 portable payload 51 files, NSIS embedded payload 51 matching digests, MSI 53
 matching payload/helper digests with multiplicity. Exact hashes and scoped
 native results are in
-`.hermes/evidence/windows-20261011/WINDOWS_COMPLETION_CANDIDATE_ACCEPTANCE.json`.
+`.evidence/windows-20261011/WINDOWS_COMPLETION_CANDIDATE_ACCEPTANCE.json`.
 The preceding `43cfa62` candidate receipt is retained as
 `WINDOWS_43CFA62_CANDIDATE_ACCEPTANCE.json`; its native lifecycle/GUI evidence
 does not accept the replacement artifacts. Public Windows downloads remain
@@ -9390,7 +9390,7 @@ registry access. ProductLanguage 0 is valid for a neutral package. The reference
 sets EnableUserControl, which broadens public-property control; that is not an
 authorized or demonstrated rollback fix and is not copied into Ottrin. Primary
 references and compact package/property/action snapshots are retained in
-`.hermes/evidence/windows-20261011/MSI_AUTHORING_COMPARISON.json` and
+`.evidence/windows-20261011/MSI_AUTHORING_COMPARISON.json` and
 `MSI_SUMMARY_METADATA_COMPARISON.json`. External reference packages were inspected
 as data, never executed, and temporary downloads/parser files were removed.
 
@@ -9430,7 +9430,7 @@ the second graceful reboot to test the real trigger. No credential was exported.
 Uninstall then removed the app, generated index and task, with exact preference
 and source-file hashes preserved. The actor exited zero; owned task/files and
 one-shot sign-in/plaintext credential were removed. Receipt and all three phases:
-`.hermes/evidence/windows-20261011/WINDOWS_CURRENT_NSIS_REBOOT_ACCEPTANCE.json`.
+`.evidence/windows-20261011/WINDOWS_CURRENT_NSIS_REBOOT_ACCEPTANCE.json`.
 The owned guest was shut down with backing content mtime unchanged.
 
 This closes the current NSIS installed-daemon reboot/login check, not MSI reboot,
@@ -9453,7 +9453,7 @@ change through normal GUI persistence and are then restored byte-for-byte by the
 actor. The source fixture is unchanged. Uninstall removes the app/index/task;
 owned actor, guest fixtures, one-shot sign-in and plaintext credential are removed.
 The owned VM is shut off with backing content mtime unchanged. Receipt:
-`.hermes/evidence/windows-20261011/WINDOWS_INSTALLED_GUI_INDEX_LIFETIME_ACCEPTANCE.json`.
+`.evidence/windows-20261011/WINDOWS_INSTALLED_GUI_INDEX_LIFETIME_ACCEPTANCE.json`.
 
 Visual inspection also found default white input/sort controls inside the dark
 palette. This is a real failed theme-coherence gate, not accepted by the lifetime
@@ -9480,7 +9480,7 @@ Clean source `d4ef8f9` replaces the preceding Linux and Windows artifacts at the
 stable paths. All seven published files were re-hashed after replacement. The
 AppImage is `31ede0892909a2bd28d87afd5bd54bcc85de88fcd83c215c4ab5a72e0f98154a`;
 all format hashes and sizes are retained in
-`.hermes/evidence/windows-20261011/THEME_FIXED_PACKAGE_IDENTITIES.json`.
+`.evidence/windows-20261011/THEME_FIXED_PACKAGE_IDENTITIES.json`.
 
 Native standard-user Windows NSIS GUI captures now show the dark search input
 and sort control matching the resolved palette. One visible search result agrees
@@ -9502,7 +9502,7 @@ native verifier block passes DEB bytes, RPM code/readonly sections, embedded
 revision, GLIBC-derived dependencies and polkit bytes. A harness assumption that
 the portable launch script was the ELF was corrected to use its authoritative
 `libexec/ottrin` layout before acceptance; no package defect was inferred. Linux
-receipt: `.hermes/evidence/theme-os-transition-linux/ACCEPTANCE.json`.
+receipt: `.evidence/theme-os-transition-linux/ACCEPTANCE.json`.
 
 All disposable Windows actors, installed app/index/tasks, compiler/payload copies,
 one-shot sign-in and plaintext credential were removed. Guest/backing VMs are
@@ -9549,7 +9549,7 @@ characters, relative paths and unchanged volume/device namespaces. This is pure
 path-format/identity testing under QGA SYSTEM, not file-operation or main-window
 acceptance. All 368 regular UI tests pass (one ignored), plus strict Linux and
 Windows UI all-target Clippy, formatting and diff checks. Receipts:
-`.hermes/evidence/windows-20261011/PATH_DISPLAY_SOURCE_ACCEPTANCE.json` and
+`.evidence/windows-20261011/PATH_DISPLAY_SOURCE_ACCEPTANCE.json` and
 `WINDOWS_PATH_DISPLAY_NATIVE_TESTS.json` beside it. Native test fixture/process
 are removed; guest/backing VMs are shut off with backing content mtime unchanged.
 The failed-address test's private profile was also removed on panic.
@@ -9580,7 +9580,7 @@ tab labels remain authoritative.
 
 All 369 regular UI tests pass (one ignored), along with strict Linux and Windows
 UI all-target Clippy and formatting/diff checks. Source receipt:
-`.hermes/evidence/windows-20261011/BREADCRUMB_POINTER_SOURCE_ACCEPTANCE.json`.
+`.evidence/windows-20261011/BREADCRUMB_POINTER_SOURCE_ACCEPTANCE.json`.
 Rebuild the source and rerun the native drive-root and literal-space navigation
 checks before publishing. Current downloads remain the preceding accepted palette
 build. The rejected candidate's pure label/target tests did not prove clickability;
@@ -9589,7 +9589,7 @@ this real packaged GUI gate is required.
 
 ### Address destination visibility — 2026-10-15
 
-The `82d75c1` native packaged drive-click check correctly changed the path, but visual review rejected the resulting file view: the old horizontal offset left almost all of the root column off-screen. This candidate was not published. `.hermes/evidence/windows-20261011/PATH_REVEAL_REJECTED.json` and `path-reveal-red-root.png` record that boundary.
+The `82d75c1` native packaged drive-click check correctly changed the path, but visual review rejected the resulting file view: the old horizontal offset left almost all of the root column off-screen. This candidate was not published. `.evidence/windows-20261011/PATH_REVEAL_REJECTED.json` and `path-reveal-red-root.png` record that boundary.
 
 Breadcrumb and address-entry navigation now use the existing one-shot Miller destination reveal. Explicit reveals bring a destination left of the viewport into view as well as revealing destinations to its right. A rendered regression starts deep enough to scroll, clicks the actual ancestor breadcrumb, and checks that the resulting current file column becomes fully visible; it fails before the repair and passes afterward. Ordinary same-directory refresh and deliberate horizontal scrolling keep their existing behavior. All 370 regular UI tests pass (one ignored), with strict Linux/Windows UI all-target Clippy. Packages require a fresh native visual check before publication.
 
@@ -9600,7 +9600,7 @@ All seven stable Linux/Windows packages are refreshed from clean `41027a0`. The 
 
 Exact AppImage main/View menus were inspected in Dark 100% and Light 150%: complete semantic icons, compact action-menu leading padding, aligned labels/checks and matching palettes. Both real Move operations preserve bytes and exit normally. Native Linux package verification and portable/Windows payload identities pass. Source has 370 passing regular UI tests (one ignored) and strict Linux/Windows UI all-target Clippy.
 
-Evidence: `.hermes/evidence/windows-20261011/PATH_FIXED_PACKAGE_IDENTITIES.json`, `PATH_FIXED_VISUAL_REVIEW.json`, `WINDOWS_PATH_FIXED_GUI_ACCEPTANCE.json`, `WINDOWS_PATH_FIXED_MSI_ACCEPTANCE.json`, and `.hermes/evidence/path-display-linux/gui/`. Private Linux profiles/processes and current Windows test tasks, installations, generated databases, compiler/extracted payloads, and autologon credentials were removed. QA preferences/source and operator Linux preferences/unit remain unchanged. The owned guest is shut off; both underlying guests remain shut off and the base disk content timestamp is unchanged. Earlier CPU, reboot, upgrade/rollback, physical GPU and wider appearance acceptance are not inherited by the refreshed artifacts.
+Evidence: `.evidence/windows-20261011/PATH_FIXED_PACKAGE_IDENTITIES.json`, `PATH_FIXED_VISUAL_REVIEW.json`, `WINDOWS_PATH_FIXED_GUI_ACCEPTANCE.json`, `WINDOWS_PATH_FIXED_MSI_ACCEPTANCE.json`, and `.evidence/path-display-linux/gui/`. Private Linux profiles/processes and current Windows test tasks, installations, generated databases, compiler/extracted payloads, and autologon credentials were removed. QA preferences/source and operator Linux preferences/unit remain unchanged. The owned guest is shut off; both underlying guests remain shut off and the base disk content timestamp is unchanged. Earlier CPU, reboot, upgrade/rollback, physical GPU and wider appearance acceptance are not inherited by the refreshed artifacts.
 
 
 ### Fresh Fedora RPM lifecycle — direct removal rejected, 2026-10-15
@@ -9611,7 +9611,7 @@ Direct `dnf remove ottrin` with the service still active **fails the required li
 
 Next work is shared native package lifecycle cleanup for DEB/RPM: stop/remove only integration owned by the native executable, preserve portable/AppImage integration and all preferences/source files, handle active/offline and multiple users, preserve intended service behavior on reinstall/upgrade, and refuse destructive removal when required cleanup fails. Native package-manager acceptance must exercise those paths directly. No new fixed package is claimed by this checkpoint.
 
-Evidence: `.hermes/evidence/fedora-rpm-current/ACCEPTANCE.json`, `DIRECT_REMOVE_REJECTED.json`, `native/result.json`, actual installed-GUI screenshot, and DNF logs. The test daemon/unit were explicitly stopped and removed after capturing rejection. The disposable Fedora guest/domain, disks, seed and SSH key were removed; the signed base image is retained once in the shared tools cache for the repair's rerun. Existing networks, Windows guests and operator state were preserved. This remains Cloud/private-display scope; clean GNOME/KDE, physical graphics and broad permission/media acceptance remain open.
+Evidence: `.evidence/fedora-rpm-current/ACCEPTANCE.json`, `DIRECT_REMOVE_REJECTED.json`, `native/result.json`, actual installed-GUI screenshot, and DNF logs. The test daemon/unit were explicitly stopped and removed after capturing rejection. The disposable Fedora guest/domain, disks, seed and SSH key were removed; the signed base image is retained once in the shared tools cache for the repair's rerun. Existing networks, Windows guests and operator state were preserved. This remains Cloud/private-display scope; clean GNOME/KDE, physical graphics and broad permission/media acceptance remain open.
 
 
 ### Native package cleanup — source and draft RPM checkpoint, 2026-10-15
@@ -9622,14 +9622,14 @@ The first native draft exposed the offline `systemctl --no-reload` bus assumptio
 
 A separate session-only test reproduced another deleted native daemon without any service registration. `ottrin-indexd --native-package-stop` now uses the current user's existing endpoint, validates peer credentials and executable ownership, retains a pidfd, sends PrepareUpgrade over the same authenticated stream, and waits for that exact process to exit. It never starts an index or signals a PID inferred from a pathname. Native and previously deleted native executables stop; an independent portable session at the same user's endpoint survives removal. The private control mode runs before profile loading. Ordinary startup still requires a valid private runtime.
 
-All 220 regular search tests pass (two ignored), the indexd launch contract passes, and strict Linux/Windows app/search all-target Clippy, formatting and shell syntax pass. The release verifier now checks lifecycle-helper bytes/mode, dependency metadata and actual DEB/RPM maintainer-script guards. DEB control/helper inspection passes; native DPKG execution is not inferred from the Fedora result. Source receipt: `.hermes/evidence/native-lifecycle-current/SOURCE_ACCEPTANCE.json`. Draft artifacts carry modified-tree provenance and are not published. Clean artifacts, native DPKG lifecycle, offline custom configuration roots/nonstandard runtime namespaces and remaining broad lifecycle acceptance still need verification. Current stable packages remain unchanged at this checkpoint.
+All 220 regular search tests pass (two ignored), the indexd launch contract passes, and strict Linux/Windows app/search all-target Clippy, formatting and shell syntax pass. The release verifier now checks lifecycle-helper bytes/mode, dependency metadata and actual DEB/RPM maintainer-script guards. DEB control/helper inspection passes; native DPKG execution is not inferred from the Fedora result. Source receipt: `.evidence/native-lifecycle-current/SOURCE_ACCEPTANCE.json`. Draft artifacts carry modified-tree provenance and are not published. Clean artifacts, native DPKG lifecycle, offline custom configuration roots/nonstandard runtime namespaces and remaining broad lifecycle acceptance still need verification. Current stable packages remain unchanged at this checkpoint.
 
 
 ### Clean native lifecycle artifacts — verified and staged, 2026-10-15
 
 Clean `2350b212e42b637bdee51477555309707bd5b2a3` builds all four Linux formats. Exact RPM SHA-256 `ef1bbff8ffeafeca790441c1c5255cade14e2b6fd34664f842e45b7d1bf35410` passes the native Fedora multi-user same-version reinstall/direct-removal matrix and the session-only native/portable matrix. A controlled unlink/restore of the installed daemon reproduces the deleted-executable case against this exact clean build; the captured native process exits through the authenticated cleanup request. Foreign service/session PIDs remain unchanged. Data preservation, ambiguity refusal and protected SQLite integrity pass. These are scoped native results, not cross-version or arbitrary-environment acceptance.
 
-The four real packages pass payload/code identities and the updated production native verification block, including lifecycle-helper bytes/mode, maintenance-script guards and dependencies. Exact AppImage private GUI Dark 100%/Light 150% launch, menus and Move checks also pass; the inspected menus retain complete icons, compact spacing and matching palettes. Receipt: `.hermes/evidence/native-lifecycle-current/CLEAN_NATIVE_ACCEPTANCE.json`.
+The four real packages pass payload/code identities and the updated production native verification block, including lifecycle-helper bytes/mode, maintenance-script guards and dependencies. Exact AppImage private GUI Dark 100%/Light 150% launch, menus and Move checks also pass; the inspected menus retain complete icons, compact spacing and matching palettes. Receipt: `.evidence/native-lifecycle-current/CLEAN_NATIVE_ACCEPTANCE.json`.
 
 This was the clean staged checkpoint. Native Ubuntu execution, guide reconciliation and publication were subsequently completed below; the candidate hashes above retain their exact historical scope.
 
@@ -9640,7 +9640,7 @@ Exact clean `2350b212e42b637bdee51477555309707bd5b2a3` DEB, SHA-256 `e9b1c6e7a93
 
 The corrected guide is now delivered in all four Linux formats built from clean `1ac0c8c57249a99c3a06f8d2133bdf9a68034f87`. They replace the stable `dist/packages/` artifacts; current AppImage SHA-256 is `af1801906c80ddc06af86f22c8f9be517aa38b48ac648f75c2a91409680207a6`, DEB `24653789d108ba0e5ed99aac8d98de8a03b6b7d0efb1d9c722516cb0bf2ad07c`. The exact final DEB repeats both managed and session matrices successfully. It also returns enabled/active and Ready with a working watch after an actual guest reboot with explicitly configured lingering; configuration bytes are unchanged. This is not a claim that services start before login without lingering.
 
-The final four payloads pass the production native verifier block, portable six-byte identities, source provenance, lifecycle helper/hooks/dependencies and current guide bytes. Relative to native-tested `2350b21`, source changes are docs/evidence only: Fedora runtime and GUI results retain the preceding candidate’s exact artifact scope, rather than being called fresh tests of the final repackaged documentation. Receipts: `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`, `.hermes/evidence/deb-lifecycle-current/FINAL_PACKAGE_IDENTITIES.json`, `final-managed/result.json`, `final-session/result.json`, `REBOOT_ACCEPTANCE.json` and `PUBLICATION.json`. Windows outputs remain unchanged at `41027a0`.
+The final four payloads pass the production native verifier block, portable six-byte identities, source provenance, lifecycle helper/hooks/dependencies and current guide bytes. Relative to native-tested `2350b21`, source changes are docs/evidence only: Fedora runtime and GUI results retain the preceding candidate’s exact artifact scope, rather than being called fresh tests of the final repackaged documentation. Receipts: `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`, `.evidence/deb-lifecycle-current/FINAL_PACKAGE_IDENTITIES.json`, `final-managed/result.json`, `final-session/result.json`, `REBOOT_ACCEPTANCE.json` and `PUBLICATION.json`. Windows outputs remain unchanged at `41027a0`.
 
 This closes native DPKG execution and correct-guide delivery for these hooks. Cross-version upgrade, full desktop integration, arbitrary XDG/runtime namespaces and production signing remain open. The native fixture processes are stopped and removed before the owned Ubuntu VM, disks, seed and SSH key are deleted. Existing Windows guests, host settings and operator service configuration are preserved; cleanup is recorded separately.
 
@@ -9649,14 +9649,14 @@ This closes native DPKG execution and correct-guide delivery for these hooks. Cr
 
 A real unprivileged private-mount fixture reproduced a cleanup ownership defect: an independent copied daemon also appears as `/usr/bin/ottrin-indexd` inside its own filesystem. The old internal cleanup stopped it solely because the path text matched. Cleanup now compares the installed file identity in the caller’s view with the entry reached through the connected peer’s `/proc/PEER/root`; a different installed entry is preserved. A private namespace using the actual native entry remains removable, as does a legitimate native daemon retaining its old deleted executable after replacement. The authenticated connection and captured pidfd remain authoritative for the shutdown request and exit observation.
 
-The repeatable actual-binary namespace regression passes all three cases and preserves private source/config bytes; the prior published binary fails only the independent-namespace case. All 220 regular search tests, Linux/Windows app/search strict Clippy, and the native packaging contract pass. The packaging contract now checks dependency membership rather than assuming libc is first, and verifies the lifecycle helper is executable. Evidence: `.hermes/evidence/native-lifecycle-audit/`. This closes the reproduced filesystem-view confusion; arbitrary custom endpoints, offline custom XDG roots and broad namespace races remain separate. All four Linux packages are now published from clean `723ac7c0aa3c83ba932f3948f224da57b841d397`. AppImage SHA-256 is `b0d9d942f7149b1fb7cff105704199fd571f357c80edc4bbc8fbdf27e88a97b9`. Actual extracted AppImage and RPM daemons pass the three ownership cases. Fresh Ubuntu and Fedora guests both pass the exact current packages’ multi-user same-version reinstall, pre-removal ambiguity refusal, direct removal, session-only native/deleted-executable cleanup and portable preservation matrices. Data and protected SQLite integrity remain correct. Current hashes and exact scope are in `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`; final package/namespace, native and cleanup receipts are under `.hermes/evidence/native-lifecycle-audit/`. Both owned guests, all six disks/seeds, credentials and duplicate package staging were removed. Host configuration and the operator service remain unchanged. Windows packages remain at their separately recorded revision; prior GUI/reboot results retain their exact historical scope.
+The repeatable actual-binary namespace regression passes all three cases and preserves private source/config bytes; the prior published binary fails only the independent-namespace case. All 220 regular search tests, Linux/Windows app/search strict Clippy, and the native packaging contract pass. The packaging contract now checks dependency membership rather than assuming libc is first, and verifies the lifecycle helper is executable. Evidence: `.evidence/native-lifecycle-audit/`. This closes the reproduced filesystem-view confusion; arbitrary custom endpoints, offline custom XDG roots and broad namespace races remain separate. All four Linux packages are now published from clean `723ac7c0aa3c83ba932f3948f224da57b841d397`. AppImage SHA-256 is `b0d9d942f7149b1fb7cff105704199fd571f357c80edc4bbc8fbdf27e88a97b9`. Actual extracted AppImage and RPM daemons pass the three ownership cases. Fresh Ubuntu and Fedora guests both pass the exact current packages’ multi-user same-version reinstall, pre-removal ambiguity refusal, direct removal, session-only native/deleted-executable cleanup and portable preservation matrices. Data and protected SQLite integrity remain correct. Current hashes and exact scope are in `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`; final package/namespace, native and cleanup receipts are under `.evidence/native-lifecycle-audit/`. Both owned guests, all six disks/seeds, credentials and duplicate package staging were removed. Host configuration and the operator service remain unchanged. Windows packages remain at their separately recorded revision; prior GUI/reboot results retain their exact historical scope.
 
 
 ### Address-selection regression found during desktop acceptance — 2026-10-15
 
 The exact `723ac7c` AppImage’s private-desktop tab workflow reproduced Ctrl+L appending a replacement path to the previous address. The prior same-frame unit assertion only checked that typed text was present, so it accepted this behavior. The regression now requires exact replacement. The editor selects its full character range before rendering on initial focus and on Ctrl/Command+L in an already-open editor, using the same press-event modifier check as other application shortcuts. Ordinary subsequent typing does not reset the selection; Unicode and released-chord cases pass. All 371 regular UI tests pass (one ignored), as do strict Linux/Windows UI all-target Clippy. All four Linux formats are now delivered from clean `a764a0caa97ee975972dcbf40bb351847fcfbc42`. AppImage SHA-256 `1a78543af053e8937d819f66b170ae0a078fb6acd2633ff7176cbc0205498b60`. Exact-package Xvfb/private-DBus/software-GL acceptance passes rendered Dark 100% and actual Light150: replacement navigation without an extra Ctrl+A, repeated Ctrl+L selection, tab reorder in both directions with active identity/moved contents preserved, and select-all/Ctrl-click exclusion in Miller/List/Grid. Each view copies exactly the intended two of three files, with exact destination bytes and all six original fixtures unchanged. Main/View menus retain their icons, compact spacing and palettes; both GUI processes exit normally. The initial incomplete fixture was corrected rather than being accepted as Light: the Dark 100% run rendered System/Dark, and Light150 was selected through the real Settings UI before repeating its checks. This scope and the corrected complete private configuration are recorded explicitly.
 
-Current native/portable payload, source-note, guide, dependency/helper/hook and namespace ownership checks pass. Native daemon/helper bytes remain identical to the preceding native-tested `723ac7c` package; distro lifecycle receipts retain that exact older artifact scope. Current artifacts/scopes: `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`; GUI and cleanup evidence: `.hermes/evidence/address-selection-current/`. Windows release binaries and GUI PE-header checks are complete for this source, but stable Windows portable/NSIS/MSI outputs still need their refresh and native acceptance. Physical graphics, broader selection/keyboard coverage, and the full appearance/release matrix remain open. A box-shaped List header sort marker in these captures also needs focused font/icon correction before closing typography consistency; source Unicode markers are at the search and file-list header renderers. Evidence: `.hermes/evidence/address-selection-current/`.
+Current native/portable payload, source-note, guide, dependency/helper/hook and namespace ownership checks pass. Native daemon/helper bytes remain identical to the preceding native-tested `723ac7c` package; distro lifecycle receipts retain that exact older artifact scope. Current artifacts/scopes: `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`; GUI and cleanup evidence: `.evidence/address-selection-current/`. Windows release binaries and GUI PE-header checks are complete for this source, but stable Windows portable/NSIS/MSI outputs still need their refresh and native acceptance. Physical graphics, broader selection/keyboard coverage, and the full appearance/release matrix remain open. A box-shaped List header sort marker in these captures also needs focused font/icon correction before closing typography consistency; source Unicode markers are at the search and file-list header renderers. Evidence: `.evidence/address-selection-current/`.
 
 Copy retention/reclamation remains unfinished. Current Copy observations are read-only evidence; safe deletion still needs durable cleanup intent and interruption recovery, dependency handling for retained overwrite chains, and ownership/content validation of every deleted entry. Matching journal names or age alone cannot authorize deletion. This investigation did not mutate retained user data.
 
@@ -9668,9 +9668,9 @@ The boxed List sort marker was traced to unsupported Unicode triangles in the pr
 
 ### Windows package refresh exposed inherited-handle lifetime defect — 2026-10-15
 
-The Linux `4fb827a` packages are delivered with actual Dark 100%/Light150 menu and List sort-direction acceptance; current hashes and focused scopes are in `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json` and `.hermes/evidence/sort-header-current/DELIVERY.json`. Windows portable/NSIS/MSI were rebuilt coherently from clean `84c05de`; all 51 portable/NSIS files and 53 natively extracted MSI files match their stage/source. They remain unpublished because exact-package runtime acceptance found a new cold CLI defect: `index update --json` exits, but a redirected reader never receives EOF until the persistent daemon exits. A bounded native rerun reproduces the error without manual intervention.
+The Linux `4fb827a` packages are delivered with actual Dark 100%/Light150 menu and List sort-direction acceptance; current hashes and focused scopes are in `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json` and `.evidence/sort-header-current/DELIVERY.json`. Windows portable/NSIS/MSI were rebuilt coherently from clean `84c05de`; all 51 portable/NSIS files and 53 natively extracted MSI files match their stage/source. They remain unpublished because exact-package runtime acceptance found a new cold CLI defect: `index update --json` exits, but a redirected reader never receives EOF until the persistent daemon exits. A bounded native rerun reproduces the error without manual intervention.
 
-Stable Rust's Windows process launcher inherits unrelated inheritable handles even when its three standard streams are null. Ottrin now creates the persistent daemon with `CreateProcessW` and inheritance disabled, preserving its environment, no-window behavior, readiness deadline and early-exit errors. A native standalone regression proves that a caller-owned inheritable file can be deleted while the daemon stays responsive; ordinary and space/Unicode executable paths pass. The fixed release CLI completes the same cold update with captured output in 1.145 seconds, reuses its singleton daemon, discovers a created file through the watcher and restores both indexed files after process restart. The eight-second quiet VM sample records 62.5 ms CPU and 8.5 MB working set; it is not sustained-idle acceptance. Rebuilt fixed packages and final publication still require their own acceptance. Evidence: `.hermes/evidence/windows-package-current/`. This is separate from the unresolved per-user MSI registration rollback defect. No global policy or registry-permission workaround was applied.
+Stable Rust's Windows process launcher inherits unrelated inheritable handles even when its three standard streams are null. Ottrin now creates the persistent daemon with `CreateProcessW` and inheritance disabled, preserving its environment, no-window behavior, readiness deadline and early-exit errors. A native standalone regression proves that a caller-owned inheritable file can be deleted while the daemon stays responsive; ordinary and space/Unicode executable paths pass. The fixed release CLI completes the same cold update with captured output in 1.145 seconds, reuses its singleton daemon, discovers a created file through the watcher and restores both indexed files after process restart. The eight-second quiet VM sample records 62.5 ms CPU and 8.5 MB working set; it is not sustained-idle acceptance. Rebuilt fixed packages and final publication still require their own acceptance. Evidence: `.evidence/windows-package-current/`. This is separate from the unresolved per-user MSI registration rollback defect. No global policy or registry-permission workaround was applied.
 
 
 ### Ordinary Windows acceptance and startup work-area repair — 2026-10-15
@@ -9681,19 +9681,19 @@ A real published `41027a0` to `1662557` MSI upgrade with its continuous daemon r
 
 The same native screenshots exposed a real startup placement problem: the 1024×680 main window was cascaded to (156,156), past a 1280×752 work area. Windows main startup now reads the primary work area/DPI in the authoritative initial viewport hook, fits requested/minimum size and centers a fresh window while respecting an explicit position. A source-built GUI now starts at (128,36)–(1152,716), fully inside that work area, and closes/cleans its daemon normally. All 22 Linux app tests and strict Windows app all-target Clippy pass; focused geometry covers 100%, 150% and 200% scaling, bounded and undersized requests. The native probe is 100% only. Packaging this source fix and broader secondary-window/multi-monitor/native-DPI acceptance remain open. A Unix-only root-index-start test also now has its missing Unix test gate, so Windows app test targets compile correctly.
 
-Evidence: `.hermes/evidence/windows-desktop-current/ACCEPTANCE.json`, raw per-phase results, native MSI logs and screenshots. Fixture-only failures (first-login privacy UI, temporary NSIS-uninstaller lifetime, COM null outputs and renderer dummy-window selection) are recorded and corrected without accepting their incomplete runs. The disposable account, password, login overrides, profile, tasks, processes and guest staging are removed and the guest returned to shut off; existing campbell configuration/installation and host settings are preserved in cleanup evidence.
+Evidence: `.evidence/windows-desktop-current/ACCEPTANCE.json`, raw per-phase results, native MSI logs and screenshots. Fixture-only failures (first-login privacy UI, temporary NSIS-uninstaller lifetime, COM null outputs and renderer dummy-window selection) are recorded and corrected without accepting their incomplete runs. The disposable account, password, login overrides, profile, tasks, processes and guest staging are removed and the guest returned to shut off; existing campbell configuration/installation and host settings are preserved in cleanup evidence.
 
 
 ### Pre-replacement Windows index transaction controller — 2026-10-15
 
 The running-daemon MSI upgrade defect is repaired in source: preparation is scheduled after InstallInitialize and before InstallFiles. The MSI embeds its current indexd as a resource controller, so it can snapshot/stop before file replacement and restore/commit after installed files are missing or changed. The obsolete installed transaction/identity script components and copied `.json.scripts` runtime directories are removed. The existing shared identity and transaction implementations are embedded directly; no second scheduler or journal implementation is introduced.
 
-Native source-controller checks against the published `41027a0` baseline pass under an ordinary interactive account: task definition/security and login enablement survive preparation; saved index/source/preferences remain; rollback resumes enabled/disabled running tasks and leaves idle tasks stopped. Commit preserves enabled/disabled running/idle intent using the new task definition. Invalid snapshots are refused without deleting their contents, and a space/Unicode/apostrophe snapshot path works. Explicit indexd argument tests, Windows app/search all-target strict Clippy and the MSI source contract pass. Evidence: `.hermes/evidence/windows-upgrade-current/`. The final executable is bound in `COMMIT_RUNNING_INTENT.json`; earlier controller checks retain their prototype hash. These are controller checks, not yet engine-driven MSI upgrade or failed-transaction registration rollback. Rebuild coherent candidates and repeat the real upgrade before promotion. The owned published MSI remains running in the disposable account as the next upgrade fixture until its recorded cleanup.
+Native source-controller checks against the published `41027a0` baseline pass under an ordinary interactive account: task definition/security and login enablement survive preparation; saved index/source/preferences remain; rollback resumes enabled/disabled running tasks and leaves idle tasks stopped. Commit preserves enabled/disabled running/idle intent using the new task definition. Invalid snapshots are refused without deleting their contents, and a space/Unicode/apostrophe snapshot path works. Explicit indexd argument tests, Windows app/search all-target strict Clippy and the MSI source contract pass. Evidence: `.evidence/windows-upgrade-current/`. The final executable is bound in `COMMIT_RUNNING_INTENT.json`; earlier controller checks retain their prototype hash. These are controller checks, not yet engine-driven MSI upgrade or failed-transaction registration rollback. Rebuild coherent candidates and repeat the real upgrade before promotion. The owned published MSI remains running in the disposable account as the next upgrade fixture until its recorded cleanup.
 
 
 ### Native MSI upgrade and NSIS replacement gap — 2026-10-15
 
-Exact staged `651d3e9` MSI SHA-256 `a7ba85534614219a1c666d2beb16c74a92dec534fa9e9846430d576fd5828c37` upgrades the published `41027a0` MSI with its continuous daemon running and returns 0, with no reboot requested. All 51 installed payload files match the new stage; the old product registration is removed and the new registration is installed. Task security/login intent, saved SQLite creation identity, source files and preference hashes survive. Disabled-running forced repair resumes the daemon without enabling login; enabled-idle forced repair remains idle. Uninstall returns 0 and removes the product/task/generated index/app directory while preserving source/preferences. Native receipts and correctly decoded MSI logs are under `.hermes/evidence/windows-upgrade-current/`. These results close the reproduced running-daemon replacement gate for this MSI, not failed-transaction product-registration rollback.
+Exact staged `651d3e9` MSI SHA-256 `a7ba85534614219a1c666d2beb16c74a92dec534fa9e9846430d576fd5828c37` upgrades the published `41027a0` MSI with its continuous daemon running and returns 0, with no reboot requested. All 51 installed payload files match the new stage; the old product registration is removed and the new registration is installed. Task security/login intent, saved SQLite creation identity, source files and preference hashes survive. Disabled-running forced repair resumes the daemon without enabling login; enabled-idle forced repair remains idle. Uninstall returns 0 and removes the product/task/generated index/app directory while preserving source/preferences. Native receipts and correctly decoded MSI logs are under `.evidence/windows-upgrade-current/`. These results close the reproduced running-daemon replacement gate for this MSI, not failed-transaction product-registration rollback.
 
 The separate NSIS native update test exposed the same replacement defect more severely: it returned 0 while retaining the old daemon executable bytes. Its installer now extracts the current embedded controller independently of installed files, prepares before payload replacement and commits after normal task registration. Failure/cancellation callbacks restore task metadata/runtime intent; failed restoration retains its journal outside NSIS's disposable plugin directory. Copy failures explicitly fail setup. This restores task state, not an entire partially replaced payload; setup errors instruct retry. Native acceptance and exact final package delivery are recorded in the following checkpoint when complete. Public Windows packages remain unchanged pending the remaining installer gates.
 
@@ -9702,16 +9702,16 @@ The separate NSIS native update test exposed the same replacement defect more se
 
 The NSIS prototype with the `651d3e9` payload passes published-NSIS running-daemon upgrade: all 51 payload files match, the daemon PID changes, the saved database creation identity and source/preferences remain, and task login/security stay intact. Reinstall covers enabled-running, disabled-running, enabled-idle and disabled-idle intent. A QA-only Abort injected after successful preparation returns 73; the actual NSIS failure callback restores original XML/security and starts the original task again without changing payload bytes. Invalid journal refusal returns 1, preserving the journal, installed bytes and live daemon. Fresh install/uninstall pass. The final source also passes native named-mutex refusal before any writes and another fresh lifecycle. The first failure fixture incorrectly expected a running task after the preceding disabled-idle case; its rejected result is retained and the corrected explicit-start run passes.
 
-These are source/prototype results with exact setup hashes in `.hermes/evidence/windows-upgrade-current/NSIS_TRANSACTION_ACCEPTANCE.json` and raw per-phase receipts. They do not claim whole-payload rollback or acceptance of a subsequently rebuilt installer. Coherent clean portable/NSIS/MSI candidates must be rebuilt before publication; MSI failed-transaction product-registration rollback remains open. No existing operator installation, configuration or host service was changed.
+These are source/prototype results with exact setup hashes in `.evidence/windows-upgrade-current/NSIS_TRANSACTION_ACCEPTANCE.json` and raw per-phase receipts. They do not claim whole-payload rollback or acceptance of a subsequently rebuilt installer. Coherent clean portable/NSIS/MSI candidates must be rebuilt before publication; MSI failed-transaction product-registration rollback remains open. No existing operator installation, configuration or host service was changed.
 
 
 ### Clean Windows transaction candidates — 2026-10-15
 
-All three Windows candidates are rebuilt from clean `fcf00aaee547085517300a5f5d32925c323dd2ae` at `.hermes/packaging-tmp/windows-current/`. Portable SHA-256 is `3ea27c533774afb54ddcf9fabc83fa039cb3008e2f032007d4140bcd0a8636b9`, NSIS `075a537f2852f9b60422fc5a47af4812ec22c6d49395c5df4df401ad49204710`, MSI `f28a7f143edba14fd972781c1fbe4a6c368ec8cc9037d05a5b3d7b84dba15108`. All 51 portable/NSIS payload files and current packaged documentation match the clean stage; the independently embedded NSIS controller matches staged indexd.
+All three Windows candidates are rebuilt from clean `fcf00aaee547085517300a5f5d32925c323dd2ae` at `.evidence/packaging-tmp/windows-current/`. Portable SHA-256 is `3ea27c533774afb54ddcf9fabc83fa039cb3008e2f032007d4140bcd0a8636b9`, NSIS `075a537f2852f9b60422fc5a47af4812ec22c6d49395c5df4df401ad49204710`, MSI `f28a7f143edba14fd972781c1fbe4a6c368ec8cc9037d05a5b3d7b84dba15108`. All 51 portable/NSIS payload files and current packaged documentation match the clean stage; the independently embedded NSIS controller matches staged indexd.
 
 The exact new NSIS passes published410 running-daemon upgrade, enabled/disabled running/idle reinstall intent, security/login/database/source/preferences preservation, concurrent-setup refusal and invalid-journal refusal. Its fresh install/uninstall repeats all 51 payload identities and removes the generated index while retaining source/preferences. The earlier separately hashed QA-only Abort installer repeats task-restoration against the new installed payload; it remains a fault-fixture result, not a claim that the exact final setup contains that injected action. Exact new MSI fresh install/uninstall passes with all 51 installed files, live task/index/query, registration transition 5 to -1 and preserved source/preferences.
 
-These candidates remain unpublished. Repeat upgrade/repair against the newest exact MSI and resolve the separate failed-transaction product-registration rollback gate before promotion. Previous651 successful upgrade/repair remains scoped to its recorded artifact. Wider native GUI/DPI, login/reboot, portable-path, Office, cross-version and signing checks remain separate. Exact scopes/hashes are in `.hermes/evidence/windows-upgrade-current/FINAL_ACCEPTANCE.json` and the matching staged acceptance files. The owned account/profile/password/tasks/staging are removed and the VM is shut off; original login values and existing operator installation/configuration are preserved. No Windows security-policy or manual MSI-registry workaround was applied.
+These candidates remain unpublished. Repeat upgrade/repair against the newest exact MSI and resolve the separate failed-transaction product-registration rollback gate before promotion. Previous651 successful upgrade/repair remains scoped to its recorded artifact. Wider native GUI/DPI, login/reboot, portable-path, Office, cross-version and signing checks remain separate. Exact scopes/hashes are in `.evidence/windows-upgrade-current/FINAL_ACCEPTANCE.json` and the matching staged acceptance files. The owned account/profile/password/tasks/staging are removed and the VM is shut off; original login values and existing operator installation/configuration are preserved. No Windows security-policy or manual MSI-registry workaround was applied.
 
 
 ### Exact MSI upgrade/repair and independent rollback reproduction — 2026-10-15
@@ -9724,7 +9724,7 @@ Two independently authored file-only per-user controls reproduce registration ro
 
 [WiX issue 8574](https://github.com/wixtoolset/issues/issues/8574) describes related failures. Metadata-only inspection of its attachments shows the reported Advanced Installer comparison uses an immediate failure at6401 before InstallExecute6500, so that comparison does not prove equivalent rollback succeeds. No downloaded third-party MSI was executed. Local controls use pinned native WiX5.0.2 in Windows11 IoT Enterprise LTSC build26100, msi.dll5.0.26100.9168. Initial fixture compilation/export mistakes were corrected before their results were interpreted.
 
-MSI failed-transaction registration remains a rejected release gate. A production failure after index shutdown, full NSIS payload rollback, and the other native acceptance/signing gates retain their separate scopes; no partial release is inferred. README, guide, release notes and checklist now distinguish native construction/normal lifecycle evidence from this observed failure. Full receipts, controls and compact log extracts are under `.hermes/evidence/windows-msi-rollback-current/`; the staged acceptance records reference them. The fresh COW domain, disk, copied NVRAM and new TPM were discarded through libvirt. All backing VMs remain shut off and backing disk/NVRAM modification times are unchanged. Host settings and existing operator files are preserved.
+MSI failed-transaction registration remains a rejected release gate. A production failure after index shutdown, full NSIS payload rollback, and the other native acceptance/signing gates retain their separate scopes; no partial release is inferred. README, guide, release notes and checklist now distinguish native construction/normal lifecycle evidence from this observed failure. Full receipts, controls and compact log extracts are under `.evidence/windows-msi-rollback-current/`; the staged acceptance records reference them. The fresh COW domain, disk, copied NVRAM and new TPM were discarded through libvirt. All backing VMs remain shut off and backing disk/NVRAM modification times are unchanged. Host settings and existing operator files are preserved.
 
 
 ### Copy retained-data cleanup admission — 2026-10-15
@@ -9807,7 +9807,7 @@ Clean source `eb10b1b7f42322a0e90f656280df869ebe21d93f` is published at the stab
 
 The exact delivered AppImage passes per-entry/bulk Clear confirmation, cancellation preserving the original backup, changed-data refusal, persistent error/retry, success styling, full selected stage/journal/manifest removal and source/publication preservation in Dark100 and Light150. The same actual package preserves complete menu icons, compact leading padding and separate check columns. The first visual previews exposed duplicated failure details, retry wording and an incorrect success color flag; those previews were corrected, rebuilt and retested before promotion. Normal exits and private fixture/display/daemon teardown are recorded. Current package contents and native namespace ownership checks pass; current daemon bytes differ from the older distro-tested payload, so older package-manager lifecycle receipts remain historical.
 
-This closes the explicit Linux Activity Copy cleanup integration and its focused package workflow. Automatic expiry remains disabled; other owned recovery receipts remain protected. Large-operation resource profiling, broader appearance/desktop/release matrices, arbitrary power-loss boundaries, physical hardware and native Windows gates retain their separate scopes. Operator data/settings/services are unchanged and user testing remains deferred. Evidence: `.hermes/evidence/copy-activity-current/` and `dist/packages/COPY_CLEANUP_ACCEPTANCE.json`. The overall roadmap remains open.
+This closes the explicit Linux Activity Copy cleanup integration and its focused package workflow. Automatic expiry remains disabled; other owned recovery receipts remain protected. Large-operation resource profiling, broader appearance/desktop/release matrices, arbitrary power-loss boundaries, physical hardware and native Windows gates retain their separate scopes. Operator data/settings/services are unchanged and user testing remains deferred. Evidence: `.evidence/copy-activity-current/` and `dist/packages/COPY_CLEANUP_ACCEPTANCE.json`. The overall roadmap remains open.
 
 
 ### Copy finalization read scaling — 2026-10-15
@@ -9947,7 +9947,7 @@ a deadlock cause. Native wait-chain capture reports per-thread states without a
 dependency cycle. Production code, containment and stable packages are unchanged;
 the Windows Office provider remains gated. All-format/fidelity, macro-positive
 control and exact-package acceptance remain open. Evidence and precise scope:
-`.hermes/evidence/windows-office-loop-current/ACCEPTANCE.json`. Exact probe tasks,
+`.evidence/windows-office-loop-current/ACCEPTANCE.json`. Exact probe tasks,
 processes, uploads and copied fixture/profile directories were removed; the
 original corpus, stale lock and operator installation were preserved.
 
@@ -9969,7 +9969,7 @@ cases preserve external fixture source/preferences and remove their isolated
 registration, shortcut and user-data names. The native fixtures compile the full
 NSIS scripts with harmless mock executables and isolated integration names; this
 is source behavior acceptance, not exact production payload/service acceptance.
-Evidence: `.hermes/evidence/windows-installer-lock-current/ACCEPTANCE.json`.
+Evidence: `.evidence/windows-installer-lock-current/ACCEPTANCE.json`.
 Owned task, processes, uploads and extracted fixtures were removed and the guest
 was shut down. Stable packages remain unchanged. Full NSIS payload rollback,
 coherent package refresh, MSI registration rollback and cross-engine coordination
@@ -10015,7 +10015,7 @@ The helper uses the trusted CLR working directory and an explicit null-string
 argument. Fixture exit-code, Unicode source-encoding and lock-admission mistakes
 were corrected before accepting the final results.
 
-Evidence: `.hermes/evidence/windows-payload-current/ACCEPTANCE.json`. Owned
+Evidence: `.evidence/windows-payload-current/ACCEPTANCE.json`. Owned
 fixture tasks, processes, integration names, profiles, uploads and staging were
 removed; the QA guest is shut off. Stable packages remain unchanged. Next work is restart/commit-boundary recovery and
 exact coherent Windows candidate construction with real scheduler, daemon and
@@ -10040,7 +10040,7 @@ intent restoration, unchanged snapshot bytes after Activate, preservation of the
 new task definition, final snapshot removal, and missing-snapshot refusal.
 The daemon phase-parser test, Windows search-library check/strict Clippy and
 default NSIS construction pass. Evidence:
-`.hermes/evidence/windows-commit-current/ACCEPTANCE.json`.
+`.evidence/windows-commit-current/ACCEPTANCE.json`.
 
 This is a source and isolated integration checkpoint. Automatic restart recovery,
 full coherent package/daemon acceptance, MSI registration rollback and the Office
@@ -10072,7 +10072,7 @@ Windows app and daemon release cross-build and GUI-subsystem checks also pass;
 new coherent installers have not yet been built or promoted. Rejected fixture
 assumptions, a bounded timeout and the causal shortcut-guard failure are retained
 with the final results at
-`.hermes/evidence/windows-recovery-current/ACCEPTANCE.json`.
+`.evidence/windows-recovery-current/ACCEPTANCE.json`.
 
 Owned fixture processes, task, integrations, uploads and staging were removed;
 the owned guest was shut down. Stable packages are unchanged. Next work is exact
@@ -10085,7 +10085,7 @@ provider acceptance remain open.
 
 Unpublished portable, NSIS and MSI candidates now share clean source
 `3ddb1bf65ee514d1ecc69745df66055d2ae515e1` at the stable internal path
-`.hermes/packaging-tmp/windows-current/`. All 51 portable and NSIS files match
+`.evidence/packaging-tmp/windows-current/`. All 51 portable and NSIS files match
 staging; native administrative MSI extraction matches those same files. Both
 installer controllers match the current daemon, and NSIS embeds the exact
 payload-recovery script. The preceding generated candidate was atomically
@@ -10102,7 +10102,7 @@ preference/source preservation. Its real daemon observed a new filename in
 single-core CPU. This is a small filename-only fixture, not large-index or
 content-enabled performance acceptance.
 
-Evidence: `.hermes/evidence/windows-transaction-package-current/ACCEPTANCE.json`.
+Evidence: `.evidence/windows-transaction-package-current/ACCEPTANCE.json`.
 The disposable account, profile, task, temporary credential, native compiler,
 extractions and uploads were removed; prior login values were restored exactly,
 the original installation/preferences remained unchanged and the guest is off.
@@ -10130,7 +10130,7 @@ committed DWORD values remain after it. Payload hashes, preference/source hashes
 and saved-index query/creation identity pass. Checkpoint payload hashes also
 match the complete current stage, excluding only the QA-generated uninstaller.
 
-Evidence: `.hermes/evidence/windows-full-recovery-current/ACCEPTANCE.json`.
+Evidence: `.evidence/windows-full-recovery-current/ACCEPTANCE.json`.
 The owned process trees, index task, account, profile, credential, uploads and
 private setup outputs were removed; original guest data/login values were
 preserved. These are four selected termination boundaries, not arbitrary power
@@ -10145,7 +10145,7 @@ The exact unpublished `3ddb1bf` MSI (`717890c74af6e259005b37ae057bf5eb273e6bafea
 
 A private prototype executes the queued cleanup before `ProcessComponents`, retains transaction rollback, and uses `InstallExecuteAgain` for late upgrade removal. Its log proves `InstallExecute` fails before `ProcessComponents` starts, yet it produces the identical registration failure and retry result. The hypothesis is rejected; production MSI authoring is unchanged. This does not establish the underlying engine/compiler/environment cause. No elevation, ACL/policy change, rollback disabling or manual MSI registry repair was applied. Current exact-MSI upgrade/repair follow-on did not run after corruption.
 
-Evidence: `.hermes/evidence/windows-msi-execution-current/ACCEPTANCE.json`. All three private VM domains, their thin overlay disks, private NVRAM/TPM and the rejected package were removed after guest shutdown and daemon teardown. Original QA machines remain off and preserved. Stable public packages are unchanged; the current candidate receipt now records this exact-artifact rejection. The MSI promotion gate remains open while other actionable roadmap work continues.
+Evidence: `.evidence/windows-msi-execution-current/ACCEPTANCE.json`. All three private VM domains, their thin overlay disks, private NVRAM/TPM and the rejected package were removed after guest shutdown and daemon teardown. Original QA machines remain off and preserved. Stable public packages are unchanged; the current candidate receipt now records this exact-artifact rejection. The MSI promotion gate remains open while other actionable roadmap work continues.
 
 ### Empty pre-journal NSIS initialization recovery (2026-10-15)
 
@@ -10167,7 +10167,7 @@ terminates whole helper process trees during timeout/cancellation cleanup.
 Its exact source and helper hashes match the native uploads.
 
 The NSIS source lifecycle contract and construction with the corrected helper
-also pass. Evidence: `.hermes/evidence/windows-initialization-current/ACCEPTANCE.json`.
+also pass. Evidence: `.evidence/windows-initialization-current/ACCEPTANCE.json`.
 The private construction output and both disposable native trial environments
 were removed; original QA machines remain off and preserved. Public packages
 are unchanged. This is helper-level interruption acceptance plus installer
@@ -10202,7 +10202,7 @@ of these UI changes remains separate. The newly built `3a3d72d` Windows portable
 and NSIS inputs passed all-51-file archive verification but their native installer
 actor was not launched before this urgent user correction. Its disposable VM was
 shut down and discarded; inputs and handoff are retained at
-`.hermes/evidence/windows-init-package-current/`. The full roadmap goal remains
+`.evidence/windows-init-package-current/`. The full roadmap goal remains
 active, including the independent MSI registration rollback gate.
 
 ### Exact Linux preview correction package acceptance (2026-10-15)
@@ -10227,7 +10227,7 @@ verified executable payloads (RPM `.text`/`.rodata` after standard stripping).
 The cached project RPM tool was used after the default PATH lacked rpmbuild.
 
 Receipt: `dist/packages/PREVIEW_SAFETY_ACCEPTANCE.json`, mirrored at
-`.hermes/evidence/preview-safety-current/ACCEPTANCE.json`; screenshots and before/after
+`.evidence/preview-safety-current/ACCEPTANCE.json`; screenshots and before/after
 traces are alongside it. Superseded `3a3d72d` Windows construction output is
 removed after its compact receipts and deferred actor inputs were retained.
 Native Windows/macOS and physical Wayland/GPU acceptance remain separate;
@@ -10237,10 +10237,10 @@ this does not close the wider roadmap or the MSI rollback gate.
 
 Clean source `a7c189f87172c73791493af0ac9e9579f73201f8` is now packaged as one
 coherent internal portable/NSIS/MSI cohort at
-`.hermes/packaging-tmp/windows-current/`. All 51 payload files agree across
+`.evidence/packaging-tmp/windows-current/`. All 51 payload files agree across
 portable, NSIS and native MSI administrative extraction; strict Windows UI
 all-target Clippy passes. Exact hashes and native results are recorded in
-`.hermes/evidence/windows-init-integration-current/ACCEPTANCE.json` and the
+`.evidence/windows-init-integration-current/ACCEPTANCE.json` and the
 cohort's `CANDIDATE_ACCEPTANCE.json`.
 
 Six full-payload NSIS pre-journal interruption/retry cases pass, covering both
@@ -10301,7 +10301,7 @@ the final checks, the VHD is detached normally; the child guest is shut down
 normally and its exact overlay, NVRAM and TPM are removed. Original guests and
 backing storage are preserved and shut off. Compact receipts, actor inputs and
 selected native screenshots are in
-`.hermes/evidence/windows-move-ui-current/`; its acceptance is linked from the
+`.evidence/windows-move-ui-current/`; its acceptance is linked from the
 stable internal cohort receipt. Public Windows packages remain unchanged.
 
 The stale Linux delivery overview now names the four actual `0040b44` artifacts,
@@ -10335,7 +10335,7 @@ search remains an open gate: the pre-fix binary has 49 failures, the final binar
 has 48; the resolved failure is the directory regression. Shared failures include
 short-temp-path/canonical-root fixture mismatches and Windows-invalid test names.
 They are not waived by the focused pass. Raw logs, controls and comparison are in
-`.hermes/evidence/windows-tree-ui-current/`.
+`.evidence/windows-tree-ui-current/`.
 
 Updated package construction and the twenty-case directory/mixed-batch GUI matrix
 are pending for this repair. Configured-root ancestors, junction isolation,
@@ -10372,7 +10372,7 @@ The source-repair checkpoints above now have exact-package acceptance. Clean
 GUI cases pass, including the previously failed cross-volume mixed-batch Replace;
 all resulting bytes/identities and retained journal pairs survive normal NSIS and
 MSI uninstall. The current MSI's positive lifecycle, watcher rename and bounded
-quiet CPU checks also pass. `.hermes/evidence/windows-tree-ui-current/ACCEPTANCE.json`
+quiet CPU checks also pass. `.evidence/windows-tree-ui-current/ACCEPTANCE.json`
 records the artifacts, scopes, historical controls and remaining gates. Normal
 VM shutdown/owned-volume removal preserved the original profile, installation,
 backing image and three original stopped domains. The source/library and broader
@@ -10403,7 +10403,7 @@ This separates library correctness from a newly verified shipping dependency gap
 The Windows package lacks the live-content provider used by the passing tests.
 Shipping that provider, checking Linux delivery, reporting provider failures and
 clean-PATH packaged acceptance are required work, recorded in
-`.hermes/evidence/windows-search-portability-current/PACKAGE_DEPENDENCY_GAP.json`.
+`.evidence/windows-search-portability-current/PACKAGE_DEPENDENCY_GAP.json`.
 
 
 ### Live-content provider delivery — source checkpoint (2026-10-15)
@@ -10459,7 +10459,7 @@ The full search suites pass 225 Linux tests and 209 Windows tests with their
 specialized exclusions unchanged; strict app/search Clippy passes both targets.
 Actual PowerShell staging and checksum rejection use the verified archive through
 offline transport; a full native PowerShell Cargo build is not claimed.
-Receipts are in `.hermes/evidence/content-provider-current/ACCEPTANCE.json`,
+Receipts are in `.evidence/content-provider-current/ACCEPTANCE.json`,
 `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json` and the internal cohort's
 `CANDIDATE_ACCEPTANCE.json`. Existing GUI, distro lifecycle and other native
 acceptance retain their prior exact artifact scopes. Public Windows artifacts
@@ -10502,8 +10502,8 @@ original stopped domains, backing images and original profile/installation are
 preserved. Superseded internal Windows generated output is removed.
 
 Current Linux receipt: `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`. Internal
-Windows receipt: `.hermes/packaging-tmp/windows-current/CANDIDATE_ACCEPTANCE.json`.
-Compact evidence: `.hermes/evidence/content-roots-current/ACCEPTANCE.json`.
+Windows receipt: `.evidence/packaging-tmp/windows-current/CANDIDATE_ACCEPTANCE.json`.
+Compact evidence: `.evidence/content-roots-current/ACCEPTANCE.json`.
 Public Windows remains unchanged pending failed-registration MSI rollback.
 Exact positive-content totals/pagination is the next indexing outcome; network
 I/O isolation, configured-root ancestor/junction and the other roadmap gates
@@ -10526,7 +10526,7 @@ SeSecurityPrivilege confined to the test. Final DACL application preserves the
 native inherited audit and label rules, including directory child behavior.
 Linux platform tests pass 411 with 3 exclusions; strict platform all-target
 Clippy passes on both targets. Source evidence and cleanup are recorded in
-`.hermes/evidence/windows-copy-inheritance-current/ACCEPTANCE.json`.
+`.evidence/windows-copy-inheritance-current/ACCEPTANCE.json`.
 
 This is a component checkpoint, not public Windows Copy completion. Full staging,
 special attributes, non-ACL filesystem strategy, complete security/Overwrite,
@@ -10553,7 +10553,7 @@ platform tests pass 411 with 3 exclusions; strict platform all-target Clippy on
 Linux/Windows, formatting and diff checks pass. The first fresh guest was missing
 Developer Mode: existing symlink setup failed while all directory payload cases
 passed. Restoring the fixture-only prerequisite made the full native suite pass.
-Evidence: `.hermes/evidence/windows-copy-directory-current/ACCEPTANCE.json`.
+Evidence: `.evidence/windows-copy-directory-current/ACCEPTANCE.json`.
 
 This stages one folder's own payload; recursive children, bottom-up final metadata
 after child changes and link preservation still need implementation and native
@@ -10590,7 +10590,7 @@ cleanup requirements. A cold-after-reboot run passed with readiness at 4.47
 seconds. This is a test-only correction after product packaging; the runner
 source/binary hashes are recorded separately.
 
-Evidence: `.hermes/evidence/office-package-current/ACCEPTANCE.json` and
+Evidence: `.evidence/office-package-current/ACCEPTANCE.json` and
 `dist/packages/OFFICE_UI_ACCEPTANCE.json`. The disposable Windows task, compiler
 and payload extractions were removed; the owned VM is shut off and the original
 profile, installation, provider and login state were preserved. The roadmap
@@ -10606,7 +10606,7 @@ makes that name occupied. All five destination-admission tests pass, with zero
 skips or failures, in 0.45 seconds. Strict Windows all-target platform Clippy and
 formatting/diff checks pass. Production code and published packages are unchanged.
 
-Evidence: `.hermes/evidence/windows-case-policy-current/ACCEPTANCE.json`.
+Evidence: `.evidence/windows-case-policy-current/ACCEPTANCE.json`.
 Absent-name durable cross-process claims, short-name aliases, parent changes and
 concurrent transaction workflows remain open. Public Windows Copy stays gated;
 the roadmap goal remains active and user testing is deferred.
@@ -10637,7 +10637,7 @@ Activity consumer or secondary-volume gate. Strict Windows platform all-target
 Clippy, formatting and diff checks pass. Owned temporary data and the uploaded
 executable are removed, the VM is shut off and original profile/installation/login
 state is unchanged. Exact source, binary, case accounting and teardown are in
-`.hermes/evidence/windows-admission-policy-current/ACCEPTANCE.json`.
+`.evidence/windows-admission-policy-current/ACCEPTANCE.json`.
 
 Published application packages are unchanged by this Windows-only source fix.
 Durable cross-process target claims, remaining Copy staging/security/resource
@@ -10665,7 +10665,7 @@ Clippy and formatting/diff checks pass. All task-owned processes, uploaded test
 executable and temporary profiles are removed, the VM is shut off, and original
 profile/installation/login state is unchanged.
 
-Evidence: `.hermes/evidence/windows-directory-policy-current/ACCEPTANCE.json`.
+Evidence: `.evidence/windows-directory-policy-current/ACCEPTANCE.json`.
 This accepts the ordinary NTFS metadata component, not public Windows Copy or
 GUI/package readiness. Durable target claims, sparse/EFS and broader storage,
 security, interruption/resource and platform workflow gates remain open. Published
@@ -10691,7 +10691,7 @@ fixture limitation; the unchanged native executable then passed. Production
 permissions and code were unchanged. The secondary image and test data are
 removed, the VM is shut off, and original disks/profile/installation/login state
 are verified unchanged. Evidence:
-`.hermes/evidence/windows-secondary-discovery-current/ACCEPTANCE.json`.
+`.evidence/windows-secondary-discovery-current/ACCEPTANCE.json`.
 
 This accepts the scoped cross-volume recovery-discovery case, not removable or
 network storage, physical power loss, public Windows Copy or package readiness.
@@ -10716,7 +10716,7 @@ first creation. All five native dispatch tests pass (zero failures/ignores,
 pass. The uploaded executable and owned temporary data are removed; the VM is
 shut off and original profile/installation/login state is unchanged. Native
 results and exact source/binary provenance are recorded in
-`.hermes/evidence/windows-target-claims-current/ACCEPTANCE.json`.
+`.evidence/windows-target-claims-current/ACCEPTANCE.json`.
 
 This is one part of the native reservation work. Absent-name durable claims,
 simultaneous admission, cross-registry ownership and the broader interruption,
@@ -10739,7 +10739,7 @@ Copy transactions yet. Durable claim records, paired-journal binding, guarded
 release/recovery, short-name and parent-alias cases, normal workflow integration
 and the remaining platform gates are still required. Public Windows Copy remains
 gated and application packages are unchanged. Scoped verification is recorded in
-`.hermes/evidence/windows-native-claim-root-current/ACCEPTANCE.json`.
+`.evidence/windows-native-claim-root-current/ACCEPTANCE.json`.
 
 All seven native registry/namespace tests pass (zero failures/ignores, 1.10s).
 Three controlled two-process cohorts prove one owner for colliding names and two
@@ -10771,7 +10771,7 @@ The focused native checks cover live and dropped owners, Skip/Rename, Undo and
 name reuse, restored-original dependency release, encoded-name collisions, native
 case variants, the 12/13-unit boundary and 255-unit names. Exact source/binary
 identity, completed check counts and remaining verification are in
-`.hermes/evidence/windows-copy-claim-binding-current/ACCEPTANCE.json`.
+`.evidence/windows-copy-claim-binding-current/ACCEPTANCE.json`.
 
 Still required: released-log retirement, discovery/reclamation of pre-journal and
 partial claims, interrupted-release recovery, integrated separate-process Copy
@@ -10801,7 +10801,7 @@ failures and the quota boundary, with no ignored cases or leftover temporary
 entries (34.38s). Strict Windows all-target Clippy and formatting pass. Full current
 journal/cleanup/registry batches are running on the same recorded executable;
 no broader pass is inferred before their results arrive. Exact source/binary
-identity and scope: `.hermes/evidence/windows-copy-claim-budget-current/ACCEPTANCE.json`.
+identity and scope: `.evidence/windows-copy-claim-budget-current/ACCEPTANCE.json`.
 Public Windows Copy remains gated and application packages are unchanged.
 
 
@@ -10823,7 +10823,7 @@ journals and all unrelated names/bytes to remain unchanged. All 14 focused nativ
 checks now pass, zero failures/ignores and no temporary entries (37.50s). Strict
 Windows all-target Clippy and formatting pass. Full current journal/cleanup/registry
 batches run on the same recorded executable; completion is pending their results.
-Evidence: `.hermes/evidence/windows-copy-claim-process-current/ACCEPTANCE.json`.
+Evidence: `.evidence/windows-copy-claim-process-current/ACCEPTANCE.json`.
 
 This ordered held-owner matrix does not close simultaneous initial ledger
 construction, integrated Overwrite/Rename, alias/ancestor/resource, log retirement,
@@ -10844,7 +10844,7 @@ Teardown verifies no owned processes or temporary roots, unchanged original
 profile/installation hashes and login state, and the owned VM shut off. The
 frozen compiler copy used to isolate this completed run from later source work
 has been removed. Exact case coverage and scope are in
-`.hermes/evidence/windows-copy-claim-process-current/JOURNAL_SUITE.json` and its
+`.evidence/windows-copy-claim-process-current/JOURNAL_SUITE.json` and its
 `ACCEPTANCE.json`. These results do not cover the subsequent release-prefix repair
 implementation, which has its own source/binary/native verification in progress.
 Public Windows Copy and the remaining roadmap gates are unchanged.
@@ -10871,7 +10871,7 @@ also pass. Teardown preserved the original profile, installation and login state
 removed owned temporary data and shut down the test VM. These results cover
 revision `a7904eb`; the subsequent finish-release API and Activity changes still
 need their own native acceptance.
-Evidence: `.hermes/evidence/windows-copy-claim-release-current/ACCEPTANCE.json`.
+Evidence: `.evidence/windows-copy-claim-release-current/ACCEPTANCE.json`.
 
 Still required: a distinct non-destructive finish-release recovery admission and
 pending status after restart (fresh completed-Undo admission currently refuses),
@@ -10899,7 +10899,7 @@ formatting and the native test build pass. Owned test processes, executables and
 temporary data are removed; the VM is shut off and original profile, installation
 and login state are preserved.
 
-Evidence: `.hermes/evidence/windows-copy-name-release-current/ACCEPTANCE.json`.
+Evidence: `.evidence/windows-copy-name-release-current/ACCEPTANCE.json`.
 These are focused source/API/egui interaction results, not physical desktop or
 package acceptance. Orphan/partial claim construction, released-log retirement,
 repair-I/O interruption and remaining concurrency/alias/resource/workflow/package

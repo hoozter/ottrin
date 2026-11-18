@@ -43,7 +43,7 @@ Independent originals retain their native identities, security and complete byte
 only the two expected persistent caller-bound claim controls augment the parent.
 The initial retained-overlap and coordinator fixture assumptions are corrected
 without changing production guards. Exact verification and owned teardown are recorded in
-`.hermes/evidence/caller-routing-current/`. This is the existing wire command set:
+`.evidence/caller-routing-current/`. This is the existing wire command set:
 explicit Resume, end-attempt and name-release commands and their UI remain to be
 connected. Operation Stop/progress must also reach the helper before UI enablement.
 Newly authenticated process-restart, alternate-administrator UAC,
@@ -82,7 +82,7 @@ after deliberately prepared lower-level interrupted states. Sources, caller
 preferences/index identity/security/bytes and edited unknown payloads are preserved;
 terminal name release leaves both journals byte-identical. Exact source/build,
 native assertions and independent teardown are checked in
-`.hermes/evidence/caller-recovery-routing-current/ACCEPTANCE.json`.
+`.evidence/caller-recovery-routing-current/ACCEPTANCE.json`.
 The duplicate wrapper log's UTF8-to-ANSI artifact is exactly reconciled against the
 independently exported native log; `WRAPPER_ENCODING.json` retains that limitation
 and the original used actor. That historical receipt retains its encoding limitation; the newer protocol5
@@ -177,7 +177,7 @@ engine callbacks for every command kind, including positive copied-byte progress
 Three policy tests distinguish damaged-record review, interrupted requests and an
 incorrectly swallowed callback failure. The full preceding caller/recovery lane
 still passes; exact UTF8 wrapper/native receipt equality, source/build binding and
-independent teardown pass in `.hermes/evidence/caller-progress-current/ACCEPTANCE.json`.
+independent teardown pass in `.evidence/caller-progress-current/ACCEPTANCE.json`.
 These pre-work stops do not establish mid-operation or blocked-helper cancellation.
 
 Native acceptance of progress/cancellation frames and Windows frontend
@@ -203,7 +203,7 @@ anchors, naming/location/security, complete journals, links/streams and phase ru
 remain mandatory. The ordinary-client/SYSTEM native fixture verifies successful
 reopen, read-only write denial and unchanged refusal cases; it does not establish
 alternate-administrator UAC or packaged Copy acceptance. See
-`.hermes/evidence/caller-private-reopen-current/ACCEPTANCE.json`.
+`.evidence/caller-private-reopen-current/ACCEPTANCE.json`.
 
 ## Held original-caller registry authority
 
@@ -281,7 +281,7 @@ token is modified. This operation is carried by explicit private staging authori
 full caller transaction/recovery integration is still required. It does not enable
 administrator Copy or prove
 alternate-administrator UAC/package behavior. Native mechanism acceptance:
-`.hermes/evidence/caller-metadata-current/ACCEPTANCE.json`.
+`.evidence/caller-metadata-current/ACCEPTANCE.json`.
 
 ## Explicit private staging authority
 
@@ -315,7 +315,7 @@ carry authority through those remaining transitions. Caller candidate creation a
 per-object ACL behavior now have the dedicated original-token controls below.
 Caller links, full final-permission/journal/recovery integration and package/UAC
 contexts remain separate gates. Administrator Copy remains disabled. Exact scoped evidence is maintained at
-`.hermes/evidence/caller-staging-current/ACCEPTANCE.json`.
+`.evidence/caller-staging-current/ACCEPTANCE.json`.
 
 ## Caller candidate security controls
 
@@ -339,7 +339,7 @@ Native descriptor derivation follows
 
 All controls pass without changing production candidate creation. Exact source,
 executable, native results and teardown are recorded in
-`.hermes/evidence/caller-candidate-security-current/ACCEPTANCE.json`.
+`.evidence/caller-candidate-security-current/ACCEPTANCE.json`.
 The original-token finalization callback is a component control. Helper-side final
 plans, destination claims and paired journals are covered below; publication,
 receipts and restored Undo/cleanup still need explicit caller authority. This does not enable administrator Copy or establish
@@ -383,7 +383,7 @@ The fixture now matches production operation waiting, with its existing outer
 180-second owned-process deadline and disconnect detection unchanged.
 
 Exact source/binary/native binding and teardown:
-`.hermes/evidence/caller-permission-plan-current/ACCEPTANCE.json`.
+`.evidence/caller-permission-plan-current/ACCEPTANCE.json`.
 This is final-permission component acceptance, not a durable caller operation,
 alternate-administrator UAC, packaged Copy or completed Undo/cleanup bridge.
 Administrator Copy remains disabled.
@@ -424,7 +424,7 @@ matrix includes ordinary claim publication, process exclusion, orphan recovery,
 release/repair/retirement, paired-journal initialization, name release and abort
 regressions, plus prior caller/permission/staging/security controls. Strict paired
 Windows platform/UI lint passes. Exact binding and teardown:
-`.hermes/evidence/caller-claims-current/ACCEPTANCE.json`.
+`.evidence/caller-claims-current/ACCEPTANCE.json`.
 
 This checkpoint accepts caller pre-journal reservations and complete orphan
 preparations. The subsequent paired-journal checkpoint below extends that scope;
@@ -476,7 +476,7 @@ payload mutation authority. Two initial fixture fresh-open failures and the
 subsequent directory-overlap failure are retained with exact source/binary/native
 bindings. The final 100 tests across 23 native invocations and strict paired
 Windows platform/UI lint pass. Evidence:
-`.hermes/evidence/caller-journals-current/ACCEPTANCE.json`.
+`.evidence/caller-journals-current/ACCEPTANCE.json`.
 
 Retained copied-tree verification now retains the snapshot/journal's authenticated
 runtime authority. Its shared no-follow source opener uses scoped helper access
@@ -488,7 +488,7 @@ verify every payload and derive the identical original-token native policy again
 Ordinary source-free publication/permission replay and receipt/public Undo also
 pass against the shared retained-tree verifier. That checkpoint has 102
 passing tests across 25 native invocations and strict paired Windows platform/UI
-lint. Evidence: `.hermes/evidence/caller-retained-tree-current/ACCEPTANCE.json`.
+lint. Evidence: `.evidence/caller-retained-tree-current/ACCEPTANCE.json`.
 
 Creation publication now retains caller authority through the exclusive paired
 journal handoff, genuine native per-object reopening, no-replace publish rename,
@@ -509,7 +509,7 @@ and replay through a fresh writer. Original source and pinned preferences/index
 bytes, identities and security remain unchanged. All 102 tests across 25 native
 invocations and strict paired Windows platform/UI lint pass. Failed input/result
 bindings and the final acceptance are retained at
-`.hermes/evidence/caller-publication-current/ACCEPTANCE.json`.
+`.evidence/caller-publication-current/ACCEPTANCE.json`.
 
 The unified creation executor now holds canonical caller registry admission before
 its first claim/stage write and through receipt construction. The shared retained,
@@ -534,7 +534,7 @@ unchanged. A first native trial reproduced a missed Process argument at the sess
 receipt's Undo-admission handoff. The corrected trial passes all 102 tests across 25
 native invocations and strict paired Windows platform/UI lint; failed source/result
 binding and final acceptance are retained at
-`.hermes/evidence/caller-receipts-current/ACCEPTANCE.json`.
+`.evidence/caller-receipts-current/ACCEPTANCE.json`.
 
 Live forward recovery plans now retain the authenticated runtime authority too.
 Admission and execution hold fresh canonical registry admission, inspect registered
@@ -554,7 +554,7 @@ The original source and user-state evidence stay unchanged. Ordinary source-free
 readonly-root replay plus publication/permission outcome-retry regressions also pass.
 The checkpoint has 104 passing tests across 27 native invocations and strict paired
 Windows platform/UI lint. Evidence:
-`.hermes/evidence/caller-resume-current/ACCEPTANCE.json`.
+`.evidence/caller-resume-current/ACCEPTANCE.json`.
 
 Overwrite now retains caller authority through original destination admission,
 namespace checks, dependency observation, original evidence preparation, both native
@@ -579,7 +579,7 @@ rewritten. Source and pinned preferences/index bytes, identities and permissions
 unchanged. Ordinary source-free overwrite replay and drift/occupant refusals also pass.
 The checkpoint has 106 passing tests across 29 native invocations and strict paired
 Windows platform/UI lint. Evidence:
-`.hermes/evidence/caller-overwrite-current/ACCEPTANCE.json`.
+`.evidence/caller-overwrite-current/ACCEPTANCE.json`.
 
 Admitted registry objects now provide read-only retained discovery and restored
 Resume/Undo admissions with their retained runtime authority. Ordinary and caller
@@ -599,7 +599,7 @@ The bad-record/symlink discovery regression requires SYSTEM's symlink capability
 ordinary phase-classification discovery remains an ordinary-user control. An initial
 ordinary-user routing failure occurred during symlink fixture creation (error 1314),
 before product discovery; the unchanged executable passed with the corrected role.
-Evidence: `.hermes/evidence/caller-discovery-current/ACCEPTANCE.json`.
+Evidence: `.evidence/caller-discovery-current/ACCEPTANCE.json`.
 
 Retained-payload cleanup now carries explicit runtime authority too. Its handle-free
 admission retains the authenticated context through snapshot/writer handoff and
@@ -623,7 +623,7 @@ full metadata/cohort, alias, failure-prefix, drift and real-exit controls. The i
 whole-module timeout is retained as incomplete evidence; per-test results preserve
 the later successful long matrices. There are 200 test passes across 123 top-level
 native invocations in total, with strict Windows platform/UI lint passing.
-Evidence: `.hermes/evidence/caller-cleanup-current/ACCEPTANCE.json`.
+Evidence: `.evidence/caller-cleanup-current/ACCEPTANCE.json`.
 
 This does not complete the full caller mutation-prefix matrix, readonly/link
 publication recovery, the complete original-retention/restoration failure matrix
@@ -681,9 +681,9 @@ Actual factory, affected claim/journal callers and interruption cases need nativ
 acceptance; public Copy was disabled at that checkpoint. The current persistent
 claim lifecycle is described below, and the current administrator gate is in the
 roadmap. The rejected Rust candidate is archived, not installed. Exact controls and limits:
-`.hermes/evidence/windows-ephemeral-security-current/FINDINGS.md`.
+`.evidence/windows-ephemeral-security-current/FINDINGS.md`.
 Earlier lifetime controls:
-`.hermes/evidence/windows-directory-lifetime-current/FINDINGS.md`.
+`.evidence/windows-directory-lifetime-current/FINDINGS.md`.
 
 ## Current claim preparation lifecycle
 
@@ -743,7 +743,7 @@ observing a central terminal frame alone is insufficient.
 Schema 18 adds this terminal state. Older schemas remain review-only and are not
 converted or deleted. UI confirmation retains the exact originally admitted plan;
 refresh cannot silently replace the action the user reviewed. Current native
-acceptance is recorded in `.hermes/evidence/windows-copy-abort-current/`.
+acceptance is recorded in `.evidence/windows-copy-abort-current/`.
 Incomplete-payload reclamation, broader transaction/workflow acceptance and public
 Windows Copy remain unfinished.
 
@@ -799,15 +799,15 @@ retained foreign streams/files, refusal of post-Begin intents/mismatches/replace
 controls/canonical collisions/parent-policy drift, all six claim-release fault
 boundaries and write/delete exclusion on both journals during release. Broader
 regression, exact source/executables and teardown:
-`.hermes/evidence/windows-setup-recovery-current/ACCEPTANCE.json`.
+`.evidence/windows-setup-recovery-current/ACCEPTANCE.json`.
 
 These are native status/admission checks, not newly rendered Activity or new
 whole-Copy power-loss acceptance. Earlier guest cuts at complete-unpublished and
 published-claim barriers passed reservation recovery with protected bytes intact;
 they retain their original source/executable scope:
-`.hermes/evidence/windows-persistent-controls-current/ACCEPTANCE.json`.
+`.evidence/windows-persistent-controls-current/ACCEPTANCE.json`.
 Earlier review-visibility evidence is retained in
-`.hermes/evidence/windows-unpublished-setup-current/ACCEPTANCE.json`.
+`.evidence/windows-unpublished-setup-current/ACCEPTANCE.json`.
 
 ## Complete outcome
 
@@ -873,14 +873,14 @@ changing original bytes. All four destination-admission tests pass on the same
 ordinary-account Windows executable. This does not establish absent-name claims,
 explicitly case-sensitive directory behavior or cross-process exclusion. Exact
 scope and teardown are in
-`.hermes/evidence/windows-native-name-admission-current/ACCEPTANCE.json`.
+`.evidence/windows-native-name-admission-current/ACCEPTANCE.json`.
 An additional normal-user native regression now explicitly enables and queries
 NTFS directory case sensitivity. Differently cased names are admitted as distinct
 only when actually absent; two existing variants retain independent bytes, and a
 late occupant invalidates creation admission. Disabling case sensitivity makes the
 previously absent spelling resolve to the existing file and invalidates its old
 creation approval. All five destination-admission checks pass on one executable.
-Evidence: `.hermes/evidence/windows-case-policy-current/ACCEPTANCE.json`.
+Evidence: `.evidence/windows-case-policy-current/ACCEPTANCE.json`.
 This does not establish short-name alias equivalence or cross-process exclusion.
 Admission now captures the native case policy independently of current target
 occupancy. A changed policy invalidates both creation and Overwrite approval,
@@ -894,7 +894,7 @@ for all 181 journal cases in disjoint core/cleanup batches: 172 pass, zero fail,
 and nine specialized fixture/child entries are ignored with exact reasons
 recorded. Original source, retained/public data and journal bytes survive policy
 refusal in staged and published fixtures. Source, binary, case lists and clean
-teardown: `.hermes/evidence/windows-admission-policy-current/ACCEPTANCE.json`.
+teardown: `.evidence/windows-admission-policy-current/ACCEPTANCE.json`.
 The native target-reservation gate remains required before public Windows Copy:
 
 - Bind claims to the actual destination-parent identity and native target name;
@@ -936,7 +936,7 @@ membership and same-byte replacement are refused even after cached nonidentity
 metadata is refreshed. Entry-budget and cancellation refusals preserve the
 observed graph. Audit-SACL/mandatory-label completeness, broader original-object
 matrices and the durable retention/publication/Undo protocol remain required.
-Receipt: `.hermes/evidence/windows-copy-existing-tree-current/ACCEPTANCE.json`.
+Receipt: `.evidence/windows-copy-existing-tree-current/ACCEPTANCE.json`.
 
 ## Paired original-evidence preparation
 
@@ -961,7 +961,7 @@ rename an original. Retention intent/acknowledgement, whole-overwrite mutation-t
 reservation, the writer handoff, publication, restoration and full security
 acceptance are still required. Public Copy/Overwrite and cleanup remain gated.
 Native preparation and regression receipt:
-`.hermes/evidence/windows-copy-original-plan-current/ACCEPTANCE.json`.
+`.evidence/windows-copy-original-plan-current/ACCEPTANCE.json`.
 
 ## Initial destination admission
 
@@ -980,7 +980,7 @@ cannot publish as creation merely because its original is absent. Original
 retention still requires its separate durable intent and acknowledgement.
 User conflict UI/session/batch integration and broader acceptance remain gated.
 Native admission and regression evidence:
-`.hermes/evidence/windows-copy-destination-admission-current/ACCEPTANCE.json`.
+`.evidence/windows-copy-destination-admission-current/ACCEPTANCE.json`.
 
 ## Native namespace and sharing
 
@@ -1004,7 +1004,7 @@ The explicit-registry dispatcher takes an already owned handle. The configured
 entry point supplies that handle through the registry admission below. Ordinary
 single/batch Copy is wired through the native engine; complete release and
 administrator-Copy gates remain open in the roadmap. The historical dispatcher
-fixture is `.hermes/evidence/windows-copy-dispatch-current/ACCEPTANCE.json`;
+fixture is `.evidence/windows-copy-dispatch-current/ACCEPTANCE.json`;
 its original scope does not describe current whole-product acceptance.
 
 ### Configured registry admission
@@ -1091,7 +1091,7 @@ or Undo after new-copy publication; the schema-9 engine below adds those phases.
 Readonly/rights strategies, complete audit/label protection, broader storage and
 package acceptance remain required. Public Copy/Overwrite and cleanup stay gated.
 Schema-8 native evidence:
-`.hermes/evidence/windows-copy-original-move-current/ACCEPTANCE.json`.
+`.evidence/windows-copy-original-move-current/ACCEPTANCE.json`.
 
 ### Publication and Undo over a retained original
 
@@ -1111,7 +1111,7 @@ original preparation cannot authorize retention. `RetainingOriginal` remains
 resumable through discovery and Activity; restoration owns its transaction and
 prevents forward resumption. Native injected/process-exit, read-only admission,
 version-drift and same-plan cancellation evidence:
-`.hermes/evidence/windows-copy-retention-resume-current/ACCEPTANCE.json`.
+`.evidence/windows-copy-retention-resume-current/ACCEPTANCE.json`.
 
 The existing Undo engine first withdraws the verified new copy to its candidate
 slot and records that native result, then invokes the shared original restoration
@@ -1130,7 +1130,7 @@ authority and can still resume preparation. Public Windows Copy remains disabled
 pending session/batch integration, initial conflict admission, security/storage,
 power-cut and exact-package acceptance. Native file/folder original and all-prefix
 injected/process-exit evidence is recorded at
-`.hermes/evidence/windows-copy-overwrite-current/ACCEPTANCE.json`.
+`.evidence/windows-copy-overwrite-current/ACCEPTANCE.json`.
 
 ### Private candidate namespace
 
@@ -1187,7 +1187,7 @@ cannot release path ownership or announce completion until the worker has actual
 stopped and its journal outcome has been inspected. Windows cancellation can
 complete normally, abort or fail. Device/network, other workflow and full resource
 acceptance remain open. Exact scopes:
-`.hermes/evidence/windows-copy-blocked-io-current/ACCEPTANCE.json`.
+`.evidence/windows-copy-blocked-io-current/ACCEPTANCE.json`.
 
 The later NTFS oplock fixture blocks actual central/local journal and payload
 opens inside both forward recovery and cleanup. All six Stop cases return native
@@ -1197,7 +1197,7 @@ publishes; cleanup retry fully reclaims; unrelated destination data is retained.
 These are pre-mutation open interruptions, not mutating-write, remote/device or
 physical power-loss acceptance. The final fixture observes 12–28 ms cancellation,
 not a general latency guarantee. Exact scopes:
-`.hermes/evidence/windows-copy-oplock-current/ACCEPTANCE.json`.
+`.evidence/windows-copy-oplock-current/ACCEPTANCE.json`.
 
 The following Activity integration composes the actual rendered Stop control with
 those kernel-blocked operations. All 24 scenarios pass: the previous 18 plus
@@ -1209,7 +1209,7 @@ refresh. The shared test-only oplock implementation is in
 `tests/support/windows_oplock.rs`; it is not copied or exposed in production.
 This is native egui action/layout evidence, not physical desktop or package
 acceptance. Exact executable/fixture scopes and cleanup:
-`.hermes/evidence/windows-copy-blocked-activity-current/ACCEPTANCE.json`.
+`.evidence/windows-copy-blocked-activity-current/ACCEPTANCE.json`.
 
 Copy Undo now registers its own Stop flag with the existing worker, forwards it
 through session receipts and retained/batch inverses, and binds the same native
@@ -1226,7 +1226,7 @@ prefix normalization; it resolves no filesystem aliases and grants no native
 authority. Focused native controls verify both prefix directions, independent
 paths, per-operation flags and the existing admission/editing behavior. Exact
 scopes and remaining gates:
-`.hermes/evidence/windows-copy-undo-stop-current/ACCEPTANCE.json`.
+`.evidence/windows-copy-undo-stop-current/ACCEPTANCE.json`.
 
 The native fixture follows [Microsoft's level-1 oplock contract](https://learn.microsoft.com/en-us/windows/win32/api/winioctl/ni-winioctl-fsctl_request_oplock_level_1)
 and [acknowledgment/close semantics](https://learn.microsoft.com/en-us/windows-hardware/drivers/ifs/acknowledging-oplock-breaks).
@@ -1263,7 +1263,7 @@ The native workflow covers empty/populated trees across all four source/parent
 policy combinations, nested opposite policies, distinct case-variant file bytes,
 publication, Undo and byte-preserving refusal of retained-candidate policy drift.
 Exact source and verification scope are recorded in
-`.hermes/evidence/windows-directory-policy-current/`. This does not establish
+`.evidence/windows-directory-policy-current/`. This does not establish
 all specialized storage, interruption or public workflow gates.
 
 Streams/compression are verified before final timestamp application: native backup
@@ -1325,7 +1325,7 @@ EA preservation checks remain intact.
 
 Exact source/executable scopes, earlier raw-format probes, fixture corrections,
 broader regressions and teardown are recorded in
-`.hermes/evidence/windows-sparse-current/ACCEPTANCE.json`.
+`.evidence/windows-sparse-current/ACCEPTANCE.json`.
 The later cross-volume test reuses the same durable workflow on two owned NTFS
 volumes, with 4 KiB versus 64 KiB allocation units. All four cases pass: both
 copy directions, each with and without a sparse primary. Sparse file/directory
@@ -1333,7 +1333,7 @@ named streams and unaligned data offsets exercise allocation-independent
 fingerprints through publication, discovery, source-free Undo and cleanup.
 The 1 TiB logical primary also passes on the small secondary volume. This is a
 logical preservation check, not throughput or physical crash acceptance.
-Evidence: `.hermes/evidence/windows-sparse-cross-volume-current/ACCEPTANCE.json`.
+Evidence: `.evidence/windows-sparse-cross-volume-current/ACCEPTANCE.json`.
 Broader filesystem/provider, EFS, blocked-I/O and resource acceptance remain
 separate gates. No package changed; public Windows Copy stays
 disabled. The native format is documented in [Microsoft's sparse block format](https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-bkup/6be866e6-6d1f-4183-8b78-b10c2941228a).
@@ -1500,14 +1500,14 @@ the shared publication engine. Verified unfinished transactions can resume;
 unverified staging cannot. Completion enables fresh Undo admission. Current
 source-built action acceptance, including changed-data refusal, moved-parent
 retry and pre-mutation Stop/retry, retains its preceding source scope in
-`.hermes/evidence/windows-copy-resume-volume-current/ACCEPTANCE.json`.
+`.evidence/windows-copy-resume-volume-current/ACCEPTANCE.json`.
 The same nine populated-folder scenarios pass on one volume and with recovery
 records/data on distinct NTFS volumes. Root-file, readonly, link, specialized
 storage and power-cut acceptance remain separate.
 Public new Copy, Overwrite, cleanup and broader release acceptance remain gated;
 packages have not been rebuilt for this action.
 
-Streamed-plan checkpoint receipt: `.hermes/evidence/windows-copy-streamed-plan-current/ACCEPTANCE.json`.
+Streamed-plan checkpoint receipt: `.evidence/windows-copy-streamed-plan-current/ACCEPTANCE.json`.
 The ordinary-user Copy suite passes 91 with 3 specialized/child exclusions; the
 full native Windows platform suite passes 191 with 29 exclusions. SYSTEM audit
 passes separately. Linux platform tests pass 411 with 3 exclusions, and strict
@@ -1532,14 +1532,14 @@ Streamed intent adds aggregate-over-frame codec, ordered/sealed-record validatio
 and coherent cancellation/resume cases; real exits now span every plan-append
 boundary. These remain source/native components, not public Copy acceptance.
 Earlier private-group fixture evidence and its test-only WRITE_OWNER setter are
-recorded in `.hermes/evidence/windows-copy-private-security-current/ACCEPTANCE.json`.
+recorded in `.evidence/windows-copy-private-security-current/ACCEPTANCE.json`.
 Production creation/recovery rights and validation assertions remain intact.
 The preceding access-time correction retains distinct evidence in
-`.hermes/evidence/windows-copy-retained-current/ACCEPTANCE.json`.
+`.evidence/windows-copy-retained-current/ACCEPTANCE.json`.
 
 Separate earlier Developer Mode-off acceptance (ordinary-user symlink denial with
 error 1314 and positive junction staging after reboot) remains in
-`.hermes/evidence/windows-copy-links-current/ACCEPTANCE.json`. It was not repeated
+`.evidence/windows-copy-links-current/ACCEPTANCE.json`. It was not repeated
 for the reader change. Test-only Developer Mode exists solely in the disposable
 no-network COW. Cleanup checks original profile/installation hashes, removes owned
 processes/fixtures and disposes only the owned VM/volume/NVRAM/TPM after normal
@@ -1580,7 +1580,7 @@ Read-only action admission freezes observed pending epochs through writer handof
 Optional repair frames are included in forward/inverse journal reservations.
 
 The preceding schema-11 component evidence is in
-`.hermes/evidence/windows-copy-registry-current/`: `SCHEMA11_FULL_*` records
+`.evidence/windows-copy-registry-current/`: `SCHEMA11_FULL_*` records
 271 passing ordinary-user native tests, zero failures and no temporary entries.
 This includes 72 injected failures and 72 real process exits across normal and
 readonly creation/overwrite/Undo fixtures. Coherent prefixes recover without the
@@ -1808,7 +1808,7 @@ observation, and IDs never become removal authority.
 
 ### Verification and remaining gates
 
-All receipts are under `.hermes/evidence/windows-copy-cleanup-current/` and bind
+All receipts are under `.evidence/windows-copy-cleanup-current/` and bind
 their own source, executable, profile and scope. Earlier component receipts are
 historical evidence, not claims about a newer executable.
 
@@ -1899,7 +1899,7 @@ private display/profile are removed. The original Windows profile/installation
 hashes and login configuration are unchanged. Portable/NSIS/MSI payload identity
 covers all 57 files; all four Linux formats pass current content/source checks.
 
-Receipt: `.hermes/evidence/windows-activity-desktop-current/ACCEPTANCE.json`.
+Receipt: `.evidence/windows-activity-desktop-current/ACCEPTANCE.json`.
 That checkpoint is superseded for Activity presentation by clean source
 `693e515`: readable summaries, expandable selectable diagnostics, wrapping
 controls and consistently aligned status badges now have packaged native-window
@@ -1908,8 +1908,8 @@ Light/Dark at 100% and paired custom Light/Dark at 150% with text1.35 pass; the
 ordinary Windows default-renderer window passes Light100 refusal/disclosure and
 custom Dark text1.35 disclosure. Windows 150% DPI is not claimed. The portable,
 NSIS and MSI payloads each match all 57 files; Windows remains an internal
-candidate at `.hermes/packaging-tmp/windows-activity-candidate/`.
-Current receipt: `.hermes/evidence/windows-activity-presentation-current/ACCEPTANCE.json`.
+candidate at `.evidence/packaging-tmp/windows-activity-candidate/`.
+Current receipt: `.evidence/windows-activity-presentation-current/ACCEPTANCE.json`.
 Actual desktop Stop/retry and broader current-package lifecycle/workflow gates
 remain open. These scoped checks do not establish daily-driver readiness or
 enable public Windows Copy.
@@ -1930,7 +1930,7 @@ allowed file creation but blocked DACL changes inside the attached drive. That
 fixture-only correction and the initial failure/control probe are retained.
 The owned image is detached/deleted after testing; original disks, profile,
 installation and login settings are unchanged and the VM is shut off.
-Receipt: `.hermes/evidence/windows-secondary-discovery-current/ACCEPTANCE.json`.
+Receipt: `.evidence/windows-secondary-discovery-current/ACCEPTANCE.json`.
 This establishes neither physical/removable/network acceptance nor public Copy.
 
 ### Existing-object Overwrite dependency admission
@@ -1983,7 +1983,7 @@ The existing mixed-tree directory-policy regression passes separately on the
 same executable (2.67s). Strict Windows platform all-target Clippy and formatting
 pass. The owned VM is shut off after temporary data/executable removal and
 profile/installation/login-state verification. Receipt:
-`.hermes/evidence/windows-native-claim-root-current/ACCEPTANCE.json`.
+`.evidence/windows-native-claim-root-current/ACCEPTANCE.json`.
 
 
 ### Durable name claims bound to Copy journals
@@ -2028,7 +2028,7 @@ Released-log retirement, orphan/partial construction discovery, interrupted rele
 recovery and the complete separate-process integrated Copy/alias/ancestor matrix
 remain required. Public Windows Copy stays disabled and packages are unchanged.
 Current scoped source and native evidence are recorded in
-`.hermes/evidence/windows-copy-claim-binding-current/ACCEPTANCE.json`.
+`.evidence/windows-copy-claim-binding-current/ACCEPTANCE.json`.
 
 
 The staged-process acceptance checkpoint adds three ordered native cohorts with
@@ -2040,7 +2040,7 @@ This verifies cross-process held staging and post-exit recovery; simultaneous
 initial claim construction and the complete Overwrite/Rename matrix remain open.
 A recovered paired cleanup Start may append its pending bound release, while the
 paired journals and all unrelated bytes remain unchanged. Scoped evidence:
-`.hermes/evidence/windows-copy-claim-process-current/ACCEPTANCE.json`.
+`.evidence/windows-copy-claim-process-current/ACCEPTANCE.json`.
 
 
 ### Guarded completion of an interrupted claim release
@@ -2065,7 +2065,7 @@ boundary, observed without mutation and completed by source-free internal Undo
 replay while both journals remain byte-identical and retained data stays intact.
 The negative matrix verifies divergent/nonterminal pairs, unknown/corrupt records,
 ADS and later-generation ownership refusal. Exact source/binary scope:
-`.hermes/evidence/windows-copy-claim-release-current/ACCEPTANCE.json`.
+`.evidence/windows-copy-claim-release-current/ACCEPTANCE.json`.
 
 This is core writer recovery. Fresh completed-Undo admission still rejects an
 already-undone operation. A distinct non-destructive finish-release admission and
@@ -2094,7 +2094,7 @@ All 120 test passes across 43 top-level invocations pass, including the 12
 affected ordinary metadata/cohort parent regressions. The ordinary audit-SACL
 test requires its dedicated SYSTEM lane, where it explicitly passes. Source,
 compiler profile, executable text, actor sources and normalized native results
-are bound in `.hermes/evidence/caller-metadata-retirement-current/ACCEPTANCE.json`.
+are bound in `.evidence/caller-metadata-retirement-current/ACCEPTANCE.json`.
 VM/disks/private desktop/profile/process teardown is independently verified.
 Caller cohort retirement, public cleanup entry points, real process restart/new
 connections, alternate-administrator UAC and packaged/profile acceptance remain
@@ -2134,7 +2134,7 @@ additional ordinary group/cohort parents: 44 passes/44 invocations. Combined,
 metadata/group/cohort parents. The ordinary audit-SACL case is intentionally
 ignored without its privilege, then explicitly passes in the SYSTEM lane.
 Both native runs have independent VM/disks/private desktop/profile/process teardown.
-Scope and provenance: `.hermes/evidence/caller-cohort-current/ACCEPTANCE.json`.
+Scope and provenance: `.evidence/caller-cohort-current/ACCEPTANCE.json`.
 Complete caller failure/readonly/link matrices, actual process restart/new
 connections/UAC and package/profile contexts remain separate. Administrator Copy
 remains disabled. Public cleanup/discovery admission is described below.
@@ -2166,7 +2166,7 @@ All 16 top-level native invocations pass: the ordinary client, SYSTEM helper and
 public cleanup flows and four payload/metadata discovery pairs. Exact eleven-file
 source/build/staged-text binding, strict Windows platform/UI lint and independent
 owned VM/disks/private desktop/profile/process teardown pass. Evidence:
-`.hermes/evidence/caller-public-cleanup-current/ACCEPTANCE.json` and its source,
+`.evidence/caller-public-cleanup-current/ACCEPTANCE.json` and its source,
 build, first-failure and continuity receipts. Existing application packages retain
 their separately accepted source and hashes.
 Recapturing the same live client remains distinct from real process restart or a
@@ -2202,7 +2202,7 @@ All five ordinary dispatcher and nine registry/
 namespace parents pass, alongside the ordinary client and full SYSTEM caller role:
 16 top-level invocations. Strict Windows platform/UI lint, exact source/build/
 staged-text binding and independent owned teardown pass. Evidence:
-`.hermes/evidence/caller-dispatch-current/ACCEPTANCE.json`.
+`.evidence/caller-dispatch-current/ACCEPTANCE.json`.
 
 The public engine/API is covered, not final helper command routing. Caller-aware
 end-attempt and terminal name-release integration is described below; the complete
@@ -2244,7 +2244,7 @@ binding and independent owned teardown pass. The initial fixture attempted a
 writer flush through an inspection-only registry and correctly failed before data
 transfer; corrected writer admission preserves all production checks. The failed
 source is exactly reconstructible from the retained correction receipt. Evidence:
-`.hermes/evidence/caller-terminal-current/ACCEPTANCE.json` and its first-failure,
+`.evidence/caller-terminal-current/ACCEPTANCE.json` and its first-failure,
 continuity, source/build and cleanup records.
 
 Complete helper command/history/recovery routing, caller mutation-prefix and
@@ -2269,7 +2269,7 @@ history controls disabled until remaining acceptance passes.
 The checkpoint passes 22 native Windows cases, 20 scoped Linux tests, nine actual
 Linux helper CLI probes, formatting and strict Linux/Windows lint. Exact source,
 executable/helper hashes, unchanged stable packages and independent VM/volume/
-staging teardown pass in `.hermes/evidence/caller-history-ui-current/ACCEPTANCE.json`.
+staging teardown pass in `.evidence/caller-history-ui-current/ACCEPTANCE.json`.
 Linux scoped UI/platform tests, strict Linux/Windows checks and helper CLI probes
 are separate from native Windows headless interaction/adapter tests under the
 SYSTEM guest-agent token. None establishes ordinary-user rendered interaction,
@@ -2285,7 +2285,7 @@ but loses stale Undo and Windows recovery/cleanup actions until a complete refre
 Current-session ownership remains unchanged. The follow-up passes 23 native Windows
 cases, 21 scoped Linux tests and strict Linux/Windows checks with independently
 verified teardown and unchanged package hashes:
-`.hermes/evidence/caller-history-refresh-current/ACCEPTANCE.json`.
+`.evidence/caller-history-refresh-current/ACCEPTANCE.json`.
 
 ### Queued administrator Copy
 
@@ -2313,7 +2313,7 @@ Twenty-six scoped Linux tests and 39 native Windows cases pass, together with
 strict Linux/Windows lint, formatting, exact source/build/helper bindings, four
 unchanged stable package hashes and independent initial/final VM, volume and
 fixture teardown. Evidence:
-`.hermes/evidence/caller-forward-ui-current/ACCEPTANCE.json`. Ordinary-user rendered
+`.evidence/caller-forward-ui-current/ACCEPTANCE.json`. Ordinary-user rendered
 GUI, actual UAC/helper process and package acceptance remain open. Windows Copy
 capability stays disabled; this source checkpoint does not replace stable packages.
 
@@ -2333,7 +2333,7 @@ process profile on Linux and Windows. It checks current-session provenance,
 writer refusal, explicit renewal, error-overlay retirement, absent-snapshot
 preservation, renewed cleanup state and an unrelated failure. Exact inputs,
 results and teardown receipts:
-`.hermes/evidence/caller-cleanup-refresh-current/ACCEPTANCE.json`. The checkpoint
+`.evidence/caller-cleanup-refresh-current/ACCEPTANCE.json`. The checkpoint
 passes 27 scoped Linux tests, 39 native Windows cases, strict Linux/Windows lint,
 formatting and source/build/helper/package bindings, with independent owned
 VM/volume/staging teardown. This is UI state integration; actual UAC and package

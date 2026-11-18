@@ -56,6 +56,7 @@ pub(crate) fn list_directory(path: &Path, show_hidden: bool) -> Result<Vec<FileE
             .ok()
             .and_then(|t| t.duration_since(UNIX_EPOCH).ok())
             .map(|d| d.as_secs());
+        let created_unix_secs = ottrin_core::metadata_created_unix_secs(&meta);
         let symlink_target_is_dir = if matches!(kind, EntryKind::Symlink) {
             std::fs::metadata(item.path())
                 .ok()
@@ -73,6 +74,7 @@ pub(crate) fn list_directory(path: &Path, show_hidden: bool) -> Result<Vec<FileE
             symlink_target_is_dir,
             size_bytes,
             modified_unix_secs,
+            created_unix_secs,
         });
     }
 
@@ -93,46 +95,84 @@ pub(crate) fn detect_executable(meta: &std::fs::Metadata) -> bool {
 }
 
 pub(crate) fn sort_entries(entries: &mut [FileEntry], config: &ottrin_core::SortConfig) {
-    // Directories always come first
-    entries.sort_by(|a, b| {
-        let a_dir = matches!(a.kind, EntryKind::Directory);
-        let b_dir = matches!(b.kind, EntryKind::Directory);
-        if a_dir != b_dir {
-            return b_dir.cmp(&a_dir); // dirs first
-        }
-        let ord = match config.by {
-            SortBy::Name => a.name.to_lowercase().cmp(&b.name.to_lowercase()),
-            SortBy::Size => b
-                .size_bytes
-                .unwrap_or(0)
-                .cmp(&a.size_bytes.unwrap_or(0))
-                .then_with(|| a.name.to_lowercase().cmp(&b.name.to_lowercase())),
-            SortBy::Modified => b
-                .modified_unix_secs
-                .unwrap_or(0)
-                .cmp(&a.modified_unix_secs.unwrap_or(0))
-                .then_with(|| a.name.to_lowercase().cmp(&b.name.to_lowercase())),
-            SortBy::Kind => kind_sort_rank(a).cmp(&kind_sort_rank(b)).then_with(|| {
-                let a_name = a.name.to_lowercase();
-                let b_name = b.name.to_lowercase();
-                if config.ascending {
-                    a_name.cmp(&b_name)
-                } else {
-                    b_name.cmp(&a_name)
-                }
-            }),
+    entries.sort_by(|a, b| compare_entries(a, b, config));
+}
+
+/// The one ordering used by scans, visible-index caches and indexed results.
+///
+/// Folder grouping is applied first and is deliberately independent of the
+/// requested direction. Size and date keys place entries with missing metadata
+/// last in both directions. Name ordering is a case-insensitive, deterministic
+/// tie-break; it reverses with kind groups but stays ascending for numeric and
+/// date ties.
+fn compare_entries(
+    a: &FileEntry,
+    b: &FileEntry,
+    config: &ottrin_core::SortConfig,
+) -> std::cmp::Ordering {
+    use std::cmp::Ordering;
+
+    if config.folders_first {
+        let folder_order = match (is_folder(a), is_folder(b)) {
+            (true, false) => Ordering::Less,
+            (false, true) => Ordering::Greater,
+            _ => Ordering::Equal,
         };
-        match config.by {
-            SortBy::Name => {
-                if config.ascending {
-                    ord
-                } else {
-                    ord.reverse()
-                }
-            }
-            SortBy::Kind | SortBy::Size | SortBy::Modified => ord,
+        if folder_order != Ordering::Equal {
+            return folder_order;
         }
-    });
+    }
+
+    let (primary, name_tie_ascending) = match config.by {
+        SortBy::Name => return compare_names(a, b, config.ascending),
+        SortBy::Size => (
+            compare_optional(a.size_bytes, b.size_bytes, config.ascending),
+            true,
+        ),
+        SortBy::Modified => (
+            compare_optional(a.modified_unix_secs, b.modified_unix_secs, config.ascending),
+            true,
+        ),
+        SortBy::Created => (
+            compare_optional(a.created_unix_secs, b.created_unix_secs, config.ascending),
+            true,
+        ),
+        SortBy::Kind => (
+            compare_ordered(kind_sort_key(a), kind_sort_key(b), config.ascending),
+            config.ascending,
+        ),
+    };
+    primary.then_with(|| compare_names(a, b, name_tie_ascending))
+}
+
+fn compare_ordered<T: Ord>(a: T, b: T, ascending: bool) -> std::cmp::Ordering {
+    if ascending { a.cmp(&b) } else { b.cmp(&a) }
+}
+
+fn compare_optional<T: Ord>(a: Option<T>, b: Option<T>, ascending: bool) -> std::cmp::Ordering {
+    use std::cmp::Ordering;
+
+    match (a, b) {
+        (Some(a), Some(b)) => compare_ordered(a, b, ascending),
+        (Some(_), None) => Ordering::Less,
+        (None, Some(_)) => Ordering::Greater,
+        (None, None) => Ordering::Equal,
+    }
+}
+
+fn compare_names(a: &FileEntry, b: &FileEntry, ascending: bool) -> std::cmp::Ordering {
+    let ordering = a
+        .name
+        .to_lowercase()
+        .cmp(&b.name.to_lowercase())
+        .then_with(|| a.name.cmp(&b.name))
+        // Identical display names are possible in indexed result sets.
+        .then_with(|| a.path.cmp(&b.path));
+    if ascending {
+        ordering
+    } else {
+        ordering.reverse()
+    }
 }
 
 pub(crate) fn nearest_existing_dir(path: &Path) -> PathBuf {
@@ -162,21 +202,32 @@ pub(crate) fn sibling_from_entries(entries: &[FileEntry], target: &Path) -> Opti
     }
 }
 
-pub(crate) fn sort_supports_direction(sort_by: SortBy) -> bool {
-    matches!(sort_by, SortBy::Name | SortBy::Kind)
-}
-
 pub(crate) fn default_sort_direction(sort_by: SortBy) -> bool {
     matches!(sort_by, SortBy::Name | SortBy::Kind)
 }
 
-fn kind_sort_rank(entry: &FileEntry) -> u8 {
-    match entry.kind {
+fn is_folder(entry: &FileEntry) -> bool {
+    entry.kind == EntryKind::Directory
+        || entry.kind == EntryKind::Symlink && entry.symlink_target_is_dir == Some(true)
+}
+
+fn kind_sort_key(entry: &FileEntry) -> (u8, String) {
+    let rank = match entry.kind {
         EntryKind::Directory => 0,
+        EntryKind::Symlink if entry.symlink_target_is_dir == Some(true) => 0,
         EntryKind::Symlink => 1,
         EntryKind::File => 2,
         EntryKind::Other => 3,
-    }
+    };
+    let extension = if is_folder(entry) {
+        String::new()
+    } else {
+        Path::new(&entry.name)
+            .extension()
+            .map(|extension| extension.to_string_lossy().to_lowercase())
+            .unwrap_or_default()
+    };
+    (rank, extension)
 }
 
 fn format_list_dir_error(path: &Path, e: &std::io::Error) -> String {
@@ -201,6 +252,7 @@ fn format_list_dir_error(path: &Path, e: &std::io::Error) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use ottrin_core::SortConfig;
     use std::collections::BTreeSet;
 
     fn names(path: &Path, show_hidden: bool) -> BTreeSet<String> {
@@ -209,6 +261,23 @@ mod tests {
             .into_iter()
             .map(|entry| entry.name)
             .collect()
+    }
+
+    #[test]
+    fn listing_uses_platform_creation_metadata_when_available() {
+        let root = tempfile::tempdir().unwrap();
+        let path = root.path().join("created.txt");
+        std::fs::write(&path, b"fixture").unwrap();
+        let entry = list_directory(root.path(), false)
+            .unwrap()
+            .into_iter()
+            .find(|entry| entry.path == path)
+            .unwrap();
+        let metadata = std::fs::metadata(&path).unwrap();
+        assert_eq!(
+            entry.created_unix_secs,
+            ottrin_core::metadata_created_unix_secs(&metadata)
+        );
     }
 
     #[test]
@@ -254,6 +323,238 @@ mod tests {
             std::fs::read(root.path().join("target-file")).unwrap(),
             b"target"
         );
+    }
+
+    fn entry(
+        name: &str,
+        kind: EntryKind,
+        size: Option<u64>,
+        modified: Option<u64>,
+        created: Option<u64>,
+    ) -> FileEntry {
+        FileEntry {
+            name: name.to_string(),
+            path: PathBuf::from("/sort-fixture").join(name),
+            kind,
+            is_executable: false,
+            symlink_target_is_dir: None,
+            size_bytes: size,
+            modified_unix_secs: modified,
+            created_unix_secs: created,
+        }
+    }
+
+    fn sorted(mut entries: Vec<FileEntry>, by: SortBy, ascending: bool) -> Vec<String> {
+        sort_entries(
+            &mut entries,
+            &SortConfig {
+                by,
+                ascending,
+                folders_first: true,
+            },
+        );
+        entries.into_iter().map(|entry| entry.name).collect()
+    }
+
+    fn entry_names(entries: &[FileEntry]) -> Vec<&str> {
+        entries.iter().map(|entry| entry.name.as_str()).collect()
+    }
+
+    #[test]
+    fn name_sort_is_case_insensitive_and_reverses_cleanly() {
+        let entries = ["beta.txt", "Alpha.txt", "alpha.txt", "gamma.txt"]
+            .map(|name| entry(name, EntryKind::File, None, None, None))
+            .to_vec();
+        assert_eq!(
+            sorted(entries.clone(), SortBy::Name, true),
+            ["Alpha.txt", "alpha.txt", "beta.txt", "gamma.txt"]
+        );
+        assert_eq!(
+            sorted(entries, SortBy::Name, false),
+            ["gamma.txt", "beta.txt", "alpha.txt", "Alpha.txt"]
+        );
+    }
+
+    #[test]
+    fn folders_stay_first_independently_of_direction_for_every_key() {
+        let entries = vec![
+            entry("a.txt", EntryKind::File, Some(10), Some(100), Some(100)),
+            entry("z-folder", EntryKind::Directory, None, None, None),
+            entry("m.txt", EntryKind::File, Some(20), Some(200), Some(200)),
+        ];
+        for (by, ascending_order, descending_order) in [
+            (
+                SortBy::Name,
+                ["z-folder", "a.txt", "m.txt"],
+                ["z-folder", "m.txt", "a.txt"],
+            ),
+            (
+                SortBy::Size,
+                ["z-folder", "a.txt", "m.txt"],
+                ["z-folder", "m.txt", "a.txt"],
+            ),
+            (
+                SortBy::Modified,
+                ["z-folder", "a.txt", "m.txt"],
+                ["z-folder", "m.txt", "a.txt"],
+            ),
+            (
+                SortBy::Created,
+                ["z-folder", "a.txt", "m.txt"],
+                ["z-folder", "m.txt", "a.txt"],
+            ),
+            (
+                SortBy::Kind,
+                ["z-folder", "a.txt", "m.txt"],
+                ["z-folder", "m.txt", "a.txt"],
+            ),
+        ] {
+            assert_eq!(
+                sorted(entries.clone(), by, true),
+                ascending_order,
+                "{by:?} ascending"
+            );
+            assert_eq!(
+                sorted(entries.clone(), by, false),
+                descending_order,
+                "{by:?} descending"
+            );
+        }
+    }
+
+    #[test]
+    fn folders_first_false_mixes_folders_with_the_primary_order() {
+        let entries = vec![
+            entry("a.txt", EntryKind::File, Some(10), None, None),
+            entry("z-folder", EntryKind::Directory, None, None, None),
+            entry("m.txt", EntryKind::File, Some(20), None, None),
+        ];
+        let mut sorted_entries = entries;
+        sort_entries(
+            &mut sorted_entries,
+            &SortConfig {
+                by: SortBy::Size,
+                ascending: false,
+                folders_first: false,
+            },
+        );
+        assert_eq!(entry_names(&sorted_entries), ["m.txt", "a.txt", "z-folder"]);
+    }
+
+    #[test]
+    fn metadata_sorts_follow_direction_and_keep_missing_values_last() {
+        for by in [SortBy::Size, SortBy::Modified, SortBy::Created] {
+            let entries = vec![
+                entry("missing.txt", EntryKind::File, None, None, None),
+                entry("small.txt", EntryKind::File, Some(10), Some(100), Some(100)),
+                entry("large.txt", EntryKind::File, Some(20), Some(200), Some(200)),
+            ];
+            assert_eq!(
+                sorted(entries.clone(), by, true),
+                ["small.txt", "large.txt", "missing.txt"],
+                "{by:?} ascending"
+            );
+            assert_eq!(
+                sorted(entries, by, false),
+                ["large.txt", "small.txt", "missing.txt"],
+                "{by:?} descending"
+            );
+        }
+    }
+
+    #[test]
+    fn created_sort_orders_known_creation_times_in_both_directions() {
+        let entries = vec![
+            entry("middle.txt", EntryKind::File, None, None, Some(200)),
+            entry("newest.txt", EntryKind::File, None, None, Some(300)),
+            entry("oldest.txt", EntryKind::File, None, None, Some(100)),
+        ];
+        assert_eq!(
+            sorted(entries.clone(), SortBy::Created, true),
+            ["oldest.txt", "middle.txt", "newest.txt"]
+        );
+        assert_eq!(
+            sorted(entries, SortBy::Created, false),
+            ["newest.txt", "middle.txt", "oldest.txt"]
+        );
+    }
+
+    #[test]
+    fn metadata_ties_use_deterministic_ascending_name_breaks() {
+        let entries = vec![
+            entry("beta.txt", EntryKind::File, Some(10), None, None),
+            entry("alpha.txt", EntryKind::File, Some(10), None, None),
+        ];
+        assert_eq!(
+            sorted(entries.clone(), SortBy::Size, true),
+            ["alpha.txt", "beta.txt"]
+        );
+        assert_eq!(
+            sorted(entries, SortBy::Size, false),
+            ["alpha.txt", "beta.txt"]
+        );
+    }
+
+    #[test]
+    fn kind_sort_reverses_groups_and_names_but_folders_stay_first() {
+        let entries = vec![
+            entry("beta.txt", EntryKind::File, None, None, None),
+            entry("alpha.txt", EntryKind::File, None, None, None),
+            entry("docs", EntryKind::Directory, None, None, None),
+        ];
+        assert_eq!(
+            sorted(entries.clone(), SortBy::Kind, true),
+            ["docs", "alpha.txt", "beta.txt"]
+        );
+        assert_eq!(
+            sorted(entries, SortBy::Kind, false),
+            ["docs", "beta.txt", "alpha.txt"]
+        );
+    }
+
+    #[test]
+    fn duplicate_names_have_a_path_tie_break_for_determinism() {
+        let mut entries = vec![
+            entry("same.txt", EntryKind::File, None, None, None),
+            entry("same.txt", EntryKind::File, None, None, None),
+        ];
+        entries[0].path = PathBuf::from("/a/same.txt");
+        entries[1].path = PathBuf::from("/b/same.txt");
+        sort_entries(&mut entries, &SortConfig::default());
+        assert_eq!(entries[0].path, PathBuf::from("/a/same.txt"));
+        assert_eq!(entries[1].path, PathBuf::from("/b/same.txt"));
+    }
+
+    #[test]
+    fn sort_keys_have_sensible_default_directions() {
+        assert!(default_sort_direction(SortBy::Name));
+        assert!(default_sort_direction(SortBy::Kind));
+        assert!(!default_sort_direction(SortBy::Size));
+        assert!(!default_sort_direction(SortBy::Modified));
+        assert!(!default_sort_direction(SortBy::Created));
+    }
+
+    #[test]
+    fn type_sort_groups_extensions_in_both_directions() {
+        let entries = ["a.txt", "z.pdf", "b.TXT"]
+            .map(|name| entry(name, EntryKind::File, None, None, None))
+            .to_vec();
+        assert_eq!(
+            sorted(entries.clone(), SortBy::Kind, true),
+            ["z.pdf", "a.txt", "b.TXT"]
+        );
+        assert_eq!(
+            sorted(entries, SortBy::Kind, false),
+            ["b.TXT", "a.txt", "z.pdf"]
+        );
+    }
+
+    #[test]
+    fn directory_symlinks_participate_in_folders_first() {
+        let mut link = entry("z-link", EntryKind::Symlink, None, None, None);
+        link.symlink_target_is_dir = Some(true);
+        let entries = vec![entry("a.txt", EntryKind::File, Some(100), None, None), link];
+        assert_eq!(sorted(entries, SortBy::Size, false), ["z-link", "a.txt"]);
     }
 
     #[cfg(windows)]

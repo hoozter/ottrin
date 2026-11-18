@@ -24,8 +24,8 @@ pub(crate) fn single_line_text_job(
     job
 }
 
-/// Keep sort markers visible when a column truncates its label. Icon spacing
-/// belongs to layout, and both header renderers use the installed icon font.
+/// Keep compact sort-direction triangles visible when a heading truncates.
+/// Sorting indicators are deliberately distinct from navigation arrow glyphs.
 pub(crate) fn paint_sort_header(
     ui: &Ui,
     rect: egui::Rect,
@@ -35,45 +35,71 @@ pub(crate) fn paint_sort_header(
     color: egui::Color32,
     right_align: bool,
 ) {
+    if rect.width() <= 0.0 || rect.height() <= 0.0 {
+        return;
+    }
     let painter = ui.painter().with_clip_rect(rect.intersect(ui.clip_rect()));
-    let icon = ascending.map(|ascending| {
-        painter.layout_no_wrap(
-            if ascending {
-                crate::icons::MI_ARROW_UP
-            } else {
-                crate::icons::MI_ARROW_DOWN
-            }
-            .into(),
-            font.clone(),
-            color,
-        )
-    });
-    let gap = if icon.is_some() {
-        font.size * 0.35
+    // Bound the triangle to the heading so narrow columns keep the marker
+    // inside the rectangle for both alignments.
+    let marker_size = egui::vec2(
+        (font.size * 0.55).min(rect.width()),
+        (font.size * 0.35).min(rect.height()),
+    );
+    let gap = if ascending.is_some() {
+        (font.size * 0.35).min((rect.width() - marker_size.x).max(0.0))
     } else {
         0.0
     };
-    let reserved = icon.as_ref().map_or(0.0, |icon| icon.size().x + gap);
-    let job = single_line_text_job(label, font, color, rect.width() - reserved);
+    let reserved = ascending.map_or(0.0, |_| marker_size.x + gap);
+    // Keep the text budget nonnegative and clip the drawn label where the
+    // marker starts: an elided galley can still overshoot a tiny budget.
+    let text_budget = (rect.width() - reserved).max(0.0);
+    let job = single_line_text_job(label, font, color, text_budget);
     let text = painter.layout_job(job);
-    let width = text.size().x + reserved;
+    let text_width = text.size().x.min(text_budget);
     let x = if right_align {
-        rect.right() - width
+        rect.right() - (text_width + reserved)
     } else {
         rect.left()
     };
-    let text_width = text.size().x;
-    painter.galley(
+    let marker_left = (x + text_width + gap).min(rect.right() - marker_size.x);
+    let text_clip_right = if ascending.is_some() {
+        marker_left
+    } else {
+        rect.right()
+    };
+    let text_painter = painter.with_clip_rect(egui::Rect::from_min_max(
+        egui::pos2(rect.left(), rect.top()),
+        egui::pos2(text_clip_right, rect.bottom()),
+    ));
+    text_painter.galley(
         egui::pos2(x, rect.center().y - text.size().y * 0.5),
         text,
         color,
     );
-    if let Some(icon) = icon {
-        painter.galley(
-            egui::pos2(x + text_width + gap, rect.center().y - icon.size().y * 0.5),
-            icon,
-            color,
+    if let Some(ascending) = ascending {
+        let marker = egui::Rect::from_min_size(
+            egui::pos2(marker_left, rect.center().y - marker_size.y * 0.5),
+            marker_size,
         );
+        let points = if ascending {
+            vec![
+                marker.left_bottom(),
+                marker.center_top(),
+                marker.right_bottom(),
+            ]
+        } else {
+            vec![
+                marker.left_top(),
+                marker.right_top(),
+                marker.center_bottom(),
+            ]
+        };
+        painter.add(egui::Shape::convex_polygon(
+            points,
+            color,
+            egui::Stroke::NONE,
+        ));
     }
 }
 
@@ -341,7 +367,24 @@ pub(crate) fn aligned_submenu<R>(
     colors: Colors,
     contents: impl FnOnce(&mut Ui) -> R,
 ) -> egui::InnerResponse<Option<R>> {
-    let mut button = aligned_menu_button("", icon, label, &colors);
+    show_aligned_submenu(ui, aligned_menu_button("", icon, label, &colors), contents)
+}
+
+pub(crate) fn aligned_choice_submenu<R>(
+    ui: &mut Ui,
+    icon: &str,
+    label: &str,
+    colors: Colors,
+    contents: impl FnOnce(&mut Ui) -> R,
+) -> egui::InnerResponse<Option<R>> {
+    show_aligned_submenu(ui, aligned_menu_button(" ", icon, label, &colors), contents)
+}
+
+fn show_aligned_submenu<R>(
+    ui: &mut Ui,
+    mut button: AlignedMenuButton,
+    contents: impl FnOnce(&mut Ui) -> R,
+) -> egui::InnerResponse<Option<R>> {
     button.submenu = true;
     let response = ui.add(button);
     let inner = egui::containers::menu::SubMenu::default().show(ui, &response, contents);
@@ -387,71 +430,188 @@ mod tests {
     use egui::{Color32, Context, Rect, Vec2, epaint::Shape};
 
     #[test]
-    fn sort_headers_keep_supported_direction_icons_inside_narrow_columns() {
+    fn sort_headers_keep_direction_markers_inside_narrow_columns() {
         for dark in [true, false] {
             for scale in [1.0, 1.35] {
-                for width in [80.0, 240.0] {
-                    for ascending in [None, Some(true), Some(false)] {
-                        for right_align in [true, false] {
-                            let ctx = Context::default();
-                            crate::install_application_fonts(&ctx);
-                            let color = Colors::preset(ThemePreset::Ottrin, dark).text;
-                            let rect = Rect::from_min_size(
-                                egui::pos2(20.0, 20.0),
-                                Vec2::new(width, 26.0 * scale),
-                            );
-                            let font = egui::FontId::proportional(11.5 * scale);
-                            let output = ctx.run(egui::RawInput::default(), |ctx| {
-                                egui::CentralPanel::default().show(ctx, |ui| {
-                                    paint_sort_header(ui, rect, "Modified", ascending, font.clone(), color, right_align);
-                                    if let Some(ascending) = ascending {
-                                        let glyph = if ascending { crate::icons::MI_ARROW_UP } else { crate::icons::MI_ARROW_DOWN };
-                                        assert!(ui.fonts_mut(|fonts| fonts.has_glyphs(&font, glyph)), "sort icon is missing from the actual application font stack");
-                                    }
+                for width in [1.0, 4.0, 8.0, 20.0, 50.0, 80.0, 240.0] {
+                    // Elision matters most in narrow columns; at normal widths a
+                    // long heading must also truncate to leave room for the marker.
+                    let labels: &[&str] = if width < 80.0 {
+                        &["Modified"]
+                    } else {
+                        &["Modified", "Date modified (newest first)"]
+                    };
+                    for label in labels {
+                        for ascending in [None, Some(true), Some(false)] {
+                            for right_align in [true, false] {
+                                let ctx = Context::default();
+                                crate::install_application_fonts(&ctx);
+                                let color = Colors::preset(ThemePreset::Ottrin, dark).text;
+                                let rect = Rect::from_min_size(
+                                    egui::pos2(20.0, 20.0),
+                                    Vec2::new(width, 26.0 * scale),
+                                );
+                                let font = egui::FontId::proportional(11.5 * scale);
+                                let mut ui_clip = Rect::NOTHING;
+                                let output = ctx.run(egui::RawInput::default(), |ctx| {
+                                    egui::CentralPanel::default().show(ctx, |ui| {
+                                        paint_sort_header(
+                                            ui,
+                                            rect,
+                                            label,
+                                            ascending,
+                                            font.clone(),
+                                            color,
+                                            right_align,
+                                        );
+                                        ui_clip = ui.clip_rect();
+                                    });
                                 });
-                            });
-                            let texts: Vec<_> = output
-                                .shapes
-                                .iter()
-                                .filter_map(|shape| match &shape.shape {
-                                    Shape::Text(text) => Some(text),
-                                    _ => None,
-                                })
-                                .collect();
-                            assert_eq!(texts.len(), if ascending.is_some() { 2 } else { 1 });
-                            for text in &texts {
-                                assert_eq!(text.galley.rows.len(), 1);
+                                let header_clip = rect.intersect(ui_clip);
+                                let texts: Vec<_> = output
+                                    .shapes
+                                    .iter()
+                                    .filter_map(|shape| match &shape.shape {
+                                        Shape::Text(text) => Some((shape.clip_rect, text)),
+                                        _ => None,
+                                    })
+                                    .collect();
+                                let paths: Vec<_> = output
+                                    .shapes
+                                    .iter()
+                                    .filter_map(|shape| match &shape.shape {
+                                        Shape::Path(path) => Some((shape.clip_rect, path)),
+                                        _ => None,
+                                    })
+                                    .collect();
+                                // At most one elided label, never navigation icon glyphs.
                                 assert!(
-                                    rect.expand(0.5).contains_rect(Rect::from_min_size(
-                                        text.pos,
-                                        text.galley.size()
-                                    )),
-                                    "sort header escapes its column"
+                                    texts.len() <= 1,
+                                    "unexpected extra text shapes at width {width}"
                                 );
-                                assert!(
-                                    text.galley
-                                        .job
-                                        .sections
-                                        .iter()
-                                        .all(|section| section.format.color == color)
-                                );
-                            }
-                            if let Some(ascending) = ascending {
-                                let icon = texts.last().unwrap();
-                                assert_eq!(
-                                    icon.galley.job.text,
-                                    if ascending {
-                                        crate::icons::MI_ARROW_UP
+                                for (text_clip, text) in &texts {
+                                    assert_ne!(text.galley.job.text, crate::icons::MI_ARROW_UP);
+                                    assert_ne!(text.galley.job.text, crate::icons::MI_ARROW_DOWN);
+                                    assert_eq!(text.galley.job.text, *label);
+                                    assert!(
+                                        text.galley
+                                            .job
+                                            .sections
+                                            .iter()
+                                            .all(|section| section.format.color == color)
+                                    );
+                                    assert!(header_clip.contains_rect(*text_clip));
+                                    let visible = Rect::from_min_size(text.pos, text.galley.size())
+                                        .intersect(*text_clip);
+                                    assert!(
+                                        rect.expand(0.5).contains_rect(visible),
+                                        "sort header escapes its column at width {width}"
+                                    );
+                                }
+                                if width >= 80.0 {
+                                    assert_eq!(
+                                        texts.len(),
+                                        1,
+                                        "expected one elided label at width {width}"
+                                    );
+                                    assert_eq!(texts[0].1.galley.rows.len(), 1);
+                                }
+                                if let Some(ascending) = ascending {
+                                    assert_eq!(
+                                        paths.len(),
+                                        1,
+                                        "expected one direction marker at width {width}"
+                                    );
+                                    let (marker_clip, path) = paths[0];
+                                    assert_eq!(marker_clip, header_clip);
+                                    assert_eq!(path.points.len(), 3);
+                                    assert!(path.closed, "marker must be a filled triangle");
+                                    assert_eq!(path.fill, color);
+                                    assert_eq!(path.stroke, egui::epaint::PathStroke::NONE);
+                                    let marker = Rect::from_points(&path.points);
+                                    let marker_size = Vec2::new(
+                                        (font.size * 0.55).min(rect.width()),
+                                        (font.size * 0.35).min(rect.height()),
+                                    );
+                                    assert!(
+                                        (marker.width() - marker_size.x).abs() < 0.5
+                                            && (marker.height() - marker_size.y).abs() < 0.5,
+                                        "marker must stay compact at width {width}: {marker:?}"
+                                    );
+                                    assert!(
+                                        rect.expand(0.5).contains_rect(marker),
+                                        "direction marker escapes its column at width {width}"
+                                    );
+                                    assert!(header_clip.contains_rect(marker));
+                                    // Ascending tips up from a horizontal base; descending is inverted.
+                                    let (tip_y, base_y) = if ascending {
+                                        (marker.top(), marker.bottom())
                                     } else {
-                                        crate::icons::MI_ARROW_DOWN
+                                        (marker.bottom(), marker.top())
+                                    };
+                                    let tips: Vec<_> = path
+                                        .points
+                                        .iter()
+                                        .filter(|point| (point.y - tip_y).abs() < 0.5)
+                                        .collect();
+                                    let base: Vec<_> = path
+                                        .points
+                                        .iter()
+                                        .filter(|point| (point.y - base_y).abs() < 0.5)
+                                        .collect();
+                                    assert_eq!(tips.len(), 1, "marker tip at width {width}");
+                                    assert_eq!(base.len(), 2, "marker base at width {width}");
+                                    assert!((tips[0].x - marker.center().x).abs() < 0.5);
+                                    if let Some((text_clip, text)) = texts.first() {
+                                        let gap = (font.size * 0.35)
+                                            .min((rect.width() - marker_size.x).max(0.0));
+                                        let text_budget =
+                                            (rect.width() - (marker_size.x + gap)).max(0.0);
+                                        let label_right =
+                                            text.pos.x + text.galley.size().x.min(text_budget);
+                                        assert!(
+                                            (marker.left() - (label_right + gap)).abs() < 0.5,
+                                            "marker must sit one gap after the label at width {width}"
+                                        );
+                                        assert!(
+                                            (text_clip.right() - marker.left()).abs() < 0.5,
+                                            "label must be clipped where the marker starts at width {width}"
+                                        );
                                     }
-                                );
-                                assert!(icon.pos.x > texts[0].pos.x + texts[0].galley.size().x);
+                                } else {
+                                    assert!(
+                                        paths.is_empty(),
+                                        "no direction must paint no marker at width {width}"
+                                    );
+                                    if let Some((text_clip, _)) = texts.first() {
+                                        assert_eq!(*text_clip, header_clip);
+                                    }
+                                }
                             }
                         }
                     }
                 }
             }
+        }
+        // Degenerate headers must paint nothing rather than a clipped sliver.
+        for (width, height) in [(0.0, 26.0), (80.0, 0.0)] {
+            let ctx = Context::default();
+            crate::install_application_fonts(&ctx);
+            let color = Colors::preset(ThemePreset::Ottrin, true).text;
+            let rect = Rect::from_min_size(egui::pos2(20.0, 20.0), Vec2::new(width, height));
+            let font = egui::FontId::proportional(11.5);
+            let output = ctx.run(egui::RawInput::default(), |ctx| {
+                egui::CentralPanel::default().show(ctx, |ui| {
+                    paint_sort_header(ui, rect, "Modified", Some(true), font.clone(), color, false);
+                });
+            });
+            assert!(
+                output
+                    .shapes
+                    .iter()
+                    .all(|shape| !matches!(&shape.shape, Shape::Text(_) | Shape::Path(_))),
+                "zero-sized header must not paint text or a direction marker"
+            );
         }
     }
 

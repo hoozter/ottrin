@@ -8,7 +8,7 @@ The landing contains the reviewed sizing changes in `crates/ottrin-ui/src/lib.rs
 
 Fit and manual modes share the original raster; the actual submitted image rectangle supplies effective zoom. Main preview fitting uses the padded viewport and measured wrapping toolbar. Inspector sizing controls have a separate wrapping row. Fit-width PDFs use continuous following-page rendering. Text and structured DOCX support font scaling; spreadsheets use measured equal-height rows, readable ordinary widths, explicit Overview and trailing-empty-extent trimming. Superseded thumbnail/manual branching, SVG sizing branches and uneven spreadsheet Grid allocation were removed by the implementation.
 
-The stable implementation handoff is `.hermes/preview-sizing-astra-report.md`; its detailed evidence is under `.hermes/preview-sizing/astra/`. These local evidence files are not release payloads. Before staging, the complete tracked working diff matched the handoff byte-for-byte:
+The stable implementation handoff is `.evidence/preview-sizing-astra-report.md`; its detailed evidence is under `.evidence/preview-sizing/astra/`. These local evidence files are not release payloads. Before staging, the complete tracked working diff matched the handoff byte-for-byte:
 
 - Base: `45fe5ca00f973d0f75076e8dcb9dc1f83cab0583`.
 - Full dirty candidate SHA-256: `f4f7f41a6bc9491bf67cbfb226ac5b72c402f1a93aea40529e66e9b53190ff7d`.
@@ -18,7 +18,7 @@ The full candidate includes unrelated inherited work and is not the commit scope
 
 ## Fresh landing verification
 
-Run under private HOME/XDG directories, D-Bus and Xvfb with the shared primary-checkout Cargo output. Exact commands and results are in `.hermes/preview-sizing/astra/landing-focused-gates.log`:
+Run under private HOME/XDG directories, D-Bus and Xvfb with the shared primary-checkout Cargo output. Exact commands and results are in `.evidence/preview-sizing/astra/landing-focused-gates.log`:
 
 | Command | Result |
 | --- | --- |
@@ -51,11 +51,11 @@ These boundaries remain in final QA; they do not require reopening unrelated imp
 
 Native Windows QA of the clean `cf40e58` portable package exposed an adjacent preview disappearing when a running window shrank from 1100 to 800 pixels; launching at the saved 800-pixel width worked. The production renderer now reveals the actual selected-column/preview bounds when shrinking a viewport whose preview was visible. Deliberate horizontal scrolling remains authoritative. Preview width uses the real viewport edge rather than the painter clip, which includes shadow bleed.
 
-The rendered regression covers startup, shrinking, complete preview visibility, vertical keyboard navigation without horizontal movement, actual horizontal wheel input and a later resize preserving that manual position. Linux UI checks pass: 344 tests, one ignored, strict all-target Clippy, formatting and diff validation. This is source verification; rebuilt package and native resize acceptance are pending. The earlier package screenshots and clean native Windows exit are retained in `.hermes/evidence/windows-refresh-20261012/`.
+The rendered regression covers startup, shrinking, complete preview visibility, vertical keyboard navigation without horizontal movement, actual horizontal wheel input and a later resize preserving that manual position. Linux UI checks pass: 344 tests, one ignored, strict all-target Clippy, formatting and diff validation. This is source verification; rebuilt package and native resize acceptance are pending. The earlier package screenshots and clean native Windows exit are retained in `.evidence/windows-refresh-20261012/`.
 
 The exact AppImage from clean `903c55395691828cbde81f889a8a5b846c0eebb4` (SHA-256 `4a6a0bdadeca8d37bbe9cb079dec735e20dd7510ea303188feabf3aa12a08748`) passes private native Linux Dark/Light resizing from 1100 × 690 to 800 × 600, visible adjacent text preview, vertical selection and clean exit. All five packaged executables match workspace release output. Owned apps, daemon, bus, display, profile and extracts were removed. `dist/packages/MILLER_RESIZE_ACCEPTANCE.json` records this focused scope. Native Windows resize and other preview types remain pending.
 
-The same AppImage also passes PDF preview resizing in Dark and Light at 100%, with the rendered PDF and wrapped Fit/zoom/Expand controls visible. The clean `2b3acb2` Windows portable (SHA-256 `633c9cbe386536041d3d53f895a17a9833249cfff610b9556d1a2aa8cd961416`) passes the originally failing real 1100 × 690 to 800 × 600 text-preview resize as a medium-integrity interactive user, with a matching executable hash, empty stderr and exit zero. Native result, screenshot and unchanged prior-installation checksum are retained in `.hermes/evidence/windows-refresh-20261012/`; owned guest fixtures/task were removed and the VM is shut off. This extends the focused receipt, not full platform acceptance.
+The same AppImage also passes PDF preview resizing in Dark and Light at 100%, with the rendered PDF and wrapped Fit/zoom/Expand controls visible. The clean `2b3acb2` Windows portable (SHA-256 `633c9cbe386536041d3d53f895a17a9833249cfff610b9556d1a2aa8cd961416`) passes the originally failing real 1100 × 690 to 800 × 600 text-preview resize as a medium-integrity interactive user, with a matching executable hash, empty stderr and exit zero. Native result, screenshot and unchanged prior-installation checksum are retained in `.evidence/windows-refresh-20261012/`; owned guest fixtures/task were removed and the VM is shut off. This extends the focused receipt, not full platform acceptance.
 
 ## Preview scroll ownership and accessible metadata — 2026-11-01
 
@@ -73,5 +73,5 @@ and the final metadata field reachable, including short/narrow panes. The
 rendered regression covers both themes,180/250px widths,300/450px heights and
 100/135/200% text with actual wheel and pointer events. Both final regression
 cases reject the original arrangement. Source checks and delivery scopes are
-recorded separately in `.hermes/evidence/preview-scroll-current/`; these source
+recorded separately in `.evidence/preview-scroll-current/`; these source
 observations do not accept a new package or physical display.

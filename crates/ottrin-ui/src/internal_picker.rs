@@ -12,6 +12,7 @@ pub(super) enum Purpose {
     SearchExclude,
     ContentInclude,
     ContentExclude,
+    StartupFolder,
 }
 pub(super) struct PendingPicker {
     parent: egui::ViewportId,
@@ -138,6 +139,14 @@ impl OttrinApp {
     }
     fn complete_internal_picker(&mut self, ctx: &Context, purpose: Purpose, path: PathBuf) {
         match purpose {
+            Purpose::StartupFolder => {
+                if path.is_absolute() && path.is_dir() {
+                    self.state.config.startup_folder = Some(path);
+                    self.persist_config();
+                } else {
+                    self.set_status_message("Choose an available folder for startup.", false, 5);
+                }
+            }
             Purpose::ThemeExport(json) => {
                 let (message, success) = match std::fs::write(&path, json) {
                     Ok(()) => (format!("Exported theme to {}", path_label(&path)), true),

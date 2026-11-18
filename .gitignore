@@ -1,6 +1,6 @@
 /target
 /dist
-/.hermes/
+/.evidence/
 /crates/*/target/
 .DS_Store
 Thumbs.db

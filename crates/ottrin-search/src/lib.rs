@@ -845,7 +845,7 @@ impl SearchHandle {
                     && query.text.trim().chars().count() >= 3
                     && query.text.trim().is_ascii()
                     && !matches!(query.scope, SearchScope::CurrentFolder)
-                    && !matches!(query.sort, SearchSort::Path)
+                    && !matches!(query.sort.column(), SearchSort::Path)
                 {
                     query_simple_term_page(
                         self.store_path.as_ref(),
@@ -4771,17 +4771,23 @@ fn sort_results(v: &mut [(i64, SearchResultItem)], sort: SearchSort) {
         let order = match sort {
             SearchSort::Relevance => b.0.cmp(&a.0).then_with(|| a.1.name.cmp(&b.1.name)),
             SearchSort::Name => compare_ascii_case_insensitive(&a.1.name, &b.1.name),
+            SearchSort::NameDescending => compare_ascii_case_insensitive(&b.1.name, &a.1.name),
             SearchSort::Path => a.1.path.cmp(&b.1.path),
-            SearchSort::Modified => {
-                b.1.modified_unix_secs
-                    .unwrap_or(0)
-                    .cmp(&a.1.modified_unix_secs.unwrap_or(0))
-            }
-            SearchSort::Size => {
-                b.1.size_bytes
-                    .unwrap_or(0)
-                    .cmp(&a.1.size_bytes.unwrap_or(0))
-            }
+            SearchSort::PathDescending => b.1.path.cmp(&a.1.path),
+            SearchSort::Modified => b.1.modified_unix_secs.cmp(&a.1.modified_unix_secs),
+            SearchSort::Size => b.1.size_bytes.cmp(&a.1.size_bytes),
+            SearchSort::Oldest => match (a.1.modified_unix_secs, b.1.modified_unix_secs) {
+                (Some(a), Some(b)) => a.cmp(&b),
+                (None, Some(_)) => std::cmp::Ordering::Greater,
+                (Some(_), None) => std::cmp::Ordering::Less,
+                (None, None) => std::cmp::Ordering::Equal,
+            },
+            SearchSort::Smallest => match (a.1.size_bytes, b.1.size_bytes) {
+                (Some(a), Some(b)) => a.cmp(&b),
+                (None, Some(_)) => std::cmp::Ordering::Greater,
+                (Some(_), None) => std::cmp::Ordering::Less,
+                (None, None) => std::cmp::Ordering::Equal,
+            },
         };
         order.then_with(|| a.1.path.cmp(&b.1.path))
     });
@@ -4789,6 +4795,61 @@ fn sort_results(v: &mut [(i64, SearchResultItem)], sort: SearchSort) {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn reversed_filename_sorts_apply_before_pagination() {
+        let root = crate::test_temp_dir().join("reverse-sorting");
+        std::fs::create_dir_all(&root).unwrap();
+        for index in 0..65 {
+            let path = root.join(format!("needle-{index:03}"));
+            std::fs::write(&path, vec![b'x'; index + 1]).unwrap();
+            std::fs::File::options()
+                .write(true)
+                .open(path)
+                .unwrap()
+                .set_times(std::fs::FileTimes::new().set_modified(
+                    std::time::UNIX_EPOCH
+                        + std::time::Duration::from_secs(1_700_000_000 + index as u64),
+                ))
+                .unwrap();
+        }
+        let config = SearchConfig {
+            include_roots: vec![root.clone()],
+            use_system_locate: false,
+            ..Default::default()
+        };
+        let mut service = SearchService::new_with_store_path(config, root.join("index.db"));
+        service.start();
+        service.rebuild_index_blocking().unwrap();
+        service.stop();
+        for sort in [
+            SearchSort::NameDescending,
+            SearchSort::PathDescending,
+            SearchSort::Oldest,
+            SearchSort::Smallest,
+        ] {
+            let mut query = query_by_name("needle");
+            query.sort = sort;
+            query.limit = 5;
+            query.offset = 20;
+            let page = service.query(query);
+            assert!(page.error.is_none(), "{:?}", page.error);
+            assert_eq!(page.total, 65);
+            let expected: Vec<_> = if sort.ascending() {
+                (20..25).map(|n| format!("needle-{n:03}")).collect()
+            } else {
+                (40..45).rev().map(|n| format!("needle-{n:03}")).collect()
+            };
+            assert_eq!(
+                page.items
+                    .iter()
+                    .map(|i| i.name.clone())
+                    .collect::<Vec<_>>(),
+                expected,
+                "{sort:?}"
+            );
+        }
+    }
+
     fn live_content_hits(
         expr: &Expr,
         roots: &[PathBuf],
@@ -7654,6 +7715,10 @@ folder "quoted" \ 雪 & $literal
                 SearchSort::Size,
                 SearchSort::Modified,
                 SearchSort::Relevance,
+                SearchSort::NameDescending,
+                SearchSort::PathDescending,
+                SearchSort::Smallest,
+                SearchSort::Oldest,
             ] {
                 let mut query = query_by_name("bodyneedle");
                 query.content_search = true;

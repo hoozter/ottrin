@@ -526,6 +526,7 @@ fn list_directory(path: &Path, show_hidden: bool) -> Result<Vec<FileEntry>, Stri
             .ok()
             .and_then(|t| t.duration_since(UNIX_EPOCH).ok())
             .map(|d| d.as_secs());
+        let created_unix_secs = ottrin_core::metadata_created_unix_secs(&meta);
         let symlink_target_is_dir = if matches!(kind, EntryKind::Symlink) {
             Some(meta.is_dir())
         } else {
@@ -541,6 +542,7 @@ fn list_directory(path: &Path, show_hidden: bool) -> Result<Vec<FileEntry>, Stri
             symlink_target_is_dir,
             size_bytes,
             modified_unix_secs,
+            created_unix_secs,
         });
     }
     Ok(entries)

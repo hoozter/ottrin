@@ -1,5 +1,5 @@
 //! Picker-only preferences. Explicit caller locations always take precedence.
-use ottrin_core::native_path::NativePath;
+use ottrin_core::{SortConfig, native_path::NativePath};
 use serde::{Deserialize, Serialize};
 use std::io::{Read, Write};
 use std::path::{Path, PathBuf};
@@ -13,6 +13,7 @@ pub(crate) struct PickerPreferences {
     pub grid: bool,
     pub hidden: bool,
     pub preview: bool,
+    pub sort: SortConfig,
     pub last_directory: Option<NativePath>,
 }
 impl PickerPreferences {
@@ -80,6 +81,17 @@ impl PickerPreferences {
         }
         if self.preview != initial.preview {
             latest.preview = self.preview;
+        }
+        // Merge each sort choice separately so concurrent dialogs changing
+        // different controls cannot overwrite one another.
+        if self.sort.by != initial.sort.by {
+            latest.sort.by = self.sort.by;
+        }
+        if self.sort.ascending != initial.sort.ascending {
+            latest.sort.ascending = self.sort.ascending;
+        }
+        if self.sort.folders_first != initial.sort.folders_first {
+            latest.sort.folders_first = self.sort.folders_first;
         }
         latest.last_directory.clone_from(&self.last_directory);
         write_preferences(path, &latest)
@@ -150,11 +162,34 @@ mod tests {
             preview: true,
             ..initial.clone()
         };
-        let simultaneous = std::sync::Barrier::new(2);
+        let sort_order = PickerPreferences {
+            sort: SortConfig {
+                by: ottrin_core::SortBy::Size,
+                ascending: false,
+                ..initial.sort
+            },
+            ..initial.clone()
+        };
+        let sort_folders = PickerPreferences {
+            sort: SortConfig {
+                folders_first: false,
+                ..initial.sort
+            },
+            ..initial.clone()
+        };
+        let simultaneous = std::sync::Barrier::new(4);
         std::thread::scope(|scope| {
             scope.spawn(|| {
                 simultaneous.wait();
                 grid.save_changes_to(&path, &initial).unwrap();
+            });
+            scope.spawn(|| {
+                simultaneous.wait();
+                sort_order.save_changes_to(&path, &initial).unwrap();
+            });
+            scope.spawn(|| {
+                simultaneous.wait();
+                sort_folders.save_changes_to(&path, &initial).unwrap();
             });
             simultaneous.wait();
             preview.save_changes_to(&path, &initial).unwrap();
@@ -164,6 +199,28 @@ mod tests {
         initial.save_changes_to(&path, &initial).unwrap();
         let saved = PickerPreferences::load_from(&path).unwrap();
         assert!(saved.grid && saved.preview && !saved.hidden);
+        assert_eq!(saved.sort.by, ottrin_core::SortBy::Size);
+        assert!(!saved.sort.ascending);
+        assert!(!saved.sort.folders_first);
+    }
+
+    #[test]
+    fn missing_sort_preferences_use_current_defaults() {
+        let directory = tempfile::tempdir().unwrap();
+        let path = directory.path().join(FILE_NAME);
+        std::fs::write(
+            &path,
+            br#"{"grid":true,"hidden":false,"preview":false,"last_directory":null}"#,
+        )
+        .unwrap();
+        let saved = PickerPreferences::load_from(&path).unwrap();
+        assert_eq!(saved.sort, SortConfig::default());
+
+        std::fs::write(&path, br#"{"sort":{"by":"Modified","ascending":false}}"#).unwrap();
+        let saved = PickerPreferences::load_from(&path).unwrap();
+        assert_eq!(saved.sort.by, ottrin_core::SortBy::Modified);
+        assert!(!saved.sort.ascending);
+        assert!(saved.sort.folders_first);
     }
 
     #[test]
@@ -176,11 +233,17 @@ mod tests {
             grid: true,
             hidden: true,
             preview: true,
+            sort: SortConfig {
+                by: ottrin_core::SortBy::Created,
+                ascending: false,
+                folders_first: false,
+            },
             last_directory: Some(NativePath::encode(directory.path())),
         };
         prefs.save_changes(&PickerPreferences::default()).unwrap();
         let restored = PickerPreferences::load().unwrap();
         assert!(restored.grid && restored.hidden && restored.preview);
+        assert_eq!(restored.sort, prefs.sort);
         assert_eq!(
             restored.directory().unwrap().as_deref(),
             Some(directory.path())

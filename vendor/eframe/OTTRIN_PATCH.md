@@ -9,7 +9,7 @@ visibility remains unchanged. Share the existing event-loop proxy across native
 viewport creation in both Glow and WGPU. No separate accessibility service,
 parallel renderer or application-level bridge is introduced.
 
-Native baseline evidence is under `.hermes/evidence/assistive-modals-current/`.
+Native baseline evidence is under `.evidence/assistive-modals-current/`.
 
 # Native Windows viewport corners
 
@@ -24,5 +24,5 @@ on failure and transfer it only after successful `SetWindowRgn`.
 
 No foreground/title-based window lookup, second renderer or background service
 is introduced. The pre-fix installed regression evidence is in
-`.hermes/evidence/windows-window-radius-current/`; corrected native acceptance
+`.evidence/windows-window-radius-current/`; corrected native acceptance
 and package delivery remain separate gates.

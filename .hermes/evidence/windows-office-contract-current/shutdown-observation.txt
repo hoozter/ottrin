@@ -1,1 +1,0 @@
-guest-shutdown failed for ottrin-copy-cleanup-qa: error: Guest agent is not responding: Guest agent disappeared while executing command

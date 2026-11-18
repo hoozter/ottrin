@@ -6,7 +6,7 @@ on:
     # Delivery receipts and these prose manuals do not change runtime source.
     # Pull requests retain full verification regardless of their changed paths.
     paths-ignore:
-      - ".hermes/evidence/**"
+      - ".evidence/**"
       - "dist/**"
       - "docs/ROADMAP.md"
       - "README.md"

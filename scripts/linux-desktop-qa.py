@@ -9,16 +9,19 @@ Run it with the system Python because Ubuntu installs PyAT-SPI there.
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import hashlib
 import json
 import os
 import re
+import select
 from pathlib import Path
 import shutil
 import signal
 import socket
 import struct
 import subprocess
+import sys
 import tempfile
 import time
 import zipfile
@@ -421,6 +424,130 @@ def click_search_result(window_id: str, name: str, button: str = "1"):
     time.sleep(0.35)
 
 
+def double_click_search_result(window_id: str, name: str):
+    """Activate the accessible row center with one ordinary native double-click."""
+    node = wait_for(lambda: search_result_node(name), f"visible search result {name!r}")
+    diagnostics = entry_x11_diagnostics(window_id, node)
+    target = diagnostics["x11_window_relative_target"]
+    x, y = target["x"], target["y"]
+    run("xdotool", "windowactivate", "--sync", window_id)
+    run(
+        "xdotool",
+        "mousemove",
+        "--window", window_id, str(x), str(y),
+    )
+    time.sleep(0.15)
+    run("xdotool", "click", "--repeat", "2", "--delay", "100", "1")
+    time.sleep(0.5)
+    return diagnostics
+
+
+SEARCH_RESULT_COUNT_LABEL = re.compile(r"^\d+ results?$")
+SEARCH_CONTEXT_MENU_LABELS = frozenset(
+    {
+        "Open Containing Folder",
+        "Open",
+        "Quick Inspector",
+        "Open With…",
+        "Open Folder Location",
+        "Open in Tandem",
+        "Copy File Path",
+        "Copy Item",
+        "Delete…",
+        "Rename…",
+    }
+)
+
+
+def node_text(node) -> str | None:
+    try:
+        return node.queryText().getText(0, -1)
+    except Exception:
+        return None
+
+
+def visible_entry_texts() -> list[str]:
+    """Read the text of every visible entry/text node, e.g. the live query."""
+    texts = []
+    app = ottrin_app()
+    if app is None:
+        return texts
+    for node in all_nodes(app):
+        try:
+            if node.getRoleName() not in {"entry", "text"}:
+                continue
+            if pyatspi.STATE_SHOWING not in node.getState().getStates():
+                continue
+            text = node_text(node)
+        except Exception:
+            continue
+        if text:
+            texts.append(text)
+    return texts
+
+
+def search_result_states(name: str) -> frozenset | None:
+    node = search_result_node(name)
+    if node is None:
+        return None
+    return frozenset(node.getState().getStates())
+
+
+def search_result_active(name: str) -> bool:
+    states = search_result_states(name)
+    return states is not None and bool(
+        states & {pyatspi.STATE_SELECTED, pyatspi.STATE_PRESSED, pyatspi.STATE_FOCUSED}
+    )
+
+
+def search_result_keyboard_focus(name: str) -> bool:
+    states = search_result_states(name)
+    return states is not None and pyatspi.STATE_FOCUSED in states
+
+
+def search_count_label(nodes: list[str] | None = None) -> str | None:
+    for line in visible_a11y_nodes() if nodes is None else nodes:
+        if not line.startswith("label | "):
+            continue
+        name = line[len("label | "):]
+        if SEARCH_RESULT_COUNT_LABEL.fullmatch(name):
+            return name
+    return None
+
+
+def search_settled() -> bool:
+    nodes = visible_a11y_nodes()
+    return search_count_label(nodes) is not None and not any(
+        "· searching" in line or "· indexing" in line for line in nodes
+    )
+
+
+def settled_populated_count() -> str | None:
+    """Return the result count only once it is stable and non-empty."""
+    nodes = visible_a11y_nodes()
+    if any("· searching" in line or "· indexing" in line for line in nodes):
+        return None
+    first = search_count_label(nodes)
+    if first is None or first == "0 results":
+        return None
+    time.sleep(0.6)
+    nodes = visible_a11y_nodes()
+    if any("· searching" in line or "· indexing" in line for line in nodes) or search_count_label(nodes) != first:
+        return None
+    return first
+
+
+def context_menu_top_label() -> str | None:
+    """First known context-menu label in accessibility traversal order."""
+    for line in visible_a11y_nodes():
+        if " | " not in line:
+            continue
+        name = line.split(" | ", 1)[1]
+        if name in SEARCH_CONTEXT_MENU_LABELS:
+            return name
+    return None
+
+
 def visible_a11y_nodes() -> list[str]:
     app = ottrin_app()
     lines = []
@@ -804,7 +931,8 @@ def inspector_requires_zoom_controls(filename: str) -> bool:
 
 
 def close_quick_inspector(
-    main_window_id: str, filename: str, *, dismiss_parent_menu: bool = False
+    main_window_id: str, filename: str, *, dismiss_parent_menu: bool = False,
+    require_space: bool = False,
 ):
     xkey(main_window_id, "space")
     try:
@@ -813,6 +941,8 @@ def close_quick_inspector(
             "Quick Inspector close after Space",
         )
     except AssertionError:
+        if require_space:
+            raise
         # On KWin/XWayland a native child viewport can swallow Space while
         # remaining in the accessibility tree. Escape is the inspector's
         # documented alternate close route; require the same quiescence after
@@ -1048,6 +1178,10 @@ def stop_disposable_daemon(qa_root: Path):
         descriptor = os.pidfd_open(pid)
         try:
             signal.pidfd_send_signal(descriptor, signal.SIGTERM)
+            if not select.select([descriptor], [], [], 5)[0]:
+                signal.pidfd_send_signal(descriptor, signal.SIGKILL)
+            if not select.select([descriptor], [], [], 5)[0]:
+                raise RuntimeError("Disposable index daemon did not exit")
         finally:
             os.close(descriptor)
 
@@ -1186,6 +1320,7 @@ def run_qa(qa_root: Path) -> int:
     parser.add_argument("--evidence", type=Path, required=True)
     parser.add_argument("--native-previews", action="store_true", help="Capture native preview windows when AT-SPI is intentionally disabled")
     parser.add_argument("--preview-only", action="store_true", help="Exercise preview fixtures without unrelated file workflows")
+    parser.add_argument("--search-interactions-only", action="store_true", help="Exercise search selection, preview and open interactions without unrelated file workflows")
     args = parser.parse_args()
 
     binary = args.binary.resolve()
@@ -1260,7 +1395,15 @@ def run_qa(qa_root: Path) -> int:
         run("xdotool", "windowactivate", "--sync", window_id)
         wait_for(lambda: visible_entry("Documents"), "initial home listing")
 
-        initial_navigation = double_click_entry(window_id, "Documents")
+        if args.search_interactions_only:
+            # An ancestor Miller column may expose an offscreen Documents node.
+            # Use the actual address editor rather than choosing that duplicate.
+            xkey(window_id, "ctrl+l")
+            run("xdotool", "type", "--clearmodifiers", "--delay", "1", str(documents))
+            xkey(window_id, "Return")
+            initial_navigation = {"method": "address", "destination": str(documents)}
+        else:
+            initial_navigation = double_click_entry(window_id, "Documents")
         (evidence / "initial-navigation.json").write_text(
             json.dumps(initial_navigation, indent=2) + "\n", encoding="utf-8"
         )
@@ -1288,6 +1431,160 @@ def run_qa(qa_root: Path) -> int:
         assert observed == expected, (observed, expected)
         passed("address-navigation", f"Opened {documents} and exposed all fixture entries.")
         screenshot(evidence, "01-miller-documents")
+
+        if args.search_interactions_only:
+            run("xdotool", "type", "--clearmodifiers", "--delay", "20", "sample.json")
+            wait_for(lambda: "sample.json" in visible_entry_texts(), "type-to-find command query")
+            xkey(window_id, "Down")
+            write_visible_accessibility_tree(evidence, "command-down")
+            screenshot(evidence, "command-down")
+            wait_for(lambda: entry_selected("sample.json"), "real file selection from command matches")
+            xkey(window_id, "space")
+            wait_for(lambda: quick_inspector_visible("sample.json"), "command-match Quick Inspector")
+            close_quick_inspector(window_id, "sample.json", require_space=True)
+            assert "sample.json" in visible_entry_texts(), "preview toggle edited the command query"
+            xkey(window_id, "Escape")
+            passed("command-down-selection-preview", "Typing and Down selected the actual file; Space toggled its Inspector without editing the query.")
+
+            # Disposable fixtures owned only by this mode.  Both live inside
+            # Subfolder so their search results point at a folder other than
+            # the one the main view shows, making any navigation observable.
+            (subfolder / "reveal-a.txt").write_text("search reveal fixture a\n", encoding="utf-8")
+            (subfolder / "reveal-b.txt").write_text("search reveal fixture b\n", encoding="utf-8")
+
+            open_search(window_id)
+            run("xdotool", "type", "--clearmodifiers", "--delay", "1", "reveal")
+            wait_for(
+                lambda: len(visible_named_nodes("Search result: reveal-a.txt")) >= 1
+                and len(visible_named_nodes("Search result: reveal-b.txt")) >= 1,
+                "search results for both reveal fixtures",
+                timeout=15.0,
+            )
+            settled = wait_for(settled_populated_count, "settled search count", timeout=20.0)
+            idle_until = time.monotonic() + 7.0
+            while time.monotonic() < idle_until:
+                assert search_settled(), "idle search flashed its loading indicator"
+                time.sleep(0.1)
+            passed("search-idle-settle", f"Search settled with a stable {settled!r} indicator.")
+
+            # Down Arrow enters the result matches straight from the query
+            # field; Tab is never involved.
+            xkey(window_id, "Down")
+            wait_for(
+                lambda: search_result_active("reveal-a.txt"),
+                "Down Arrow entering the search result list without Tab",
+                timeout=5.0,
+            )
+            passed(
+                "search-arrow-enters-matches",
+                "Down Arrow entered the result list from the query field without Tab.",
+            )
+
+            # A real single click moves the selection to the clicked row and
+            # leaves the main view on its current folder.
+            click_search_result(window_id, "reveal-b.txt")
+            assert search_result_active("reveal-b.txt"), "single click did not select the clicked result"
+            assert not search_result_active("reveal-a.txt"), "previous result stayed selected"
+            assert not destination_breadcrumb_visible("Subfolder"), "single click navigated the main view"
+            assert not destination_breadcrumb_visible("MultiTarget"), "single click navigated the main view"
+            passed(
+                "search-click-selects",
+                "Single click selected the clicked result and did not navigate the main view.",
+            )
+            screenshot(evidence, "01b-search-single-click")
+
+            # Space opens and closes the preview while the query and the
+            # result focus survive untouched.
+            query_before = [text for text in visible_entry_texts() if "reveal" in text]
+            xkey(window_id, "space")
+            wait_for(
+                lambda: quick_inspector_visible("reveal-b.txt"),
+                "Quick Inspector from selected search result",
+            )
+            close_quick_inspector(window_id, "reveal-b.txt", require_space=True)
+            query_after = [text for text in visible_entry_texts() if "reveal" in text]
+            assert query_before and query_after == query_before, (query_before, query_after)
+            wait_for(
+                lambda: search_result_keyboard_focus("reveal-b.txt"),
+                "keyboard focus back on the search results",
+                timeout=5.0,
+            )
+            passed(
+                "search-space-preview",
+                "Space opened and closed the Quick Inspector; the query is unchanged and the results hold keyboard focus.",
+            )
+
+            # The top item of the result context menu is the explicit
+            # navigate-and-reveal action for the containing folder.
+            click_search_result(window_id, "reveal-a.txt", "3")
+            assert search_result_active("reveal-a.txt"), "right-click did not select its target"
+            assert context_menu_top_label() == "Open Containing Folder"
+            click_accessible_suffix("Copy Item")
+            passed("search-context-file-actions", "Right-click selected its target and exposed the normal Copy Item action.")
+            click_search_result(window_id, "reveal-b.txt", "3")
+            top_label = context_menu_top_label()
+            assert top_label == "Open Containing Folder", top_label
+            write_visible_accessibility_tree(evidence, "01c-search-context-menu")
+            click_accessible_suffix("Open Containing Folder")
+            # Close the search panel through its accessible toggle before
+            # reading main-view state; the panel layer otherwise absorbs the
+            # toolbar while open.
+            if visible_named_nodes("Search result: reveal-b.txt"):
+                click_accessible_name("Toggle Search", "toggle button")
+            wait_for(
+                lambda: not visible_named_nodes("Search result: reveal-b.txt"),
+                "closed search panel",
+            )
+            wait_for(
+                lambda: destination_breadcrumb_visible("Subfolder"),
+                "containing-folder navigation from the search context menu",
+            )
+            wait_for(
+                lambda: visible_entry("reveal-b.txt"),
+                "revealed fixture after Open Containing Folder",
+            )
+            wait_for(
+                lambda: entry_selected("reveal-b.txt"),
+                "selected result after Open Containing Folder",
+            )
+            passed(
+                "search-open-containing-folder",
+                "'Open Containing Folder' topped the context menu and revealed the fixture's folder.",
+            )
+            screenshot(evidence, "01d-search-containing-folder")
+
+            # An ordinary double-click opens a directory result in the main view.
+            open_search(window_id)
+            xkey(window_id, "ctrl+a")
+            run("xdotool", "type", "--clearmodifiers", "--delay", "1", "MultiTarget")
+            wait_for(
+                lambda: len(visible_named_nodes("Search result: MultiTarget")) >= 1,
+                "search result for the MultiTarget directory",
+                timeout=15.0,
+            )
+            diagnostics = double_click_search_result(
+                window_id,
+                "MultiTarget",
+            )
+            (evidence / "double-click-target.json").write_text(json.dumps(diagnostics, indent=2) + "\n")
+            write_visible_accessibility_tree(evidence, "double-click-result")
+            screenshot(evidence, "double-click-result")
+            wait_for(
+                lambda: destination_breadcrumb_visible("MultiTarget"),
+                "navigation after double-clicking the directory result",
+                timeout=5.0,
+            )
+            passed(
+                "search-double-click-opens",
+                "Double-clicking the directory result opened it in the main view.",
+            )
+            screenshot(evidence, "01e-search-double-click-open")
+
+            (evidence / "report.json").write_text(
+                json.dumps({"binary": str(binary), "qa_root": str(qa_root), "checks": results}, indent=2)
+            )
+            print(json.dumps({"binary": str(binary), "checks": results}, indent=2))
+            return 0
 
         if args.preview_only:
             for filename in ("notes.txt", "image.png", "preview.pdf", "preview-second.pdf", "letter.docx", "ottrin-preview.svg", "workbook.xlsx", "macros.xlsm"):
@@ -1574,7 +1871,17 @@ def run_qa(qa_root: Path) -> int:
 
 
 def main() -> int:
-    with tempfile.TemporaryDirectory(prefix="pqa-", dir=Path.cwd() / ".hermes") as temporary:
+    if "--search-interactions-only" in sys.argv:
+        spec = importlib.util.spec_from_file_location(
+            "test_workspace", Path(__file__).with_name("test-workspace.py")
+        )
+        workspace = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(workspace)
+        with workspace.isolated_environment(
+            directory="/tmp/opencode", prefix="ottrin-search-qa-"
+        ) as (profile, _environment):
+            return run_qa(profile)
+    with tempfile.TemporaryDirectory(prefix="pqa-", dir=Path.cwd() / ".evidence") as temporary:
         return run_qa(Path(temporary))
 
 

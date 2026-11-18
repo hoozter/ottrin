@@ -1,6 +1,6 @@
 # System Media Playback Policy
 
-Approved by David on 2026-08-14. This policy supersedes the Linux metadata-only and no-playback restrictions in `.hermes/video-thumbnail-policy-approved.md` and `docs/VIDEO_THUMBNAIL_SPIKE.md`.
+Approved by David on 2026-08-14. This policy supersedes the Linux metadata-only and no-playback restrictions in `.evidence/video-thumbnail-policy-approved.md` and `docs/VIDEO_THUMBNAIL_SPIKE.md`.
 
 ## Product decision
 

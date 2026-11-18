@@ -1,2 +1,0 @@
-
-(process:1046301): dbind-WARNING **: 16:09:45.778: AT-SPI: Error in GetItems, sender=:1.5, error=Unknown object '/org/a11y/atspi/cache'

@@ -148,6 +148,7 @@ pub enum SortBy {
     Name,
     Size,
     Modified,
+    Created,
     Kind,
 }
 
@@ -155,6 +156,9 @@ pub enum SortBy {
 pub struct SortConfig {
     pub by: SortBy,
     pub ascending: bool,
+    /// Keep directories ahead of other entries independently of `ascending`.
+    #[serde(default = "default_true")]
+    pub folders_first: bool,
 }
 
 impl Default for SortConfig {
@@ -162,6 +166,7 @@ impl Default for SortConfig {
         Self {
             by: SortBy::Name,
             ascending: true,
+            folders_first: true,
         }
     }
 }
@@ -193,6 +198,43 @@ pub enum SearchSort {
     Path,
     Modified,
     Size,
+    NameDescending,
+    PathDescending,
+    Oldest,
+    Smallest,
+}
+
+impl SearchSort {
+    pub fn column(self) -> Self {
+        match self {
+            Self::NameDescending => Self::Name,
+            Self::PathDescending => Self::Path,
+            Self::Oldest => Self::Modified,
+            Self::Smallest => Self::Size,
+            value => value,
+        }
+    }
+
+    pub fn reversed(self) -> Self {
+        match self {
+            Self::Name => Self::NameDescending,
+            Self::NameDescending => Self::Name,
+            Self::Path => Self::PathDescending,
+            Self::PathDescending => Self::Path,
+            Self::Modified => Self::Oldest,
+            Self::Oldest => Self::Modified,
+            Self::Size => Self::Smallest,
+            Self::Smallest => Self::Size,
+            Self::Relevance => Self::Relevance,
+        }
+    }
+
+    pub fn ascending(self) -> bool {
+        matches!(
+            self,
+            Self::Name | Self::Path | Self::Oldest | Self::Smallest
+        )
+    }
 }
 
 pub const DEFAULT_CONTENT_MAX_FILE_SIZE_BYTES: u64 = 512 * 1024;
@@ -448,6 +490,18 @@ pub struct FileEntry {
     pub symlink_target_is_dir: Option<bool>,
     pub size_bytes: Option<u64>,
     pub modified_unix_secs: Option<u64>,
+    /// Creation time where the platform and filesystem expose it.
+    #[serde(default)]
+    pub created_unix_secs: Option<u64>,
+}
+
+/// Creation time from file metadata in whole Unix seconds, when available.
+pub fn metadata_created_unix_secs(metadata: &std::fs::Metadata) -> Option<u64> {
+    metadata
+        .created()
+        .ok()
+        .and_then(|time| time.duration_since(std::time::UNIX_EPOCH).ok())
+        .map(|duration| duration.as_secs())
 }
 
 // ── Semantic file classification ─────────────────────────────────────────────
@@ -538,11 +592,13 @@ impl FileSemantic {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct TabState {
     pub id: u64,
+    #[serde(with = "folder_preferences::native_folder")]
     pub current_dir: PathBuf,
+    #[serde(with = "native_path::list")]
     pub history_back: Vec<PathBuf>,
+    #[serde(with = "native_path::list")]
     pub history_forward: Vec<PathBuf>,
     pub view_mode: ViewMode,
-    pub sort: SortConfig,
     pub label: Option<String>, // custom tab label; None = auto (folder name)
 }
 
@@ -554,7 +610,6 @@ impl TabState {
             history_back: Vec::new(),
             history_forward: Vec::new(),
             view_mode: ViewMode::Miller,
-            sort: SortConfig::default(),
             label: None,
         }
     }
@@ -890,6 +945,25 @@ pub fn select_graphics_renderer(
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct AppConfig {
+    #[serde(default)]
+    pub default_sort: SortConfig,
+    #[serde(default)]
+    pub folder_sort_configs: BTreeMap<String, SortConfig>,
+    /// None means the current user's Home directory.
+    #[serde(default, with = "native_path::optional")]
+    pub startup_folder: Option<PathBuf>,
+    #[serde(default)]
+    pub restore_tabs: bool,
+    #[serde(default)]
+    pub saved_tabs: Vec<TabState>,
+    #[serde(default)]
+    pub saved_active_tab: usize,
+    #[serde(default)]
+    pub single_click_open: bool,
+    #[serde(default)]
+    pub open_folders_in_new_window: bool,
+    #[serde(default = "default_true")]
+    pub confirm_permanent_delete: bool,
     pub theme: ThemeMode,
     #[serde(default)]
     pub theme_preset: ThemePreset,
@@ -906,6 +980,9 @@ pub struct AppConfig {
     #[serde(default)]
     pub colorize_folder_labels: bool,
     pub list_columns: Vec<ListColumn>,
+    /// Optional Column view metadata. Name is always visible.
+    #[serde(default)]
+    pub miller_columns: Vec<SortBy>,
     #[serde(default = "default_view_scale")]
     pub miller_view_scale: f32,
     #[serde(default = "default_view_scale")]
@@ -967,6 +1044,15 @@ pub struct AppConfig {
 impl Default for AppConfig {
     fn default() -> Self {
         Self {
+            default_sort: SortConfig::default(),
+            folder_sort_configs: BTreeMap::new(),
+            startup_folder: None,
+            restore_tabs: false,
+            saved_tabs: Vec::new(),
+            saved_active_tab: 0,
+            single_click_open: false,
+            open_folders_in_new_window: false,
+            confirm_permanent_delete: true,
             theme: ThemeMode::System,
             theme_preset: ThemePreset::Ottrin,
             custom_themes: Vec::new(),
@@ -980,6 +1066,7 @@ impl Default for AppConfig {
                 ListColumn::Size,
                 ListColumn::Modified,
             ],
+            miller_columns: Vec::new(),
             miller_view_scale: default_view_scale(),
             list_view_scale: default_view_scale(),
             grid_view_scale: default_view_scale(),
@@ -1005,6 +1092,8 @@ impl Default for AppConfig {
         }
     }
 }
+
+mod folder_preferences;
 
 fn default_view_scale() -> f32 {
     1.0
@@ -2369,5 +2458,27 @@ mod tests {
         let loaded: AppConfig = serde_json::from_str(&json).expect("deserialize app config");
 
         assert!(!loaded.installed_office_previews_enabled);
+    }
+
+    #[test]
+    fn sort_config_defaults_folders_first_and_accepts_legacy_saved_configs() {
+        let default = SortConfig::default();
+        assert_eq!(default.by, SortBy::Name);
+        assert!(default.ascending);
+        assert!(default.folders_first);
+
+        let legacy: SortConfig =
+            serde_json::from_str(r#"{"by":"Modified","ascending":false}"#).unwrap();
+        assert_eq!(legacy.by, SortBy::Modified);
+        assert!(!legacy.ascending);
+        assert!(legacy.folders_first);
+
+        let created = SortConfig {
+            by: SortBy::Created,
+            ascending: false,
+            folders_first: false,
+        };
+        let json = serde_json::to_string(&created).unwrap();
+        assert_eq!(serde_json::from_str::<SortConfig>(&json).unwrap(), created);
     }
 }

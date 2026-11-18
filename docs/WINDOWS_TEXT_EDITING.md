@@ -72,7 +72,7 @@ original run refused publication because candidate/source security descriptors
 differed in the automatic-inheritance flag. After fixing candidate ACL preparation,
 byte-for-byte descriptor equality, retained original/draft data, directory flushes,
 collision/failure retention and closed-gate checks pass. Evidence is in
-`.hermes/evidence/windows-20261010/text-dacl-final.log`; the full default native
+`.evidence/windows-20261010/text-dacl-final.log`; the full default native
 platform suite passed 96 tests (17 cross-volume fixtures are separately ignored).
 Native Unicode-name saves and eight process-exit boundaries also pass
 (`text-path-exit.log`, 12 text fixtures total). The opened directory blocked an
@@ -150,7 +150,7 @@ retained the original and independent draft, refused an external change while
 keeping the buffer, supported Keep editing, and loaded the external version only
 after explicit discard confirmation. An ordinary-user filesystem check verified
 all three retained/current versions (`app-editor-retention.log`). Screenshots and
-logs under `.hermes/evidence/windows-20261010/app-editor-*` record these checks.
+logs under `.evidence/windows-20261010/app-editor-*` record these checks.
 The application closed after the clean reload. No codec, renderer or service was
 installed. This is source-built desktop acceptance, not exact portable-package,
 installer or power-loss acceptance.
@@ -197,7 +197,7 @@ staged recovery path visible. The normal save fixture was then recreated by the
 interactive user; its owner remained that user. This does not establish editing
 arbitrary owners or bypass Windows permission requirements.
 
-Evidence: `.hermes/evidence/windows-20261011/WINDOWS_TEXT_PACKAGE_ACCEPTANCE.json`,
+Evidence: `.evidence/windows-20261011/WINDOWS_TEXT_PACKAGE_ACCEPTANCE.json`,
 `text-package-*.png`, the filesystem verifier and compact application logs.
 This closes the focused exact-package Markdown save/conflict/reload workflow;
 it does not repeat native security fault injection, cover all formats, prove

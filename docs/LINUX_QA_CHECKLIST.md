@@ -19,7 +19,7 @@ Record these before testing. Do not mix artifacts from different commits.
 - [ ] AppImage SHA-256: `________________`
 - [ ] DEB path and SHA-256, if tested: `________________`
 - [ ] RPM path and SHA-256, if tested: `________________`
-- [ ] Evidence directory under `.hermes/qa/`: `________________`
+- [ ] Evidence directory under `.evidence/qa/`: `________________`
 
 Build and verify from the repository root:
 

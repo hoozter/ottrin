@@ -51,7 +51,7 @@ operation provenance need one coherent policy. Repair must preserve the existing
 missing/replaced-volume refusal and must not authorise arbitrary pasted paths or
 assign one parent-volume identity to a different mounted filesystem beneath it.
 
-Receipt: `.hermes/evidence/linux-cross-volume-20261012/RESULT.json`. The app exited
+Receipt: `.evidence/linux-cross-volume-20261012/RESULT.json`. The app exited
 cleanly; its private display, bus, index daemon, extraction/profile and both
 filesystem fixtures were removed, as recorded in `exit.json` and `cleanup.json`
 beside that receipt. Native removable-volume acceptance remains separate.
@@ -99,7 +99,7 @@ The first shortcut candidate (`114abcd`, SHA-256
 `431970b6024d0adf51e78f38455fd8b7f42b14888caa22498a0eee30273d00ed`)
 passed rapid path entry but exposed the same frame-boundary modifier miss in
 Select All. That failed workflow and its completed cleanup remain in
-`.hermes/evidence/address-shortcut-20261012/first-attempt/RESULT.json`.
+`.evidence/address-shortcut-20261012/first-attempt/RESULT.json`.
 
 Main command shortcuts now read modifiers from the key press event. Address
 fields request focus before rendering, so typing in the opening frame reaches

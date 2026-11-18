@@ -110,7 +110,7 @@ rollback still damages product registration; normal repair/retry does not recove
 that installation. Independent file-only per-user controls reproduce registration
 rollback failures after actual file execution. This does not establish a safe
 compiler/runtime fix and does not waive the rollback gate. Evidence and exact
-scope: `.hermes/evidence/windows-msi-rollback-current/ACCEPTANCE.json`.
+scope: `.evidence/windows-msi-rollback-current/ACCEPTANCE.json`.
 
 
 ## Release Review

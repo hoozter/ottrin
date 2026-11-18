@@ -1,6 +1,0 @@
-{
-  "status": "Verified source correction; artifact refresh pending",
-  "authoritative_receipt": "/home/campbell/Projects/Ottrin/.hermes/evidence/listing-metadata-current/ACCEPTANCE.json",
-  "delivery": "Current Linux source d09569e2 remains unchanged; current Windows internal/public files unchanged",
-  "next": "Commit clean source, build one cohort, perform actual GUI/chooser metadata acceptance and hosted checks before promotion"
-}

@@ -119,6 +119,7 @@ macOS signing/launch checks do not block Linux/Windows work.
 - **Miller columns** — browse parent, current, and preview pane side-by-side
 - **Smooth column navigation** — horizontal auto-scroll keeps focus visible while preserving path context
 - **Resizable columns** — drag separators; widths persist while you navigate
+- **Flexible sorting** — name, type, size, modified or created time, either direction, with optional folders first; the file picker remembers its own order
 - **List and Grid views** — switch instantly with a single click
 - **Smart sidebar** — info, drop folder, and search panels in a compact, toggleable activity strip
 - **Bookmarks bar** — one-click shortcuts to your most-used folders (right-click to add/remove)
@@ -152,6 +153,9 @@ macOS signing/launch checks do not block Linux/Windows work.
 | Shift+Delete | Permanently delete |
 | F2 | Rename |
 | Any printable key | Open command frame |
+| Tab / Shift+Tab (command frame) | Switch to file matches / back to command |
+| Enter (command frame) | Run command, or open the explicitly focused file match |
+| Ctrl+Space (command frame) | Complete a command's path argument |
 
 ---
 

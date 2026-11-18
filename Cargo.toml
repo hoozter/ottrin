@@ -27,7 +27,7 @@ tracing = "0.1"
 egui = "0.33"
 # Native assistive tools consume egui's AccessKit tree. Keep the supported
 # renderers/window backends explicit; private-bus lifecycle QA is recorded in
-# .hermes/evidence/assistive-integration-current/.
+# .evidence/assistive-integration-current/.
 eframe = { version = "0.33", default-features = false, features = ["accesskit", "default_fonts", "glow", "wayland", "wgpu", "x11"] }
 egui_extras = { version = "0.33", features = ["svg", "image"] }
 
@@ -58,3 +58,5 @@ egui-winit = { path = "vendor/egui-winit" }
 egui = { path = "vendor/egui" }
 # Backport the upstream disabled-control guard for the pinned AT-SPI backend.
 accesskit_atspi_common = { path = "vendor/accesskit-atspi-common" }
+# Keep a missing or stale AT-SPI bus from aborting the process at startup.
+accesskit_unix = { path = "vendor/accesskit-unix" }

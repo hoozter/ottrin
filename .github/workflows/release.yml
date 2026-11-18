@@ -18,6 +18,7 @@ permissions:
 
 env:
   RUST_VERSION: "1.94.0"
+  OTTRIN_RELEASE_SCOPE: ${{ vars.OTTRIN_RELEASE_SCOPE || 'all' }}
 
 jobs:
   verify:
@@ -44,6 +45,10 @@ jobs:
         shell: bash
         run: |
           package_version="$(sed -nE 's/^version = "([^"]+)"/\1/p' Cargo.toml | head -n1)"
+          case "$OTTRIN_RELEASE_SCOPE" in
+            all|linux) ;;
+            *) echo "Set OTTRIN_RELEASE_SCOPE to all or linux." >&2; exit 1 ;;
+          esac
           tag_version="${GITHUB_REF_NAME#v}"
           if [[ "$tag_version" != "$package_version" ]]; then
             echo "Tag $GITHUB_REF_NAME does not match package version $package_version" >&2
@@ -204,11 +209,14 @@ jobs:
           OTTRIN_SKIP_BUILD: 1
           OTTRIN_LINUX_SIGNING_KEY_FINGERPRINT: ${{ vars.LINUX_SIGNING_KEY_FINGERPRINT }}
           OTTRIN_LINUX_REPOSITORY_URL: ${{ vars.LINUX_REPOSITORY_URL }}
+          OTTRIN_LINUX_REPOSITORY_ORIGIN: ${{ vars.LINUX_REPOSITORY_PUBLIC_ORIGIN }}
         run: |
-          if [[ -n "$OTTRIN_LINUX_REPOSITORY_URL" ]]; then
-            export OTTRIN_LINUX_REPOSITORY_KEY="$RUNNER_TEMP/ottrin-repository-key.asc"
-            gpg --batch --armor --export "$OTTRIN_LINUX_SIGNING_KEY_FINGERPRINT" > "$OTTRIN_LINUX_REPOSITORY_KEY"
+          if [[ -z "$OTTRIN_LINUX_REPOSITORY_URL" || "$OTTRIN_LINUX_REPOSITORY_URL" != "$OTTRIN_LINUX_REPOSITORY_ORIGIN" ]]; then
+            echo "Set LINUX_REPOSITORY_URL to the configured public repository origin before tagging." >&2
+            exit 1
           fi
+          export OTTRIN_LINUX_REPOSITORY_KEY="$RUNNER_TEMP/ottrin-repository-key.asc"
+          gpg --batch --armor --export "$OTTRIN_LINUX_SIGNING_KEY_FINGERPRINT" > "$OTTRIN_LINUX_REPOSITORY_KEY"
           ./packaging/linux/package-deb.sh
           ./packaging/linux/package-rpm.sh
 
@@ -259,6 +267,7 @@ jobs:
   package-windows-portable:
     name: Windows portable zip
     needs: verify
+    if: vars.OTTRIN_RELEASE_SCOPE != 'linux'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -381,6 +390,10 @@ jobs:
   release:
     name: Stage GitHub release draft
     needs: [package-linux, verify-windows-artifacts]
+    if: >-
+      !cancelled() && needs.package-linux.result == 'success' &&
+      ((vars.OTTRIN_RELEASE_SCOPE == 'linux' && needs.verify-windows-artifacts.result == 'skipped') ||
+      (vars.OTTRIN_RELEASE_SCOPE != 'linux' && needs.verify-windows-artifacts.result == 'success'))
     runs-on: ubuntu-latest
     permissions:
       contents: write

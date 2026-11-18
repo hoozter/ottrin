@@ -652,6 +652,15 @@ class X11CoordinateTranslationTests(unittest.TestCase):
         ):
             self.assertFalse(qa.quick_inspector_quiescent("image.png"))
 
+    def test_required_space_close_cannot_pass_through_escape_fallback(self):
+        with (
+            patch.object(qa, "xkey") as xkey,
+            patch.object(qa, "wait_for", side_effect=AssertionError("close failed")),
+        ):
+            with self.assertRaisesRegex(AssertionError, "close failed"):
+                qa.close_quick_inspector("0x123", "image.png", require_space=True)
+        xkey.assert_called_once_with("0x123", "space")
+
     def test_maps_each_toggle_target_to_the_explicit_view_menu_item(self):
         self.assertEqual(qa.view_menu_label(qa.VIEW_TO_GRID), "List view")
         self.assertEqual(qa.view_menu_label(qa.VIEW_TO_COLUMN), "Grid view")
@@ -673,6 +682,148 @@ class X11CoordinateTranslationTests(unittest.TestCase):
                 app=(100, 200, 400, 300),
                 window={"X": 500, "Y": 300, "WIDTH": 800, "HEIGHT": 600},
             )
+
+
+class SearchInteractionCheckTests(unittest.TestCase):
+    def test_double_click_uses_one_checked_target_without_retry(self):
+        diagnostics = {"x11_window_relative_target": {"x": 794, "y": 310}}
+        with (
+            patch.object(qa, "wait_for", return_value=object()),
+            patch.object(qa, "entry_x11_diagnostics", return_value=diagnostics),
+            patch.object(qa.time, "sleep"),
+            patch.object(qa, "run") as run,
+        ):
+            self.assertEqual(qa.double_click_search_result("0x123", "folder"), diagnostics)
+        self.assertEqual(run.call_args_list[-1].args,
+                         ("xdotool", "click", "--repeat", "2", "--delay", "100", "1"))
+        self.assertEqual(run.call_count, 3)
+
+    @staticmethod
+    def named_node(name, states=()):
+        node = MagicMock(name=name)
+        node.name = name
+        node.getState.return_value.getStates.return_value = list(states)
+        return node
+
+    def test_count_label_matches_only_the_results_indicator(self):
+        with patch.object(
+            qa,
+            "visible_a11y_nodes",
+            return_value=[
+                "label | 2 results",
+                "label | 0 results",
+                "label | Sort search results by Name",
+            ],
+        ):
+            self.assertEqual(qa.search_count_label(), "2 results")
+        with patch.object(qa, "visible_a11y_nodes", return_value=["label | No matches"]):
+            self.assertIsNone(qa.search_count_label())
+
+    def test_settled_requires_a_count_and_no_busy_indicator(self):
+        with patch.object(
+            qa,
+            "visible_a11y_nodes",
+            return_value=["label | 2 results", "label | · searching"],
+        ):
+            self.assertFalse(qa.search_settled())
+        with patch.object(
+            qa,
+            "visible_a11y_nodes",
+            return_value=["label | 2 results", "label | · indexing 40%"],
+        ):
+            self.assertFalse(qa.search_settled())
+        with patch.object(qa, "visible_a11y_nodes", return_value=["label | 2 results"]):
+            self.assertTrue(qa.search_settled())
+        with patch.object(qa, "visible_a11y_nodes", return_value=["push button | Open"]):
+            self.assertFalse(qa.search_settled())
+
+    def test_settled_populated_count_rejects_empty_and_drifting_counts(self):
+        with (
+            patch.object(qa, "visible_a11y_nodes", return_value=["label | 0 results"]),
+            patch.object(qa.time, "sleep"),
+        ):
+            self.assertIsNone(qa.settled_populated_count())
+        with (
+            patch.object(
+                qa,
+                "visible_a11y_nodes",
+                side_effect=[["label | 2 results"], ["label | 3 results"]],
+            ),
+            patch.object(qa.time, "sleep"),
+        ):
+            self.assertIsNone(qa.settled_populated_count())
+        with (
+            patch.object(
+                qa,
+                "visible_a11y_nodes",
+                side_effect=[["label | 2 results"], ["label | 2 results"]],
+            ),
+            patch.object(qa.time, "sleep"),
+        ):
+            self.assertEqual(qa.settled_populated_count(), "2 results")
+
+    def test_context_menu_top_label_keeps_traversal_order(self):
+        with patch.object(
+            qa,
+            "visible_a11y_nodes",
+            return_value=[
+                "label | Files in this folder",
+                "push button | Open Containing Folder",
+                "push button | Unknown item",
+            ],
+        ):
+            self.assertEqual(qa.context_menu_top_label(), "Open Containing Folder")
+        with patch.object(qa, "visible_a11y_nodes", return_value=["push button | Unknown item"]):
+            self.assertIsNone(qa.context_menu_top_label())
+
+    def test_result_states_report_selection_and_keyboard_focus_separately(self):
+        selected = self.named_node(
+            "Search result: reveal-b.txt", states=[qa.pyatspi.STATE_SELECTED, qa.pyatspi.STATE_SHOWING]
+        )
+        focused = self.named_node(
+            "Search result: reveal-b.txt", states=[qa.pyatspi.STATE_FOCUSED, qa.pyatspi.STATE_SHOWING]
+        )
+        plain = self.named_node("Search result: reveal-b.txt", states=[qa.pyatspi.STATE_SHOWING])
+        with patch.object(qa, "search_result_node", return_value=selected):
+            self.assertTrue(qa.search_result_active("reveal-b.txt"))
+            self.assertFalse(qa.search_result_keyboard_focus("reveal-b.txt"))
+        with patch.object(qa, "search_result_node", return_value=focused):
+            self.assertTrue(qa.search_result_active("reveal-b.txt"))
+            self.assertTrue(qa.search_result_keyboard_focus("reveal-b.txt"))
+        with patch.object(qa, "search_result_node", return_value=plain):
+            self.assertFalse(qa.search_result_active("reveal-b.txt"))
+            self.assertFalse(qa.search_result_keyboard_focus("reveal-b.txt"))
+        with patch.object(qa, "search_result_node", return_value=None):
+            self.assertIsNone(qa.search_result_states("reveal-b.txt"))
+            self.assertFalse(qa.search_result_active("reveal-b.txt"))
+
+    def test_visible_entry_texts_reads_showing_text_roles(self):
+        entry = MagicMock(name="entry")
+        entry.getRoleName.return_value = "entry"
+        entry.getState.return_value.getStates.return_value = [qa.pyatspi.STATE_SHOWING]
+        hidden = MagicMock(name="hidden")
+        hidden.getRoleName.return_value = "text"
+        hidden.getState.return_value.getStates.return_value = []
+        button = MagicMock(name="button")
+        button.getRoleName.return_value = "push button"
+        button.getState.return_value.getStates.return_value = [qa.pyatspi.STATE_SHOWING]
+        app = object()
+        with (
+            patch.object(qa, "ottrin_app", return_value=app),
+            patch.object(qa, "all_nodes", return_value=[entry, hidden, button]),
+            patch.object(qa, "node_text", side_effect=lambda node: "reveal" if node is entry else None),
+        ):
+            self.assertEqual(qa.visible_entry_texts(), ["reveal"])
+        with patch.object(qa, "ottrin_app", return_value=None):
+            self.assertEqual(qa.visible_entry_texts(), [])
+
+    def test_node_text_survives_a_text_interface_failure(self):
+        node = MagicMock(name="entry")
+        node.queryText.return_value.getText.return_value = "reveal"
+        self.assertEqual(qa.node_text(node), "reveal")
+        broken = MagicMock(name="entry")
+        broken.queryText.side_effect = RuntimeError("no text interface")
+        self.assertIsNone(qa.node_text(broken))
 
 if __name__ == "__main__":
     unittest.main()

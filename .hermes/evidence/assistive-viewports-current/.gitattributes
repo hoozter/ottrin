@@ -1,3 +1,0 @@
-*.diff binary
-**/results/*.json binary
-**/controller.ps1 binary
