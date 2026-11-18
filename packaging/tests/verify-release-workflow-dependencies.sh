@@ -80,6 +80,15 @@ for step in 'Sign Linux release artifacts' 'Verify exact downloaded Linux signat
     fi
   done
 done
+# Winit loads these dynamically, so Cargo's build dependencies do not supply
+# all of the libraries that the portable runtime closure needs.
+for runtime in libxkbcommon-x11-0 libx11-6 libx11-xcb1 libxcursor1 libxi6; do
+  if ! grep -Eq "(^|[[:space:]])$runtime($|[[:space:]])" <<<"$linux_job"; then
+    printf 'Linux release build job omits desktop runtime: %s\n' "$runtime" >&2
+    exit 1
+  fi
+done
+
 for tool in rpm cpio binutils; do
   for job in "$linux_job" "$(sed -n '/^  release:/,$p' "$WORKFLOW")"; do
     if ! grep -Eq "(^|[[:space:]])$tool($|[[:space:]])" <<<"$job"; then
