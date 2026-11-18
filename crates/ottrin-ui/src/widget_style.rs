@@ -278,6 +278,7 @@ impl AlignedMenuButton {
         self
     }
     /// Choice groups reserve this column on every row; action-only menus omit it.
+    #[cfg(test)]
     pub(crate) fn indicator_column(mut self) -> Self {
         self.indicator_column = true;
         self

@@ -1041,6 +1041,32 @@ fn handle_cli_action(args: &[OsString]) -> bool {
         return false;
     }
 
+    #[cfg(target_os = "linux")]
+    match ottrin_platform::linux_installation::package_owner(std::path::Path::new(
+        "/usr/bin/ottrin",
+    )) {
+        Ok(Some((manager, _))) => {
+            if ottrin_platform::application_launch_path()
+                .is_ok_and(|path| path == std::path::Path::new("/usr/bin/ottrin"))
+            {
+                eprintln!(
+                    "ottrin: To remove this package and its services, run: {}",
+                    manager.remove_command()
+                );
+            } else {
+                eprintln!(
+                    "ottrin: A native Ottrin package is also installed. Shared services were kept. Uninstall this copy’s optional integrations individually before deleting it."
+                );
+            }
+            std::process::exit(1);
+        }
+        Ok(None) => {}
+        Err(error) => {
+            eprintln!("ottrin: {error}");
+            std::process::exit(1);
+        }
+    }
+
     let purge_config = args.iter().any(|arg| arg == "--purge-config");
     let mut freed = 0_u64;
     let mut errors = Vec::new();
@@ -1069,6 +1095,7 @@ fn handle_cli_action(args: &[OsString]) -> bool {
         }
         Err(err) => errors.push(err),
     }
+    #[cfg(not(target_os = "linux"))]
     match remove_terminal_launcher_file() {
         Ok(msg) => println!("{msg}"),
         Err(err) => errors.push(err),
@@ -1097,8 +1124,28 @@ fn handle_cli_action(args: &[OsString]) -> bool {
             Err(error) => errors.push(error),
         }
     }
+    #[cfg(target_os = "linux")]
+    if errors.is_empty() {
+        let actions: [fn() -> Result<String, String>; 4] = [
+            uninstall_standalone_administrator_index,
+            || ottrin_platform::uninstall_privileged_helper(true),
+            ottrin_platform::linux_installation::remove_terminal_launcher,
+            ottrin_platform::linux_installation::remove_desktop_launcher,
+        ];
+        for action in actions {
+            match action() {
+                Ok(message) => println!("{message}"),
+                Err(error) => {
+                    errors.push(error);
+                    break;
+                }
+            }
+        }
+    }
     println!("Cleanup freed {}.", format_size(freed));
     if errors.is_empty() {
+        #[cfg(target_os = "linux")]
+        println!("You can now delete the Ottrin AppImage or portable folder.");
         true
     } else {
         eprintln!("Cleanup completed with errors:");
@@ -1106,6 +1153,38 @@ fn handle_cli_action(args: &[OsString]) -> bool {
             eprintln!("  {err}");
         }
         std::process::exit(1);
+    }
+}
+
+#[cfg(target_os = "linux")]
+fn uninstall_standalone_administrator_index() -> Result<String, String> {
+    use std::os::unix::fs::PermissionsExt;
+    if !std::path::Path::new("/etc/systemd/system/ottrin-administrator-index.service").exists() {
+        return Ok("No persistent Administrator index service is installed.".into());
+    }
+    let indexer = std::env::current_exe()
+        .map_err(|error| error.to_string())?
+        .with_file_name("ottrin-indexd");
+    let stage = tempfile::tempdir().map_err(|error| error.to_string())?;
+    let executable = stage.path().join("ottrin-indexd");
+    std::fs::copy(indexer, &executable)
+        .and_then(|_| std::fs::set_permissions(&executable, std::fs::Permissions::from_mode(0o700)))
+        .map_err(|error| format!("Cannot stage the index service uninstaller: {error}"))?;
+    let result = std::process::Command::new("pkexec")
+        .arg(executable)
+        .arg("--uninstall-standalone-administrator-index")
+        .output()
+        .map_err(|error| {
+            format!("Cannot request permission to uninstall the Administrator index: {error}")
+        })?;
+    if result.status.success() {
+        Ok(String::from_utf8_lossy(&result.stdout).trim().into())
+    } else {
+        Err(format!(
+            "Administrator index uninstall failed ({}): {}",
+            result.status,
+            String::from_utf8_lossy(&result.stderr).trim()
+        ))
     }
 }
 
@@ -2020,6 +2099,7 @@ fn validate_renderer_override(renderer_override: Option<&str>) -> Result<Option<
     }
 }
 
+#[cfg(not(target_os = "linux"))]
 fn remove_terminal_launcher_file() -> Result<String, String> {
     let path = if cfg!(target_os = "windows") {
         ottrin_core::default_home_dir().join("ottrin.bat")

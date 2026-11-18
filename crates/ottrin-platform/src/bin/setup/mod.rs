@@ -1,3 +1,4 @@
+use sha2::{Digest, Sha256};
 use std::fs;
 use std::io::{Read, Write};
 use std::os::unix::fs::{MetadataExt, OpenOptionsExt, PermissionsExt};
@@ -9,8 +10,19 @@ const HTML_POLICY: &[u8] =
 const PORTAL_DEFINITION: &[u8] = include_bytes!("../../../../../packaging/linux/ottrin.portal");
 
 const POLICY: &[u8] = include_bytes!("../../../../../packaging/linux/org.ottrin.filesystem.policy");
+const RECEIPT: &str = "usr/share/ottrin/standalone-helper.json";
+const HELPER_PATHS: [&str; 4] = [
+    "usr/libexec/ottrin/ottrin-priv-helper",
+    "usr/libexec/ottrin/ottrin-html-render",
+    "usr/share/ottrin/ottrin-html-render.apparmor",
+    "usr/share/polkit-1/actions/org.ottrin.filesystem.policy",
+];
 
 pub fn install() -> Result<(), String> {
+    if unsafe { libc::geteuid() } != 0 {
+        return Err("System integration setup requires administrator permission".into());
+    }
+    check_package_ownership()?;
     // Read the running executable, rather than reopening a replaceable package pathname.
     let mut helper = Vec::new();
     fs::File::open("/proc/self/exe")
@@ -201,7 +213,151 @@ fn install_at(root: &Path, helper: &[u8], html: &[u8], owner: u32) -> std::io::R
         0o644,
         owner,
     )?;
-    write_protected(&portal, PORTAL_DEFINITION, 0o644, owner)
+    write_protected(&portal, PORTAL_DEFINITION, 0o644, owner).and_then(|()| {
+        let digests =
+            [helper, html, HTML_POLICY, POLICY].map(|bytes| format!("{:x}", Sha256::digest(bytes)));
+        write_protected(
+            &root.join(RECEIPT),
+            &serde_json::to_vec(&digests)?,
+            0o644,
+            owner,
+        )
+    })
+}
+
+fn check_package_ownership() -> Result<(), String> {
+    for path in std::iter::once("usr/bin/ottrin").chain(HELPER_PATHS) {
+        let path = Path::new("/").join(path);
+        if let Some((_, name)) = ottrin_platform::linux_installation::package_owner(&path)? {
+            return Err(format!(
+                "{name} manages {}. Use your package manager to change this installation.",
+                path.display()
+            ));
+        }
+    }
+    Ok(())
+}
+
+fn read_owned_file(root: &Path, relative: &str, owner: u32) -> std::io::Result<Option<Vec<u8>>> {
+    let target = root.join(relative);
+    for directory in target
+        .ancestors()
+        .skip(1)
+        .take_while(|path| path.starts_with(root))
+    {
+        match fs::symlink_metadata(directory) {
+            Ok(metadata)
+                if metadata.is_dir() && metadata.uid() == owner && metadata.mode() & 0o022 == 0 => {
+            }
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(None),
+            Err(error) => return Err(error),
+            _ => {
+                return Err(std::io::Error::other(format!(
+                    "Unsafe integration directory: {}",
+                    directory.display()
+                )));
+            }
+        }
+    }
+    match fs::symlink_metadata(&target) {
+        Ok(metadata)
+            if metadata.is_file() && metadata.uid() == owner && metadata.mode() & 0o022 == 0 =>
+        {
+            fs::read(target).map(Some)
+        }
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(None),
+        Err(error) => Err(error),
+        _ => Err(std::io::Error::other(format!(
+            "Unrecognized integration file retained: {}",
+            target.display()
+        ))),
+    }
+}
+
+fn removable_helper_files(root: &Path, owner: u32) -> std::io::Result<Vec<PathBuf>> {
+    let receipt = read_owned_file(root, RECEIPT, owner)?
+        .map(|data| serde_json::from_slice::<[String; 4]>(&data))
+        .transpose()?;
+    let mut targets = Vec::new();
+    for (index, path) in HELPER_PATHS.into_iter().enumerate() {
+        let Some(data) = read_owned_file(root, path, owner)? else {
+            continue;
+        };
+        let Some(digests) = &receipt else {
+            return Err(std::io::Error::other(
+                "The existing helper predates uninstall tracking. Reinstall the helper from this Ottrin version, then uninstall it.",
+            ));
+        };
+        if format!("{:x}", Sha256::digest(&data)) != digests[index] {
+            return Err(std::io::Error::other(format!(
+                "Modified integration file retained: /{path}"
+            )));
+        }
+        targets.push(root.join(path));
+    }
+    if receipt.is_some() {
+        targets.push(root.join(RECEIPT));
+    }
+    Ok(targets)
+}
+
+fn shared_picker_needed() -> Result<bool, String> {
+    let users = std::process::Command::new("/usr/bin/getent")
+        .env_clear()
+        .arg("passwd")
+        .output()
+        .map_err(|e| format!("Cannot check for other Ottrin picker installations: {e}"))?;
+    if !users.status.success() {
+        return Err("Cannot check for other Ottrin picker installations".into());
+    }
+    for user in String::from_utf8_lossy(&users.stdout).lines() {
+        let Some(home) = user
+            .split(':')
+            .nth(5)
+            .filter(|home| Path::new(home).is_absolute())
+        else {
+            continue;
+        };
+        for file in [
+            ".local/state/ottrin/portal-registration.json",
+            ".local/share/dbus-1/services/org.freedesktop.impl.portal.desktop.ottrin.service",
+            ".config/systemd/user/ottrin-portal.service",
+        ] {
+            match fs::symlink_metadata(Path::new(home).join(file)) {
+                Ok(_) => return Ok(true),
+                Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+                Err(error) => return Err(format!("Cannot check picker setup in {home}: {error}")),
+            }
+        }
+    }
+    Ok(false)
+}
+
+pub fn uninstall(remove_portal: bool) -> Result<(), String> {
+    if unsafe { libc::geteuid() } != 0 {
+        return Err("System integration removal requires administrator permission".into());
+    }
+    check_package_ownership()?;
+    let root = Path::new("/");
+    let files = removable_helper_files(root, 0).map_err(|error| error.to_string())?;
+    let remove_definition = remove_portal && !shared_picker_needed()?;
+    if remove_definition {
+        let definition = root.join("usr/share/xdg-desktop-portal/portals/ottrin.portal");
+        if ottrin_platform::linux_installation::package_owner(&definition)?.is_some() {
+            return Err("The system package owns the shared Ottrin picker definition.".into());
+        }
+        remove_portal_at(root, 0).map_err(|error| error.to_string())?;
+    }
+    remove_html_policy()?;
+    for file in files {
+        fs::remove_file(&file)
+            .map_err(|error| format!("Cannot remove {}: {error}", file.display()))?;
+    }
+    println!("Administrator helper and HTML preview sandbox removed.");
+    if remove_portal && !remove_definition {
+        println!("The shared picker definition remains because another registration uses it.");
+    }
+    Ok(())
 }
 
 /// Activate only our policy on hosts that need/support AppArmor 4. Hosts without
@@ -282,6 +438,34 @@ mod tests {
             .permissions(fs::Permissions::from_mode(0o755))
             .tempdir()
             .unwrap()
+    }
+
+    #[test]
+    fn standalone_removal_validates_every_file_before_removing_any() {
+        let fixture = fixture();
+        let root = fixture.path();
+        let owner = fs::metadata(root).unwrap().uid();
+        install_at(root, b"helper", b"html", owner).unwrap();
+        let expected: Vec<_> = HELPER_PATHS
+            .into_iter()
+            .chain([RECEIPT])
+            .map(|path| root.join(path))
+            .collect();
+        assert_eq!(removable_helper_files(root, owner).unwrap(), expected);
+
+        fs::write(root.join(HELPER_PATHS[1]), b"unrelated file").unwrap();
+        assert!(
+            removable_helper_files(root, owner)
+                .unwrap_err()
+                .to_string()
+                .contains("Modified")
+        );
+        assert!(expected.iter().all(|path| path.is_file()));
+
+        fs::write(root.join(HELPER_PATHS[1]), b"html").unwrap();
+        fs::remove_file(root.join(HELPER_PATHS[0])).unwrap();
+        let remaining = removable_helper_files(root, owner).unwrap();
+        assert_eq!(remaining, expected[1..]);
     }
 
     #[test]

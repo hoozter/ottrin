@@ -3649,6 +3649,7 @@ impl UiSearchService {
         self.local.rebuild_index();
     }
 
+    #[cfg(not(target_os = "linux"))]
     fn clear_storage(&mut self) -> Result<u64, String> {
         #[cfg(all(any(unix, target_os = "windows"), not(test)))]
         {
@@ -3873,6 +3874,21 @@ enum SettingsTab {
 
 type SettingsNavItem = (SettingsTab, &'static str, &'static str);
 type SettingsNavGroup = (&'static str, &'static [SettingsNavItem]);
+const SETTINGS_SERVICES_TITLE: &str = if cfg!(target_os = "linux") {
+    "Installation & Services"
+} else {
+    "Services"
+};
+const INDEX_SERVICE_INSTALL_LABEL: &str = if cfg!(target_os = "linux") {
+    "Install index service"
+} else {
+    "Enable automatic startup"
+};
+const INDEX_SERVICE_UNINSTALL_LABEL: &str = if cfg!(target_os = "linux") {
+    "Uninstall index service"
+} else {
+    "Uninstall service"
+};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Hash)]
 enum ThemePreviewRegion {
@@ -4301,6 +4317,8 @@ pub struct OttrinApp {
     theme_status: Option<(String, bool, Instant)>,
     cache_clear_confirm: bool,
     app_cleanup_confirm: bool,
+    #[cfg(target_os = "linux")]
+    app_uninstall_purge: bool,
     // General transient status message (copy, context actions, etc).
     status_message: Option<UiStatusMessage>,
     // Dedicated per-theme editor popup state (KDE-style edit flow).
@@ -4598,6 +4616,8 @@ impl OttrinApp {
             theme_status: None,
             cache_clear_confirm: false,
             app_cleanup_confirm: false,
+            #[cfg(target_os = "linux")]
+            app_uninstall_purge: false,
             status_message: None,
             theme_editor: ThemeEditorState::default(),
             system_appearance: Default::default(),
@@ -11881,13 +11901,7 @@ impl OttrinApp {
             // flash on every index snapshot bump.
             let new_selected = previous_path
                 .and_then(|path| self.search_ui.results.iter().position(|it| it.path == path))
-                .or_else(|| {
-                    if fresh_query && !self.search_ui.results.is_empty() {
-                        Some(0)
-                    } else {
-                        None
-                    }
-                });
+                .or((fresh_query && !self.search_ui.results.is_empty()).then_some(0));
             if new_selected != self.search_ui.selected {
                 self.search_ui.result_preview = None;
             }
@@ -21317,7 +21331,7 @@ impl OttrinApp {
         appearance_editor::settings_surface(c).inner_margin(12).show(ui, |ui| {
             ui.set_min_width(ui.available_width());
             settings_section_title(ui, c, "Open and Save dialogs");
-            settings_description(ui, c, "Use Ottrin’s file browser when supported apps ask you to open or save a file. This is optional.");
+            settings_description(ui, c, "Use Ottrin’s file browser for Open and Save dialogs. Uninstalling restores the previous picker.");
             if let Some(status) = self.portal_status.clone() {
                 let color = if status.ready { c.success_text() }
                     else if status.pending || status.repair_needed { c.error }
@@ -21338,10 +21352,10 @@ impl OttrinApp {
                         Some(("Apply change", ottrin_platform::portal_integration::apply))
                     } else if status.repair_needed {
                         Some(("Repair setup", ottrin_platform::portal_integration::enable))
-                    } else if status.ready {
-                        Some(("Use usual dialogs", ottrin_platform::portal_integration::disable))
+                    } else if status.enabled {
+                        None
                     } else {
-                        Some(("Use Ottrin dialogs", ottrin_platform::portal_integration::enable))
+                        Some(("Install file picker", ottrin_platform::portal_integration::enable))
                     };
                     if let Some((label, action)) = action
                         && ui.add(egui::Button::new(label).themed(&c)).clicked()
@@ -21349,6 +21363,14 @@ impl OttrinApp {
                         self.begin_service_action(ui.ctx(), move || action()
                             .map(|text| format!("Open and Save dialogs — {text}"))
                             .map_err(|text| format!("Open and Save dialogs — {text}")));
+                    }
+                    if (status.enabled || status.pending || status.repair_needed)
+                        && ui.add(egui::Button::new("Uninstall file picker").themed(&c)).clicked()
+                    {
+                        self.begin_service_action(ui.ctx(), || {
+                            ottrin_platform::portal_integration::remove_for_uninstall()
+                                .map(|messages| messages.join(" "))
+                        });
                     }
                     if (status.pending || status.repair_needed)
                         && ui.add_enabled(self.portal_status_rx.is_none(), egui::Button::new("Check again").themed(&c)).clicked()
@@ -21387,8 +21409,8 @@ impl OttrinApp {
             if let Some(status)=self.folder_status.clone() {
                 Self::render_service_status(ui, &status.detail, if status.ready { c.success_text() } else { c.text_muted });
                 ui.horizontal_wrapped(|ui| {
-                    if ui.add(egui::Button::new(if status.enabled {"Update / repair folder setup"}else if cfg!(target_os="windows"){"Enable folder menu actions"}else{"Use Ottrin for folders"}).themed(&c)).clicked() {self.begin_service_action(ui.ctx(),ottrin_platform::folder_integration::enable);}
-                    if status.enabled && ui.add(egui::Button::new(if cfg!(target_os="windows"){"Remove folder menu actions"}else{"Restore previous handler"}).themed(&c)).clicked() {self.begin_service_action(ui.ctx(),ottrin_platform::folder_integration::disable);}
+                    if ui.add(egui::Button::new(if status.enabled {"Update / repair folder setup"}else if cfg!(target_os="windows"){"Enable folder menu actions"}else{"Install folder integration"}).themed(&c)).clicked() {self.begin_service_action(ui.ctx(),ottrin_platform::folder_integration::enable);}
+                    if status.enabled && ui.add(egui::Button::new(if cfg!(target_os="windows"){"Remove folder menu actions"}else{"Uninstall folder integration"}).themed(&c)).clicked() {self.begin_service_action(ui.ctx(),ottrin_platform::folder_integration::disable);}
                     if ui.add_enabled(self.folder_status_rx.is_none(),egui::Button::new("Refresh status").themed(&c)).clicked() {Self::request_service_status(ui.ctx(),&mut self.folder_status_rx,ottrin_platform::folder_integration::status);}
                 });
                 #[cfg(target_os="windows")]
@@ -21412,13 +21434,97 @@ impl OttrinApp {
         ui.add_space(14.0);
     }
 
+    #[cfg(target_os = "linux")]
+    fn render_linux_installation(
+        &mut self,
+        ui: &mut egui::Ui,
+        c: Colors,
+        installation: Result<(&'static str, String), String>,
+    ) {
+        settings_section_title(ui, c, "Installation");
+        let (kind, command) = match installation {
+            Ok(installation) => installation,
+            Err(error) => {
+                settings_description(ui, c, &error);
+                return;
+            }
+        };
+        settings_description(ui, c, kind);
+        let native = matches!(kind, "DEB package" | "RPM package");
+        if !native
+            && settings_platform_capabilities(self.graphics_runtime.is_windows)
+                .terminal_launcher_visible
+        {
+            let status = launcher_status().unwrap_or_default();
+            settings_description(ui, c, &status);
+            ui.horizontal_wrapped(|ui| {
+                for (label, action) in [
+                    (
+                        "Install terminal command",
+                        install_terminal_launcher as fn() -> _,
+                    ),
+                    ("Uninstall terminal command", remove_terminal_launcher),
+                ] {
+                    if ui.add(egui::Button::new(label).themed(&c)).clicked() {
+                        self.begin_service_action(ui.ctx(), action);
+                    }
+                }
+            });
+        }
+        if ui
+            .add(egui::Button::new("Uninstall Ottrin").themed(&c))
+            .clicked()
+        {
+            self.app_cleanup_confirm = !self.app_cleanup_confirm;
+        }
+        if self.app_cleanup_confirm {
+            if native {
+                settings_description(
+                    ui,
+                    c,
+                    "Close Ottrin and run this command to remove the package and its services. Preferences in your home folder are kept.",
+                );
+                if kind == "DEB package" {
+                    ui.checkbox(
+                        &mut self.app_uninstall_purge,
+                        "Also remove package configuration and update source",
+                    );
+                }
+            } else {
+                settings_description(
+                    ui,
+                    c,
+                    "Close Ottrin and run this command. Cleanup removes its services, launcher registrations, index and cache. When cleanup succeeds, you can delete the AppImage or portable folder.",
+                );
+                ui.checkbox(
+                    &mut self.app_uninstall_purge,
+                    "Also remove my Ottrin preferences",
+                );
+            }
+            ui.label(RichText::new(&command).monospace());
+            if ui
+                .add(egui::Button::new("Copy uninstall command").themed(&c))
+                .clicked()
+            {
+                ui.ctx().copy_text(command);
+            }
+        }
+        ui.add_space(14.0);
+        ui.separator();
+        ui.add_space(10.0);
+    }
+
     fn render_services_settings(&mut self, ui: &mut egui::Ui, c: Colors) {
         let ready_color = c.success_text();
         settings_page_heading(
             ui,
             c,
-            "Services",
-            "Manage background search and optional desktop features.",
+            SETTINGS_SERVICES_TITLE,
+            if cfg!(target_os = "linux") {
+                "Manage this installation, background search, and desktop integration."
+            } else {
+                "Manage background search and optional desktop features."
+            },
         );
         ui.add_space(12.0);
         if let Some(result) = &self.service_action_result {
@@ -21439,7 +21545,20 @@ impl OttrinApp {
         }
         ui.add_enabled_ui(!busy, |ui| {
             #[cfg(target_os = "linux")]
-            self.render_portal_settings(ui, c);
+            let native_package = {
+                let key = egui::Id::new(("linux-uninstall-instructions", self.app_uninstall_purge));
+                type Instructions = Result<(&'static str, String), String>;
+                let installation = ui.data_mut(|data| data.get_temp::<Instructions>(key))
+                    .unwrap_or_else(|| {
+                        let found = ottrin_platform::linux_installation::uninstall_instructions(self.app_uninstall_purge);
+                        ui.data_mut(|data| data.insert_temp(key, found.clone()));
+                        found
+                    });
+                let native = installation.as_ref().is_ok_and(|(kind, _)| matches!(*kind, "DEB package" | "RPM package"));
+                self.render_linux_installation(ui, c, installation);
+                self.render_portal_settings(ui, c);
+                native
+            };
             settings_section_title(ui, c, if cfg!(target_os="windows"){"Administrator operations"}else{"Administrator helper"});
             match &self.privileged_availability {
                 PrivilegedAvailability::Ready => Self::render_service_status(ui, if cfg!(target_os="windows"){"Ready — Windows prompts when needed"}else{"Installed and ready"}, ready_color),
@@ -21456,12 +21575,24 @@ impl OttrinApp {
                 settings_description(ui, c, "Administrator Copy is unavailable in the MSIX package. The Windows desktop installer supports it.");
             }
             #[cfg(target_os = "linux")]
-            if ui.add(egui::Button::new(match self.privileged_availability {
+            if native_package {
+                settings_description(ui, c, "The package manager installs and removes the helper.");
+            } else {
+                ui.horizontal_wrapped(|ui| {
+                    if ui.add(egui::Button::new(match self.privileged_availability {
                 PrivilegedAvailability::Ready => "Reinstall helper (optional)",
                 PrivilegedAvailability::UpdateRequired(_) => "Update administrator helper",
-                _ => "Set up administrator helper",
-            }).themed(&c)).clicked() {
-                self.begin_service_action(ui.ctx(), ottrin_platform::install_privileged_helper);
+                _ => "Install administrator helper",
+                    }).themed(&c)).clicked() {
+                        self.begin_service_action(ui.ctx(), ottrin_platform::install_privileged_helper);
+                    }
+                    if std::path::Path::new("/usr/libexec/ottrin/ottrin-priv-helper").exists()
+                        && ui.add(egui::Button::new("Uninstall administrator helper").themed(&c))
+                            .on_hover_text("Also removes the safe HTML preview runtime for standalone Ottrin installations.").clicked()
+                    {
+                        self.begin_service_action(ui.ctx(), || ottrin_platform::uninstall_privileged_helper(false));
+                    }
+                });
             }
             ui.add_space(14.0);
             ui.separator();
@@ -21480,7 +21611,7 @@ impl OttrinApp {
                 settings_section_title(ui, c, "Safe HTML previews");
                 Self::render_service_status(ui, status.message(), if status==HtmlPreviewRuntimeStatus::Ready { ready_color } else { c.text_muted });
                 settings_description(ui, c, "Lets you preview saved web pages without giving them access to your files or the internet.");
-                if status == HtmlPreviewRuntimeStatus::NeedsSetup
+                if !native_package && status == HtmlPreviewRuntimeStatus::NeedsSetup
                     && ui.add(egui::Button::new("Set up safe HTML previews").themed(&c)).clicked() {
                     self.begin_service_action(ui.ctx(),ottrin_platform::install_privileged_helper);
                     ui.data_mut(|data|data.remove::<(std::time::Instant,HtmlPreviewRuntimeStatus)>(id));
@@ -21518,7 +21649,7 @@ impl OttrinApp {
                 ui.add_space(6.0);
             }
             ui.horizontal_wrapped(|ui| {
-                let setup_label = if installed { "Reinstall service (optional)" } else { "Enable automatic startup" };
+                let setup_label = if installed { "Reinstall service (optional)" } else { INDEX_SERVICE_INSTALL_LABEL };
                 if !package_managed && ui.add(egui::Button::new(setup_label).themed(&c)).clicked() {
                     let config = self.state.config.search.clone();
                     self.begin_index_service_action(ui.ctx(), move || SearchService::install_sqlite_schedule(&config));
@@ -21531,7 +21662,7 @@ impl OttrinApp {
                 if ui.add_enabled(!stopped, egui::Button::new("Stop indexing").themed(&c)).clicked() {
                     self.begin_index_service_action(ui.ctx(), SearchService::stop_sqlite_schedule);
                 }
-                if installed && !package_managed && ui.add(egui::Button::new("Uninstall service").themed(&c)).clicked() {
+                if installed && !package_managed && ui.add(egui::Button::new(INDEX_SERVICE_UNINSTALL_LABEL).themed(&c)).clicked() {
                     self.begin_index_service_action(ui.ctx(), SearchService::uninstall_sqlite_schedule);
                 }
                 #[cfg(target_os = "windows")]
@@ -21685,7 +21816,7 @@ impl OttrinApp {
                                     (SettingsTab::General, MI_TUNE, "General"),
                                     (SettingsTab::Appearance, MI_DARK_MODE, "Appearance"),
                                     (SettingsTab::Files, MI_FOLDER, "Files"),
-                                    (SettingsTab::Services, MI_LOCK, "Services"),
+                                    (SettingsTab::Services, MI_LOCK, SETTINGS_SERVICES_TITLE),
                                 ]),
                                 ("Search", &[
                                     (SettingsTab::Search, MI_SEARCH, "Search"),
@@ -21776,6 +21907,7 @@ impl OttrinApp {
                                     ui.add_space(14.0);
                                     ui.separator();
                                     ui.add_space(10.0);
+                                    #[cfg(not(target_os = "linux"))]
                                     let platform_capabilities = settings_platform_capabilities(self.graphics_runtime.is_windows);
                                     if graphics_settings_visible(self.graphics_runtime.is_windows) {
                                         ui.label(RichText::new("Graphics renderer").color(c.text).size(13.0 * c.font_scale).strong());
@@ -21823,6 +21955,8 @@ impl OttrinApp {
                                         ui.separator();
                                         ui.add_space(10.0);
                                     }
+                                    #[cfg(not(target_os = "linux"))]
+                                    {
                                     if platform_capabilities.terminal_launcher_visible {
                                         ui.add_space(14.0);
                                         ui.separator();
@@ -21935,6 +22069,7 @@ impl OttrinApp {
                                         ui.label(RichText::new(
                                             "Click Confirm cleanup to remove generated data and background indexing. Your files are not touched."
                                         ).color(c.text_dim).size(10.5 * c.font_scale));
+                                    }
                                     }
                                 }
                                 SettingsTab::Services => {
@@ -28493,7 +28628,7 @@ mod tests {
     #[test]
     fn installed_services_expose_login_choice_separately_from_runtime_controls() {
         for (source, setup, uninstall, login_choice) in [
-            ("none", "Enable automatic startup", false, false),
+            ("none", INDEX_SERVICE_INSTALL_LABEL, false, false),
             (
                 "systemd user service",
                 "Reinstall service (optional)",
@@ -28537,7 +28672,11 @@ mod tests {
                 login_choice,
                 "{source}"
             );
-            assert_eq!(visible("Uninstall service"), uninstall, "{source}");
+            assert_eq!(
+                visible(INDEX_SERVICE_UNINSTALL_LABEL),
+                uninstall,
+                "{source}"
+            );
             for label in ["Restart indexing", "Stop indexing"] {
                 assert!(
                     visible(label),
@@ -28549,7 +28688,7 @@ mod tests {
             }
             if login_choice {
                 assert!(
-                    !visible("Enable automatic startup"),
+                    !visible(INDEX_SERVICE_INSTALL_LABEL),
                     "Do not offer duplicate installation: {source}"
                 );
             }

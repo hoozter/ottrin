@@ -28,6 +28,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
+        exclude: ${{ fromJSON(vars.OTTRIN_RELEASE_SCOPE == 'linux' && '[{"os":"windows-latest"}]' || '[]') }}
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -404,6 +405,12 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y p7zip-full rpm cpio binutils
+
+      - name: Start with a clean release asset directory
+        run: |
+          if [[ -d dist ]]; then
+            mv -- dist "$RUNNER_TEMP/ottrin-checkout-dist"
+          fi
 
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:

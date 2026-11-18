@@ -1,3 +1,4 @@
+#[cfg(not(target_os = "linux"))]
 use ottrin_core::default_home_dir;
 use std::path::PathBuf;
 
@@ -6,7 +7,11 @@ fn launcher_link_path() -> PathBuf {
     {
         default_home_dir().join("ottrin.bat")
     }
-    #[cfg(not(target_os = "windows"))]
+    #[cfg(target_os = "linux")]
+    {
+        ottrin_platform::linux_installation::terminal_launcher_path()
+    }
+    #[cfg(not(any(target_os = "linux", target_os = "windows")))]
     {
         default_home_dir().join(".local").join("bin").join("ottrin")
     }
@@ -28,6 +33,20 @@ pub(crate) fn install_terminal_launcher() -> Result<String, String> {
         std::fs::create_dir_all(parent)
             .map_err(|e| format!("Failed to create {}: {}", parent.display(), e))?;
     }
+    #[cfg(target_os = "linux")]
+    match std::fs::read_link(&link) {
+        Ok(existing) if existing == target => {
+            return Ok("The terminal command is already installed for this copy.".into());
+        }
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+        _ => {
+            return Err(format!(
+                "The existing terminal command at {} was kept.",
+                link.display()
+            ));
+        }
+    }
+    #[cfg(not(target_os = "linux"))]
     if link.exists() {
         std::fs::remove_file(&link)
             .map_err(|e| format!("Failed to replace {}: {}", link.display(), e))?;
@@ -64,12 +83,19 @@ pub(crate) fn install_terminal_launcher() -> Result<String, String> {
 }
 
 pub(crate) fn remove_terminal_launcher() -> Result<String, String> {
-    let link = launcher_link_path();
-    match std::fs::remove_file(&link) {
-        Ok(()) => Ok(format!("Removed terminal launcher at {}.", link.display())),
-        Err(err) if err.kind() == std::io::ErrorKind::NotFound => {
-            Ok("No terminal launcher was installed.".to_string())
+    #[cfg(target_os = "linux")]
+    {
+        ottrin_platform::linux_installation::remove_terminal_launcher()
+    }
+    #[cfg(not(target_os = "linux"))]
+    {
+        let link = launcher_link_path();
+        match std::fs::remove_file(&link) {
+            Ok(()) => Ok(format!("Removed terminal launcher at {}.", link.display())),
+            Err(err) if err.kind() == std::io::ErrorKind::NotFound => {
+                Ok("No terminal launcher was installed.".to_string())
+            }
+            Err(err) => Err(format!("Failed to remove {}: {}", link.display(), err)),
         }
-        Err(err) => Err(format!("Failed to remove {}: {}", link.display(), err)),
     }
 }

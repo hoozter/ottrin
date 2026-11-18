@@ -98,6 +98,7 @@ enum Command {
     },
     Rebuild,
     MaintenanceDone(Option<String>),
+    #[cfg(any(test, not(target_os = "linux")))]
     Clear(mpsc::Sender<Result<u64, String>>),
     Stop,
 }
@@ -244,6 +245,7 @@ impl RemoteIndex {
                             *state.active_query.lock().expect("active index query") = None;
                             failure.map_or(Ok(None), Err)
                         }
+                        #[cfg(any(test, not(target_os = "linux")))]
                         Command::Clear(reply) => match ready {
                             Ok(()) => start_maintenance(
                                 client.as_ref().expect("connected index client").clone(),
@@ -383,6 +385,7 @@ impl RemoteIndex {
             self.record_error(error);
         }
     }
+    #[cfg(any(test, not(target_os = "linux")))]
     pub(crate) fn clear_storage(&self) -> Result<u64, String> {
         let (reply, result) = mpsc::channel();
         self.handle.send(Command::Clear(reply))?;

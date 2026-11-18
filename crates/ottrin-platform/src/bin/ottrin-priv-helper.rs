@@ -43,6 +43,30 @@ fn main() {
         && std::env::args().len() == 2
         && matches!(
             option.as_str(),
+            "--uninstall-helper" | "--uninstall-system-integration"
+        )
+    {
+        let remove_all = option == "--uninstall-system-integration";
+        let result = setup::uninstall(remove_all).and_then(|()| {
+            if remove_all {
+                println!(
+                    "{}",
+                    remove_system_locate_daily_job(Path::new("/etc/cron.daily/ottrin-updatedb"))?
+                );
+            }
+            Ok(())
+        });
+        if let Err(error) = result {
+            eprintln!("{error}");
+            std::process::exit(1);
+        }
+        return;
+    }
+    #[cfg(target_os = "linux")]
+    if let Some(option) = std::env::args().nth(1)
+        && std::env::args().len() == 2
+        && matches!(
+            option.as_str(),
             "--install-portal-definition" | "--remove-portal-definition"
         )
     {

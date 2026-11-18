@@ -3,7 +3,7 @@ use std::path::Path;
 use std::process::{Command, Output};
 
 pub(super) fn install(package_helper: &Path) -> Result<String, String> {
-    install_with(package_helper, |helper| {
+    setup_with(package_helper, false, |helper| {
         Command::new("pkexec")
             .arg("--disable-internal-agent")
             .arg(helper)
@@ -12,8 +12,24 @@ pub(super) fn install(package_helper: &Path) -> Result<String, String> {
     })
 }
 
-fn install_with(
+pub(super) fn uninstall(package_helper: &Path, remove_portal: bool) -> Result<String, String> {
+    setup_with(package_helper, true, |helper| {
+        let mut command = Command::new("pkexec");
+        command
+            .arg("--disable-internal-agent")
+            .arg(helper)
+            .arg(if remove_portal {
+                "--uninstall-system-integration"
+            } else {
+                "--uninstall-helper"
+            });
+        command.output()
+    })
+}
+
+fn setup_with(
     package_helper: &Path,
+    uninstall: bool,
     run: impl FnOnce(&Path) -> std::io::Result<Output>,
 ) -> Result<String, String> {
     // Root cannot traverse a user-owned AppImage FUSE mount. Stage the complete
@@ -41,10 +57,14 @@ fn install_with(
     let output = run(&helper)
         .map_err(|error| format!("Cannot open administrator authentication: {error}"))?;
     if output.status.success() {
-        Ok(
-            "System integration installed: administrator helper and HTML preview sandbox."
-                .to_string(),
-        )
+        if uninstall {
+            Ok(String::from_utf8_lossy(&output.stdout).trim().to_owned())
+        } else {
+            Ok(
+                "System integration installed: administrator helper and HTML preview sandbox."
+                    .to_string(),
+            )
+        }
     } else if output.status.code() == Some(126) {
         Err("Helper setup was cancelled.".to_string())
     } else {
@@ -87,7 +107,7 @@ mod tests {
         .unwrap();
         for code in [0, 126, 127] {
             let mut staged = None;
-            let result = install_with(&original, |helper| {
+            let result = setup_with(&original, false, |helper| {
                 assert_ne!(helper, original);
                 assert_eq!(
                     std::fs::read(helper.parent().unwrap().join("ottrin-html-render")).unwrap(),
@@ -127,7 +147,7 @@ mod tests {
         let package = tempfile::tempdir().unwrap();
         let helper = package.path().join("ottrin-priv-helper");
         std::fs::write(&helper, b"packaged helper").unwrap();
-        let error = install_with(&helper, |_| {
+        let error = setup_with(&helper, false, |_| {
             panic!("Incomplete payload must not authenticate")
         })
         .unwrap_err();
@@ -145,7 +165,7 @@ mod tests {
         )
         .unwrap();
         let mut staged = None;
-        let error = install_with(&original, |helper| {
+        let error = setup_with(&original, false, |helper| {
             staged = Some(helper.to_path_buf());
             Err(std::io::Error::new(
                 std::io::ErrorKind::NotFound,

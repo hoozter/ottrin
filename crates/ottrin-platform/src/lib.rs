@@ -22,6 +22,8 @@ mod integration_preferences;
 #[cfg(target_os = "linux")]
 mod integration_storage;
 #[cfg(target_os = "linux")]
+pub mod linux_installation;
+#[cfg(target_os = "linux")]
 pub mod portal_integration;
 #[cfg(all(test, target_os = "windows"))]
 #[path = "../../../tests/support/windows_oplock.rs"]
@@ -1308,17 +1310,41 @@ mod helper_setup;
 pub fn install_privileged_helper() -> Result<String, String> {
     #[cfg(target_os = "linux")]
     {
-        let exe = std::env::current_exe().map_err(|e| e.to_string())?;
-        let directory = exe
-            .parent()
-            .ok_or("Cannot locate this Ottrin installation")?;
-        let helper = [directory.join("../libexec/ottrin/ottrin-priv-helper"), directory.join("ottrin-priv-helper")]
-            .into_iter().find(|path| path.is_file())
-            .ok_or("This Ottrin package does not contain the administrator helper. Download a complete package.")?;
-        helper_setup::install(&helper)
+        helper_setup::install(&bundled_privileged_helper()?)
     }
     #[cfg(not(target_os = "linux"))]
     Err("Helper installation is managed by the installer on this platform.".to_string())
+}
+
+#[cfg(target_os = "linux")]
+fn bundled_privileged_helper() -> Result<PathBuf, String> {
+    let exe = std::env::current_exe().map_err(|e| e.to_string())?;
+    let directory = exe
+        .parent()
+        .ok_or("Cannot locate this Ottrin installation")?;
+    [
+        directory.join("../libexec/ottrin/ottrin-priv-helper"),
+        directory.join("ottrin-priv-helper"),
+    ]
+    .into_iter()
+    .find(|path| path.is_file())
+    .ok_or_else(|| "This Ottrin package does not contain the administrator helper. Download a complete package.".into())
+}
+
+#[cfg(target_os = "linux")]
+pub fn uninstall_privileged_helper(remove_portal: bool) -> Result<String, String> {
+    if linux_installation::package_owner(Path::new("/usr/bin/ottrin"))?.is_some() {
+        return Ok("The installed Linux package manages the shared system integrations.".into());
+    }
+    if !Path::new("/usr/libexec/ottrin/ottrin-priv-helper").exists()
+        && !Path::new("/usr/share/ottrin/standalone-helper.json").exists()
+        && !(remove_portal
+            && (Path::new("/usr/share/xdg-desktop-portal/portals/ottrin.portal").exists()
+                || Path::new("/etc/cron.daily/ottrin-updatedb").exists()))
+    {
+        return Ok("No standalone system integration is installed.".into());
+    }
+    helper_setup::uninstall(&bundled_privileged_helper()?, remove_portal)
 }
 
 /// Stable application entry point for launchers and desktop activation.

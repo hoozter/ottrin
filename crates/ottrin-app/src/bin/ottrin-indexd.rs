@@ -46,6 +46,17 @@ fn main() {
         }
         return;
     }
+    #[cfg(target_os = "linux")]
+    if args == ["--uninstall-standalone-administrator-index"] {
+        match ottrin_search::uninstall_administrator_index_service(false) {
+            Ok(message) => println!("{message}"),
+            Err(error) => {
+                eprintln!("ottrin index service: {error}");
+                std::process::exit(1);
+            }
+        }
+        return;
+    }
     let launch = daemon_launch(&args).unwrap_or_else(|error| {
         eprintln!("ottrin index daemon: {error}");
         std::process::exit(2);

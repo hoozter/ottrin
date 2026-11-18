@@ -1113,7 +1113,7 @@ fn search_reveal_retains_query_results_and_selection_across_back_and_reopen() {
     // Documents listing applies.
     app.tab_ui.get_mut(&tab_id).unwrap().main.dir = documents.clone();
     let idx = app
-        .resolve_miller_selection(tab_id, &documents, &[entry.clone()], true)
+        .resolve_miller_selection(tab_id, &documents, std::slice::from_ref(&entry), true)
         .expect("reveal selects the result row");
     assert_eq!(idx, 0);
     assert_eq!(app.tab_ui[&tab_id].main_sel, Some(0));
