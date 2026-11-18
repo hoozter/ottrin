@@ -53,6 +53,9 @@ done
 # transfer, signatures and inspection tools in the same release job contract.
 linux_job="$(awk '/^  package-linux:/ { active=1 } active && /^  package-windows-portable:/ { exit } active { print }' "$WORKFLOW")"
 for literal in \
+  'OTTRIN_DIST_DIR: ${{ github.workspace }}/dist' \
+  './packaging/linux/package-portable.sh' \
+  './packaging/linux/package-appimage.sh' \
   './packaging/linux/package-deb.sh' \
   './packaging/linux/package-rpm.sh' \
   'dist/ottrin_*_amd64.deb' \

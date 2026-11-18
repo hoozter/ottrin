@@ -169,6 +169,8 @@ jobs:
     name: Linux portable, AppImage, DEB and RPM
     needs: verify
     runs-on: ubuntu-24.04
+    env:
+      OTTRIN_DIST_DIR: ${{ github.workspace }}/dist
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
