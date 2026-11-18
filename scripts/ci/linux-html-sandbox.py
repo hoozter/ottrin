@@ -66,6 +66,15 @@ try:
         '/usr/share/polkit-1/actions/org.ottrin.filesystem.policy':sha('packaging/linux/org.ottrin.filesystem.policy'),
         '/usr/share/xdg-desktop-portal/portals/ottrin.portal':sha('packaging/linux/ottrin.portal'),
     }
+    # The installer writes this receipt as a JSON array in payload order.
+    receipt_hashes = [files[path] for path in (
+        '/usr/libexec/ottrin/ottrin-priv-helper',
+        '/usr/libexec/ottrin/ottrin-html-render',
+        '/usr/share/ottrin/ottrin-html-render.apparmor',
+        '/usr/share/polkit-1/actions/org.ottrin.filesystem.policy',
+    )]
+    encoded_receipt = json.dumps(receipt_hashes, separators=(',', ':')).encode()
+    files['/usr/share/ottrin/standalone-helper.json'] = hashlib.sha256(encoded_receipt).hexdigest()
     for name in files:assert not Path(name).exists() and not Path(name).is_symlink(),name
     existing=run(['systemctl','--user','list-units','--all','--plain','--no-legend','--no-pager','ottrin-render-*.service'],capture_output=True,text=True).stdout;assert not existing.strip()
     directories=['/usr/libexec','/usr/libexec/ottrin','/usr/share/ottrin','/usr/share/polkit-1','/usr/share/polkit-1/actions','/usr/share/xdg-desktop-portal','/usr/share/xdg-desktop-portal/portals']

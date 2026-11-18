@@ -739,7 +739,7 @@ mod tests {
     }
 
     #[test]
-    fn xdg_mime_query_selects_ottrin_only_for_a_bare_safe_executable() {
+    fn xdg_mime_query_selects_ottrin_for_a_bare_safe_executable() {
         if std::process::Command::new("xdg-mime")
             .arg("--version")
             .output()
@@ -781,10 +781,9 @@ mod tests {
             "A safe path stays bare so xdg-mime's first-word binary probe resolves it"
         );
         assert_eq!(query(), ID);
-        // The previous quoting behavior: xdg-mime keeps the literal quotes in
-        // the first Exec word, `command -v` fails, and selection falls through
-        // to the next configured candidate even though our desktop file itself
-        // is valid. This mirrors the real Dolphin fallback.
+        // The fallback is selected when the registered desktop entry is absent.
+        // Older xdg-mime builds also misread quoted Exec paths, but newer builds
+        // accept them. The generated bare-path assertion above covers both.
         let fallback_entry = "[Desktop Entry]\nType=Application\nName=Test fallback\nExec=/bin/true -- %f\nNoDisplay=true\nMimeType=inode/directory;\n";
         fs::write(
             d.data
@@ -799,17 +798,7 @@ mod tests {
         )
         .unwrap();
         assert_eq!(query(), ID);
-        let quoted = installed.replacen(
-            exec_line,
-            &format!("Exec=\"{}\" -- %f", executable.to_str().unwrap()),
-            1,
-        );
-        assert_ne!(quoted, installed);
-        storage::atomic_write(&desktop, quoted.as_bytes()).unwrap();
-        assert_eq!(
-            query(),
-            "xdg-test-fallback.desktop",
-            "A quoted Exec fails xdg-mime's first-word binary probe and loses the selection"
-        );
+        fs::remove_file(&desktop).unwrap();
+        assert_eq!(query(), "xdg-test-fallback.desktop");
     }
 }
