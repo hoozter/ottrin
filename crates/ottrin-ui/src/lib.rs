@@ -21816,7 +21816,7 @@ impl OttrinApp {
                                     (SettingsTab::General, MI_TUNE, "General"),
                                     (SettingsTab::Appearance, MI_DARK_MODE, "Appearance"),
                                     (SettingsTab::Files, MI_FOLDER, "Files"),
-                                    (SettingsTab::Services, MI_LOCK, SETTINGS_SERVICES_TITLE),
+                                    (SettingsTab::Services, MI_LOCK, "Services"),
                                 ]),
                                 ("Search", &[
                                     (SettingsTab::Search, MI_SEARCH, "Search"),
