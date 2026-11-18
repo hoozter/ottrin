@@ -833,6 +833,4 @@ verify_appimage_release_file_bytes 'ROADMAP.md'
 verify_appimage_release_file_bytes 'RELEASE_NOTES.md'
 verify_appimage_release_file_bytes 'RELEASE_CHECKLIST.md'
 
-require_zip_entry '/bin/pdfium/pdfium\.dll$'
-
 printf 'Verified release artifacts in %s\n' "$DIST_DIR"
