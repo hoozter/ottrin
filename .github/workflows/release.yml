@@ -27,7 +27,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-24.04, windows-latest]
         exclude: ${{ fromJSON(vars.OTTRIN_RELEASE_SCOPE == 'linux' && '[{"os":"windows-latest"}]' || '[]') }}
     runs-on: ${{ matrix.os }}
     steps:
@@ -168,7 +168,7 @@ jobs:
   package-linux:
     name: Linux portable, AppImage, DEB and RPM
     needs: verify
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
@@ -269,7 +269,7 @@ jobs:
     name: Windows portable zip
     needs: verify
     if: vars.OTTRIN_RELEASE_SCOPE != 'linux'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
@@ -395,7 +395,7 @@ jobs:
       !cancelled() && needs.package-linux.result == 'success' &&
       ((vars.OTTRIN_RELEASE_SCOPE == 'linux' && needs.verify-windows-artifacts.result == 'skipped') ||
       (vars.OTTRIN_RELEASE_SCOPE != 'linux' && needs.verify-windows-artifacts.result == 'success'))
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: write
     steps:
@@ -471,7 +471,7 @@ jobs:
       vars.LINUX_REPOSITORY_STAGING_ENABLED == 'true' &&
       ((github.event_name == 'release' && !github.event.release.prerelease && !github.event.release.draft) ||
       (github.event_name == 'workflow_dispatch' && github.ref_name == github.event.repository.default_branch))
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     concurrency:
       group: linux-stable-repositories
       cancel-in-progress: false

@@ -126,7 +126,7 @@ require_installer_literal 'if ($expectedHash -ne $actualHash) { throw "Windows p
 require_installer_literal 'if ($stages.Count -ne 1) { throw "Expected exactly one extracted Windows portable stage for installer packaging." }'
 
 for literal in \
-  'os: [ubuntu-latest, windows-latest]' \
+  'os: [ubuntu-24.04, windows-latest]' \
   'needs: package-windows-portable' \
   'needs: package-windows-installer' \
   'needs: [package-linux, verify-windows-artifacts]'; do

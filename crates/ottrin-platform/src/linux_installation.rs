@@ -29,8 +29,8 @@ pub fn package_owner(path: &Path) -> Result<Option<(PackageManager, String)>, St
         (
             PackageManager::Dnf,
             "/usr/bin/rpm",
-            &["-qf", "--queryformat", "%{NAME}\\n", "--"][..],
-            "is not owned by any package",
+            &["-q", "--whatprovides", "--queryformat", "%{NAME}\\n", "--"][..],
+            "no package provides",
         ),
     ] {
         if !Path::new(executable).is_file() {
