@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Production per-user portal lifecycle on a disposable GitHub Linux runner only."""
 from pathlib import Path
-import hashlib,json,os,re,signal,subprocess,time
+import hashlib,json,os,re,signal,subprocess,tempfile,time
 
 assert (os.environ.get('GITHUB_ACTIONS')=='true' and os.environ.get('RUNNER_OS')=='Linux'
         and os.environ.get('RUNNER_ENVIRONMENT')=='github-hosted' and os.getuid()!=0), 'Disposable hosted Linux user required'
@@ -22,13 +22,31 @@ edit='# unrelated edit made after enabling\n';env=os.environ.copy();env['XDG_CUR
 report={'scope':'Actual source CLI,protected installed definition,real user-manager/D-Bus activation and preference restoration on a disposable runner; no GUI or sandbox caller acceptance'}
 def cancelled(*_):raise KeyboardInterrupt('Portal lifecycle cancelled')
 for sig in [signal.SIGINT,signal.SIGTERM]:signal.signal(sig,cancelled)
-def run(args,check=True,**kw):
- p=subprocess.run(args,env=env,capture_output=True,text=True,timeout=45,**kw)
+def run(args,check=True,*,test_env=None,**kw):
+ p=subprocess.run(args,env=env if test_env is None else test_env,capture_output=True,text=True,timeout=45,**kw)
  if check and p.returncode:raise RuntimeError({'command':args,'code':p.returncode,'stdout':p.stdout,'stderr':p.stderr})
  return p
 def control(*args,check=True):return run(['systemctl','--user','--no-ask-password','--no-pager',*args],check)
 def manage(integration,*args):
  p=run([str(binary),integration,*args]);report.setdefault('commands',[]).append({'integration':integration,'arguments':args,'stdout':p.stdout,'stderr':p.stderr});return p.stdout
+def remove_app():
+ # Hosted jobs lack a graphical polkit agent. Use their existing sudo grant
+ # for just this teardown, checking that the app staged the built payload.
+ helper=binary.with_name('ottrin-priv-helper')
+ with tempfile.TemporaryDirectory(prefix='ottrin-ci-auth-',dir=os.environ['RUNNER_TEMP']) as temp:
+  bridge=Path(temp)/'pkexec'
+  bridge.write_text("""#!/bin/sh
+set -eu
+[ "$#" -eq 3 ] && [ "$1" = --disable-internal-agent ] && [ "$3" = --uninstall-system-integration ]
+case "$2" in /*/ottrin-helper-setup-*/ottrin-priv-helper) ;; *) exit 2 ;; esac
+cmp --silent -- "$OTTRIN_CI_HELPER" "$2"
+cmp --silent -- "${OTTRIN_CI_HELPER%/*}/ottrin-html-render" "${2%/*}/ottrin-html-render"
+exec /usr/bin/sudo -- "$2" "$3"
+""")
+  bridge.chmod(0o700)
+  return run([str(binary),'--uninstall'],test_env={
+   **env,'PATH':temp+os.pathsep+env['PATH'],'OTTRIN_CI_HELPER':str(helper),
+  })
 def wait_start_window():
  # The complete lifecycle deliberately restarts the real frontend more often
  # than a normal setup. Respect its rate limiter between independent scenarios.
@@ -81,18 +99,21 @@ try:
  report['folders']={'ready':folder_ready,'native_gio_default_verified':True,'previous_default_restored':True,'unrelated_edit_preserved':True,'foreign_entry_preserved':True,'owned_assets_removed':True}
  # Exercise application removal through the production manager, not only standalone controls.
  manage('portal','enable');manage('portal','apply');manage('folders','enable')
- cleanup=run([str(binary),'--uninstall']);report['application_cleanup']={'stdout':cleanup.stdout,'stderr':cleanup.stderr}
+ cleanup=remove_app();report['application_cleanup']={'stdout':cleanup.stdout,'stderr':cleanup.stderr}
  assert not any(path.exists() for path in [receipt,service,unit,folder_receipt,folder_entry,folder_icon,folder_service])
  assert config.read_text()==original+edit
  assert default_folder()=='org.ottrin.Previous.CI.desktop'
  assert 'application/pdf=new-reader.desktop;' in folder_config.read_text()
  assert previous_entry.read_text()==previous_contents
  wait_start_window()
+ # Recreate only the protected definition needed for the second case.
+ run(['sudo',str(binary.with_name('ottrin-priv-helper')),'--install-portal-definition'])
  # A previously disabled, pending portal must apply removal without stopping a missing unit again.
  manage('portal','enable');manage('portal','apply');manage('portal','disable')
- cleanup=run([str(binary),'--uninstall']);report['pending_portal_cleanup']={'stdout':cleanup.stdout,'stderr':cleanup.stderr}
+ cleanup=remove_app();report['pending_portal_cleanup']={'stdout':cleanup.stdout,'stderr':cleanup.stderr}
  assert not any(path.exists() for path in [receipt,service,unit])
  assert config.read_text()==original+edit
+ assert not Path('/usr/share/xdg-desktop-portal/portals/ottrin.portal').exists()
  report.update(status='pass',ready=ready,off=off,broker_pid=pid,prior_chooser_restored=True,unrelated_edit_preserved=True,managed_activation_removed=True)
 except BaseException as error:
  report.update(status='failed',error=repr(error));raise
