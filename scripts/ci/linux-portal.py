@@ -37,7 +37,7 @@ def remove_app():
   bridge=Path(temp)/'pkexec'
   bridge.write_text("""#!/bin/sh
 set -eu
-[ "$#" -eq 3 ] && [ "$1" = --disable-internal-agent ] && [ "$3" = --uninstall-system-integration ]
+[ "$#" -eq 3 ] && [ "$1" = --disable-internal-agent ] && [ "$3" = --uninstall-system-integration ] || exit 2
 case "$2" in /*/ottrin-helper-setup-*/ottrin-priv-helper) ;; *) exit 2 ;; esac
 cmp --silent -- "$OTTRIN_CI_HELPER" "$2"
 cmp --silent -- "${OTTRIN_CI_HELPER%/*}/ottrin-html-render" "${2%/*}/ottrin-html-render"
