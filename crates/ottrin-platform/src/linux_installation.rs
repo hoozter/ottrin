@@ -29,12 +29,21 @@ pub fn package_owner(path: &Path) -> Result<Option<(PackageManager, String)>, St
         (
             PackageManager::Dnf,
             "/usr/bin/rpm",
-            &["-q", "--whatprovides", "--queryformat", "%{NAME}\\n", "--"][..],
-            "no package provides",
+            &["-qf", "--queryformat", "%{NAME}\\n", "--"][..],
+            "is not owned by any package",
         ),
     ] {
         if !Path::new(executable).is_file() {
             continue;
+        }
+        if manager == PackageManager::Dnf {
+            // RPM inspects the filesystem entry during a file-owner query.
+            // A missing path has no file for the standalone setup to remove.
+            match fs::symlink_metadata(path) {
+                Ok(_) => {}
+                Err(error) if error.kind() == std::io::ErrorKind::NotFound => continue,
+                Err(error) => return Err(format!("Cannot inspect {}: {error}", path.display())),
+            }
         }
         let output = Command::new(executable)
             .env_clear()
