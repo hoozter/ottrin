@@ -32,7 +32,7 @@ cat > "$TOP/SPECS/ottrin.spec" <<EOF
 Name: ottrin
 Version: $VERSION
 Release: 1%{?dist}
-Summary: Fast, keyboard-friendly file manager
+Summary: Desktop file manager with fast local search and built-in previews
 License: MIT
 URL: https://github.com/hoozter/ottrin
 BuildArch: $RPM_ARCH
@@ -57,7 +57,8 @@ Requires: libgstbase-1.0.so.0()(64bit)
 Requires: libgstapp-1.0.so.0()(64bit)
 
 %description
-Ottrin is a keyboard-first desktop file manager with Miller, List, and Grid views.
+Ottrin is a fast desktop file manager with local indexed search,
+ built-in previews, and Column, List, and Grid views.
 
 %prep
 

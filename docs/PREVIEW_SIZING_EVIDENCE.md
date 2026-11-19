@@ -47,7 +47,7 @@ The implementation handoff records native select → Space Inspector captures fo
 
 These boundaries remain in final QA; they do not require reopening unrelated implementation during this bounded source landing.
 
-## Miller resize correction — 2026-10-12
+## Column resize correction — 2026-10-12
 
 Native Windows QA of the clean `cf40e58` portable package exposed an adjacent preview disappearing when a running window shrank from 1100 to 800 pixels; launching at the saved 800-pixel width worked. The production renderer now reveals the actual selected-column/preview bounds when shrinking a viewport whose preview was visible. Deliberate horizontal scrolling remains authoritative. Preview width uses the real viewport edge rather than the painter clip, which includes shadow bleed.
 
@@ -67,7 +67,7 @@ for text, highlighted code, archives, spreadsheets, structured DOCX and extracte
 text in both themes at100/150/200% text size. Existing footer geometry cases now
 also use the common frame, preserving their declared body viewport dimensions.
 
-The Miller Info area scales within a bounded part of its pane and scrolls
+The Column Info area scales within a bounded part of its pane and scrolls
 metadata overflow. Enlarged text must leave the actual Details toggle clickable
 and the final metadata field reachable, including short/narrow panes. The
 rendered regression covers both themes,180/250px widths,300/450px heights and

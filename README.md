@@ -2,7 +2,15 @@
 
 **Navigate with clarity.**
 
-A fast, keyboard-first file manager built in Rust with [egui](https://github.com/emilk/egui). Miller columns, blazing-fast indexed search, rich file previews, and a theme system with a native interface.
+Ottrin is a fast desktop file manager that lets you browse your way. Switch
+between Column, List, and Grid views, search across the folders you choose, and
+preview files right in the app. Local indexed search finds files by name or
+path, and optional content indexing finds words inside supported files.
+
+[Download the Linux release](https://github.com/hoozter/ottrin/releases/tag/v0.1.0)
+· [See Ottrin in action](https://ottrin.com/#screenshots)
+
+[![Ottrin showing indexed search results across project folders](https://ottrin.com/assets/search.webp?v=68321862)](https://ottrin.com/#search)
 
 [![CI](https://github.com/hoozter/ottrin/actions/workflows/ci.yml/badge.svg)](https://github.com/hoozter/ottrin/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/hoozter/ottrin)](https://github.com/hoozter/ottrin/releases)
@@ -13,13 +21,10 @@ A fast, keyboard-first file manager built in Rust with [egui](https://github.com
 
 ## Release Artifacts
 
-Public releases will be available from [GitHub Releases](https://github.com/hoozter/ottrin/releases).
-The current 0.1.0 packages are local development previews. No public release
-or complete release acceptance is claimed. The latest usable local packages
-and their source revisions, hashes and tested scopes are
-recorded in `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json` and
-`dist/WINDOWS_CANDIDATE_ACCEPTANCE.json`. See the [roadmap](docs/ROADMAP.md)
-for current delivery and the [release checklist](docs/RELEASE_CHECKLIST.md) for gates.
+[GitHub Releases](https://github.com/hoozter/ottrin/releases) hosts the public
+Linux release in AppImage, portable tarball, DEB, and RPM formats. Windows
+packages are in development. See the [roadmap](docs/ROADMAP.md) and
+[release checklist](docs/RELEASE_CHECKLIST.md) for candidate status.
 
 Local Linux formats are AppImage, portable tarball, DEB and RPM. Windows has portable
 ZIP, a per-user NSIS installer and an unsigned development MSIX for local testing.
@@ -63,9 +68,8 @@ owners and pending consumers.
 
 ### Linux
 
-Installing the current DEB or RPM does not add an Ottrin update repository.
-Updates currently require installing a newer package; GitHub releases alone do
-not configure an APT or DNF update source.
+The public DEB and RPM register Ottrin’s signed update repository. AppImage and
+portable users update by downloading the next release.
 
 File-operation provenance requires Linux 6.8 or newer. Ottrin uses unique mount
 identities to reject a filesystem that changes between selection and execution.
@@ -116,7 +120,7 @@ macOS signing/launch checks do not block Linux/Windows work.
 
 ## Features
 
-- **Miller columns** — browse parent, current, and preview pane side-by-side
+- **Column view** — keep parent folders visible alongside the current folder and its preview
 - **Smooth column navigation** — horizontal auto-scroll keeps focus visible while preserving path context
 - **Resizable columns** — drag separators; widths persist while you navigate
 - **Flexible sorting** — name, type, size, modified or created time, either direction, with optional folders first; the file picker remembers its own order
@@ -124,7 +128,7 @@ macOS signing/launch checks do not block Linux/Windows work.
 - **Smart sidebar** — info, drop folder, and search panels in a compact, toggleable activity strip
 - **Bookmarks bar** — one-click shortcuts to your most-used folders (right-click to add/remove)
 - **Integrated command frame** — run `mkdir`, `touch`, `mv`, `cp`, `rm`, `chmod`, `ln -s` and more without leaving the app; opens on any keypress
-- **Keyboard first** — arrow keys, Enter, Backspace, and Tab navigate the Miller view
+- **Keyboard shortcuts** — navigate folders, preview files, and run common actions
 - **Tabs** — multiple locations open at once, full navigation history per tab
 - **Theme system** — built-in presets (Ottrin, Breeze, Adwaita, Windows 11, Solarized, Nord, G33k) with live editing and custom save/load
 - **Semantic file styling** — file and folder types are classified and styled consistently across views
@@ -161,7 +165,7 @@ macOS signing/launch checks do not block Linux/Windows work.
 
 ## Build from Source
 
-Requires Rust 1.94.0. CI and release workflows pin this exact toolchain for Linux and Windows builds.
+Ottrin is built in Rust with [egui](https://github.com/emilk/egui). The build requires Rust 1.94.0. CI and release workflows pin this exact toolchain for Linux and Windows builds.
 
 ```sh
 git clone https://github.com/hoozter/ottrin.git

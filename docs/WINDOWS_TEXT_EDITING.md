@@ -202,6 +202,6 @@ Evidence: `.evidence/windows-20261011/WINDOWS_TEXT_PACKAGE_ACCEPTANCE.json`,
 This closes the focused exact-package Markdown save/conflict/reload workflow;
 it does not repeat native security fault injection, cover all formats, prove
 power-loss behavior or accept native WGPU/hardware/full daily-driver workflows.
-The run also shows a partially visible Miller inline preview beside a long ancestor
+The run also shows a partially visible inline preview beside a long ancestor
 chain at the private 1100 × 690 window size. This is a horizontally scrolled column,
 not the overlay Smart Panel; initial selection/reveal behavior needs separate QA.

@@ -461,12 +461,25 @@ jobs:
           fi
 
       - name: Create GitHub release draft
+        id: release_draft
         uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
         with:
           draft: true
           files: dist/*
           generate_release_notes: true
           fail_on_unmatched_files: true
+
+      - name: Check release draft wording
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_ID: ${{ steps.release_draft.outputs.id }}
+        run: |
+          body="$(gh api "repos/$GITHUB_REPOSITORY/releases/$RELEASE_ID" --jq '.body // ""')"
+          if grep -Eiq '(^|[^[:alnum:]_])miller([^[:alnum:]_]|$)|keyboard[[:space:]-]+first' <<< "$body"; then
+            echo "::error::Review the generated release draft and use Column view and desktop file manager in product copy before publishing."
+            exit 1
+          fi
 
   stage-linux-repositories:
     name: Stage repositories for a published stable release

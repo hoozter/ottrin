@@ -440,7 +440,7 @@ improvement is claimed. These are window-specific observations, not a universal
 CPU guarantee or final owner acceptance.
 
 The exact AppImage passes native icon validation, Dark/List100 and
-Light/Miller100 startup, read-only VCF Space-close/byte preservation, normal
+Light at 100% in Column view startup, read-only VCF Space-close/byte preservation, normal
 Close and saved preferences. All private profiles, displays, processes and
 package staging/extractions are removed. Full hosted Linux verification passes
 240 search, 419 platform, 205 preview and 402 UI tests, strict lint, release build

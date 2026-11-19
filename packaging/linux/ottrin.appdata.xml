@@ -2,7 +2,7 @@
 <component type="desktop-application">
   <id>org.ottrin.Ottrin</id>
   <name>Ottrin</name>
-  <summary>Keyboard-first file manager with Miller columns</summary>
+  <summary>Desktop file manager with fast local search and built-in previews</summary>
   <developer id="org.ottrin">
     <name>Ottrin contributors</name>
   </developer>
@@ -10,9 +10,8 @@
   <project_license>MIT</project_license>
   <description>
     <p>
-      Ottrin is a fast, keyboard-first desktop file manager with Miller,
-      List, and Grid views, indexed search, transactional file operations,
-      Tandem View, and rich file previews.
+      Ottrin lets you browse in Column, List, or Grid view, search across the
+      folders you choose with a local index, and preview files in the app.
     </p>
   </description>
   <launchable type="desktop-id">org.ottrin.Ottrin.desktop</launchable>

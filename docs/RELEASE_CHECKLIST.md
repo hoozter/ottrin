@@ -79,7 +79,7 @@ interactive workflow, polkit-dialog, Windows runtime, UAC, or installer sign-off
 
 - [ ] AppImage launches on a clean supported desktop.
 - [ ] Portable tarball launches on a clean supported desktop.
-- [ ] Miller/List/Grid navigation, tabs, bookmarks, address navigation, and status messages pass.
+- [ ] Column/List/Grid navigation, tabs, bookmarks, address navigation, and status messages pass.
 - [ ] Copy, overwrite, rename, multi-select, Trash, permanent delete, and partial-batch warnings pass; Linux same-filesystem and cross-filesystem Move support Skip/Rename/Overwrite/Cancel with explicit complete/partial/recovery outcomes.
 - [ ] Tandem View pane-to-pane copy and Move pass, including cross-filesystem directory/symlink handling and `No batch undo` Activity reporting.
 - [ ] Search initial index, restart, watcher update, rebuild, scope changes, content search, and result actions pass.
@@ -117,6 +117,7 @@ scope: `.evidence/windows-msi-rollback-current/ACCEPTANCE.json`.
 
 - [ ] `README.md`, `USER_GUIDE.md`, `ROADMAP.md`, and `RELEASE_NOTES.md` match observed behavior.
 - [ ] Known limitations are complete and plainly worded.
+- [ ] Review the final draft, including generated notes, against the [product wording](../AGENTS.md#product-wording) before publishing.
 - [ ] Version, artifact names, checksums, and generated release notes agree for the exact release artifacts.
 - [ ] No release-blocking item is waived without a written rationale.
 - [ ] The tag workflow stages the verified assets in a GitHub release draft. Review

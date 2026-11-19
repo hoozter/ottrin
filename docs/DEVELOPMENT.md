@@ -349,7 +349,7 @@ Windows UI provider detection and conversion use the same scheduling/rendering
 path as Linux, with the platform's native isolation launcher. Detection completion
 wakes the GUI through the existing event-driven result notifier. A failure for the
 current source generation selects Ottrin's native preview and displays an
-explanation in both the Miller preview and Quick Inspector; disabling the provider
+explanation in both the Column preview and Quick Inspector; disabling the provider
 or replacing the file does not retain that failure notice. Native source-built
 release/OpenGL UI evidence is recorded in
 `.evidence/windows-office-ui-current/ACCEPTANCE.json`. This does not establish
@@ -828,7 +828,7 @@ Runtime helper discovery checks explicit override, environment variable, app dir
   Keep plan lifetimes free of directory handles so ordinary unmount remains
   possible. Native plan checks do not accept arbitrary pathname races inside the
   existing recovery engine or replace exact-package GUI/device acceptance.
-- Navigate Miller/List/Grid, tabs, bookmarks, and address bar.
+- Navigate Column/List/Grid, tabs, bookmarks, and address bar.
 - Search first index, restart from DB, rebuild, current-folder search, content search, and result actions.
 - Create, rename, copy, trash delete, and permanent delete; verify Linux same-filesystem and cross-filesystem Move with Skip/Rename/Overwrite/Cancel and explicit dispositions. Cross-filesystem Move must stage and verify the complete destination tree before publication, revalidate before guarded source cleanup, retain explicit recovery evidence on uncertainty, and offer Undo only from identity/content-bound single-entry evidence. On Windows, extend the native same-volume Skip/Rename/Overwrite fixture evidence with crash, adverse ACL/sharing, retained-transaction lifecycle and packaged checks. Windows cross-volume Move uses the verified staged-copy route; unsupported filesystems and unsafe metadata remain refused. Accept its public workflow and exact package separately; cross-compilation alone is not acceptance.
 - Tandem activation, pinning, side switching, and pane-to-pane copy.

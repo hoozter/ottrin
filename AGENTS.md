@@ -2,6 +2,11 @@
 
 Read and follow `/home/campbell/.codex/AGENTS.md` first. This file adds only project-specific requirements.
 
+## Product wording
+
+- Describe Ottrin as a desktop file manager with fast local search, a choice of views, and built-in previews. Mention keyboard shortcuts and the command bar as features. Use platform names for specific downloads and releases.
+- Call the layout **Column view**. In descriptions, explain that it keeps parent folders visible side by side. Check the website, README, release drafts, and package metadata for consistent wording.
+
 ## Linux and Windows delivery
 
 - Treat UI changes as Linux and Windows by default. Before calling a shared UI change delivered, build both candidates from the same clean commit and verify the affected workflow on both platforms. Batch related changes into one candidate per platform. For a Linux-specific change, record why Windows is unaffected. If either platform is blocked, report the pending verification and the revision its current package still uses.

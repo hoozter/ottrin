@@ -70,13 +70,13 @@ ottrin_write_source_revision "$ROOT" "$APPDIR/usr/share/doc/ottrin/SOURCE_REVISI
 cat > "$APPDIR/org.ottrin.Ottrin.desktop" <<'DESKTOP'
 [Desktop Entry]
 Name=Ottrin
-Comment=Keyboard-first file manager
+Comment=Desktop file manager with fast local search and built-in previews
 Exec=ottrin
 Icon=ottrin
 StartupWMClass=org.ottrin.Ottrin
 Type=Application
 Categories=System;FileTools;FileManager;
-Keywords=files;manager;miller;
+Keywords=files;manager;folders;search;preview;
 DESKTOP
 cp "$APPDIR/org.ottrin.Ottrin.desktop" "$APPDIR/usr/share/applications/org.ottrin.Ottrin.desktop"
 

@@ -72,13 +72,13 @@ install -m 0644 \
 cat > "$DEST/usr/share/applications/org.ottrin.Ottrin.desktop" <<'DESKTOP'
 [Desktop Entry]
 Name=Ottrin
-Comment=Keyboard-first file manager
+Comment=Desktop file manager with fast local search and built-in previews
 Exec=ottrin
 Icon=ottrin
 StartupWMClass=org.ottrin.Ottrin
 Type=Application
 Categories=System;FileTools;FileManager;
-Keywords=files;manager;miller;
+Keywords=files;manager;folders;search;preview;
 DESKTOP
 
 SOURCE_REVISION="$(git -C "$ROOT" rev-parse --verify HEAD)"
